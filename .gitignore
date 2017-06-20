@@ -1,1 +1,4 @@
 .idea/
+__pycache__/
+hypixthon/__pycache__/
+steamapi/__pycache__/
