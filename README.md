@@ -26,7 +26,7 @@ This will start the bot or show the errors you have to fix.
 * [SlashNephy - Hypixthon](https://github.com/SlashNephy/Hypixthon) - Hypixthon API
 * [smiley - steamapi](https://github.com/smiley/steamapi) - Steam API
 * [edwardslabs - cleverwrap.py](https://github.com/edwardslabs/cleverwrap.py) - Cleverbot Wrapper
-* [More on [requirements.txt]]
+* [More on [requirements.txt](requirements.txt)]
 
 ## Authors
 
