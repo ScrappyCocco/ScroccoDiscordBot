@@ -1,5 +1,5 @@
 # Scrocco Discord Bot
-This is a little Bot i made for my Discord server and a couple of friends's Discord server.
+This is a little Python Bot i made for my Discord server and a couple of friends's Discord server.
 
 ## Getting Started
 

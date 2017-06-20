@@ -56,9 +56,12 @@ async def on_message(message):
                 print("Cleverbot Question:" + newMessage)
                 reply = ""
                 try:
-                    while reply == "":  # i have to wait for a complete reply(errors could happen with that api)
+                    request_index = 0
+                    # i have to wait for a complete reply(errors could happen with that api)
+                    while reply == "" and request_index < botVariables.maxCleverbotRequests:
                         reply = cw.say(newMessage)
                         print("Cleverbot Reply:" + reply)
+                        request_index += 1
                     print("-------------------------")
                     await bot.send_message(message.channel, reply)  # send the cleverbot response
                 except json.decoder.JSONDecodeError:  # an error occurred

@@ -31,12 +31,12 @@ class BotCommonCommands:
         Example: !gif or !gif funny cat
         """
         print("-------------------------")
-		gifKey="yourKey"  # will be moved on botvariables
+        currentgifkey = self.botVariables.get_gif_key()
         print("GifRequest:Arguments:" + str(len(args)))
         tag = ""
         if len(args) == 0:
             print("Gif Request with No arguments")
-            r = requests.get("http://api.giphy.com/v1/gifs/random?api_key="+gifKey)
+            r = requests.get("http://api.giphy.com/v1/gifs/random?api_key="+currentgifkey)
             await self.bot.say(r.json()['data']['image_url'])
         else:
             for x in range(0, len(args)):
@@ -44,7 +44,7 @@ class BotCommonCommands:
                 if x != (len(args) - 1):
                     tag += "+"
             print("Gif Request with arguments:" + tag)
-            r = requests.get("http://api.giphy.com/v1/gifs/random?api_key="+gifKey+"&tag=" + tag)
+            r = requests.get("http://api.giphy.com/v1/gifs/random?api_key="+currentgifkey+"&tag=" + tag)
             print("GifRequest:Found Length:" + str(len(r.json()['data'])))
             if (len(r.json()['data'])) == 0:
                 await self.bot.say("No GIF found with those tags :frowning: ")

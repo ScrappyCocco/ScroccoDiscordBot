@@ -6,9 +6,12 @@
 
 
 class BotVariables:
-    cleverKey = "YourKey"
-    hypixelKey = "YourKey"
-    steamKey = "YourKey"
+    cleverKey = "YourKey"  # https://www.cleverbot.com/api/
+    hypixelKey = "YourKey"  # https://api.hypixel.net/
+    steamKey = "YourKey"  # https://steamcommunity.com/dev/apikey
+    gifKey = "YourKey"  # http://api.giphy.com/
+
+    maxCleverbotRequests = 10  # max number of requests in case of errors
 
     version = "0.90"
 
@@ -32,8 +35,8 @@ class BotVariables:
     defaultStatus = "Branzini 4 Ever"
 
     # read and write url where i store the current in-game status to read it in case of reboot or update
-    readStateUrl = "URL/readState.php"
-    writeStateUrl = "URL/writeState.php"
+    readStateUrl = "http://URL/readState.php"
+    writeStateUrl = "http://URL/writeState.php"
     writeStateParamName = "GameString"  # the param name for the post request at writeStateUrl
     #  when i update the in-game status i make a post-request to "writeStateUrl" passing the new status in a
     #  param called "writeStateParamName" to save the status on server, from there i can read it making
@@ -47,10 +50,23 @@ class BotVariables:
     discordBetaBotApiToken = "YourKey"
     # there are 2 api keys because i use the "beta" key before publishing the bot in his "final" version
     # you can create apps from https://discordapp.com/developers/applications/me
+
+    emptyApiKey = "YourKey"
     # -------------------------------------------------
 
     def __init__(self):
         print("CALLING MINI-CLASS-->" + self.__class__.__name__ + " class called")
+        if (
+            self.cleverKey == self.emptyApiKey or
+            self.hypixelKey == self.emptyApiKey or
+            self.steamKey == self.emptyApiKey or
+            self.gifKey == self.emptyApiKey or
+            self.discordFinalBotApiToken == self.emptyApiKey or
+            self.discordBetaBotApiToken == self.emptyApiKey or
+            self.memeGeneratorUsername == "yourUsername" or
+            self.memeGeneratorPassword == "yourPassword"
+        ):
+            print("FATAL ERROR -> SOME API KEY ARE MISSING - BOT WON'T WORK CORRECTLY")
 
     def __del__(self):
         print("DESTROYING MINI-CLASS-->" + self.__class__.__name__ + " class called")
@@ -75,6 +91,12 @@ class BotVariables:
             :return: The Steam API-KEY
         """
         return self.steamKey
+
+    def get_gif_key(self):
+        """Function that return the api key for the gif api.
+            :return: The Gif API-KEY
+        """
+        return self.gifKey
 
     def get_version(self):
         """Function that return the current version of the bot.
