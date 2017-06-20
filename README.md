@@ -15,6 +15,12 @@ pip install -r requirements.txt
 
 You need also all the API key you'll find in botVariablesClass.py (cleverbot, steam, hypixel, ...)
 
+After you installed everything you can try to run the main class (botMainClass.py) with the command:
+```
+py botMainClass.py
+``` 
+This will start the bot or show the errors you have to fix.
+
 ## Built Using
 
 * [SlashNephy - Hypixthon](https://github.com/SlashNephy/Hypixthon) - Hypixthon API
