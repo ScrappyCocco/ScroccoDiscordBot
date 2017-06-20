@@ -62,8 +62,11 @@ async def on_message(message):
                         reply = cw.say(newMessage)
                         print("Cleverbot Reply:" + reply)
                         request_index += 1
-                    print("-------------------------")
-                    await bot.send_message(message.channel, reply)  # send the cleverbot response
+                    if reply == "":
+                        await bot.send_message(message.channel, "Cleverbot error")  # send the cleverbot response
+                    else:
+                        print("-------------------------")
+                        await bot.send_message(message.channel, reply)  # send the cleverbot response
                 except json.decoder.JSONDecodeError:  # an error occurred
                     if botVariables.indexError == 0:  # first error
                         print("Cleaning Cleverbot...")

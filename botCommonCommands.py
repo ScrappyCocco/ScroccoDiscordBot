@@ -117,7 +117,7 @@ class BotCommonCommands:
             else:
                 print("Error:" + str(result['error_message']))
         else:
-            await self.bot.say("**Usage:** !meme <text1> <text2 or memeId>[Optional] <memeId>[Optional]")
+            await self.bot.say("**Usage:** !meme \"text1\" \"text2 or memeId\"[Optional] \"memeId\"[Optional]")
         print("-------------------------")
 
     # ---------------------------------------------------------------------
@@ -233,7 +233,7 @@ class BotCommonCommands:
             except error.HTTPError:
                 await self.bot.send_message(ctx.message.channel, "HTTP Error 503: Service Unavailable")
         else:
-            await self.bot.send_message(ctx.message.channel, "**Usage:** !translate <\"message\"> <language(it/en/de...)>")
+            await self.bot.send_message(ctx.message.channel, "**Usage:** !translate \"message\" language(it/en/de...)")
 
     # ---------------------------------------------------------------------
 
@@ -284,7 +284,7 @@ class BotCommonCommands:
                 embed.set_footer(text="Using haveibeenpwned.com")
                 await self.bot.say(embed=embed)
         else:
-            await self.bot.say("**Usage:** !hacked <email or username>")
+            await self.bot.say("**Usage:** !hacked \"email or username\"")
         print("-------------------------")
 
     # ---------------------------------------------------------------------

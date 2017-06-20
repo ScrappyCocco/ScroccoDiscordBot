@@ -170,7 +170,10 @@ class BotMaintenanceCommands:
             if len(args) == 2:
                 channel_id = args[0]
                 message = args[1]
-                await self.bot.send_message(discord.Server(id=int(channel_id)), message)
+                try:
+                    await self.bot.send_message(discord.Server(id=int(channel_id)), message)
+                except discord.errors.Forbidden:
+                    print("ERROR: Can't send the message")
             else:
                 await self.bot.say("Parameters not correct")
         else:
@@ -185,7 +188,10 @@ class BotMaintenanceCommands:
             if len(args) == 2:
                 recipient = args[0]
                 message = args[1]
-                await self.bot.send_message(discord.User(id=int(recipient)), "**Message from " + ctx.message.author.name + ":**" + message)
+                try:
+                    await self.bot.send_message(discord.User(id=int(recipient)), "**Message from " + ctx.message.author.name + ":**" + message)
+                except discord.errors.Forbidden:
+                    print("ERROR: Can't send the message")
             else:
                 await self.bot.say("Parameters not correct")
         else:
@@ -224,6 +230,40 @@ class BotMaintenanceCommands:
     # ---------------------------------------------------------------------
 
     @commands.command(pass_context=True, hidden=True)
+    async def editallroles(self, ctx, *args):
+        """Function that change the role of ALL users (add/remove a role)
+        Usage: !editallroles remove "NoobRole"
+        Usage: !editallroles add "ProRole"
+        """
+        if BotMethods.is_owner(ctx.message.author) or BotMethods.is_server_admin(ctx.message.author):
+            if not len(args) == 2:
+                await self.bot.say("Parameters not correct...")
+                return
+            print("-------------------------")
+            if ctx.message.server is None:
+                return
+            serverMembers = ctx.message.server.members
+            action = str(args[0])
+            selectedRole = discord.utils.get(ctx.message.server.roles, name=str(args[1]))
+            if selectedRole is None:
+                await self.bot.say("Errors - can't find given roles...")
+                return
+            print("Found " + str(len(serverMembers)) + " members to analyze")
+            for CurrentMember in serverMembers:
+                if selectedRole in CurrentMember.roles:
+                    if action == "remove" or action == "-":  # remove the role
+                        await self.bot.remove_roles(CurrentMember, selectedRole)
+                        print("Role removed for user:" + CurrentMember.name)
+                    if action == "add" or action == "+":  # add the role
+                        await self.bot.add_roles(CurrentMember, selectedRole)
+                        print("Role added for user:" + CurrentMember.name)
+            print("-------------------------")
+        else:
+            await self.bot.say("You don't have access to this command  :stuck_out_tongue: ")
+
+    # ---------------------------------------------------------------------
+
+    @commands.command(pass_context=True, hidden=True)
     async def editrole(self, ctx, *args):
         """Function that edit a user role (in the server where it's called)
         [DON'T work with mentions for now]
@@ -243,9 +283,9 @@ class BotMaintenanceCommands:
             if roleToSet is None or userFound is None:  # error searching the user
                 await self.bot.say("Errors - can't find given roles...")
             else:
-                if action == "add":
+                if action == "add" or action == "+":
                     await self.bot.add_roles(userFound, roleToSet)
-                if action == "remove":
+                if action == "remove" or action == "-":
                     await self.bot.remove_roles(userFound, roleToSet)
                 print("Role Updated for user:" + userFound.name)
             print("-------------------------")

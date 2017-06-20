@@ -31,11 +31,11 @@ class BotGamingCommands:
     @commands.command(pass_context=True)
     async def ow(self, ctx, *args):
         """Print Overwatch stats of a player
-        Usage:** !ow <Name-Tag> <eu(default)/us>[optional]
+        Usage:** !ow "Name-Tag" <eu(default)/us>[optional]
         """
         print("-------------------------")
         if len(args) == 0 or len(args) > 2:  # parameters aren't correct - print the correct usage of the command
-            await self.bot.say("**Usage:** !ow <Name-Tag> <eu(default)/us>[optional]")
+            await self.bot.say("**Usage:** !ow \"Name-Tag\" eu(default)/us[optional]")
         else:
             if len(args) == 1:  # server not passed, going with default server
                 OwRegion = "eu"
@@ -86,11 +86,11 @@ class BotGamingCommands:
     @commands.command(pass_context=True)
     async def r6(self, ctx, *args):
         """Print Rainbow6 player's stats
-        Usage: !r6 <PlayerName>
+        Usage: !r6 PlayerName
         """
         print("-------------------------")
         if len(args) == 0 or len(args) > 1:  # parameters aren't correct - print the correct usage of the command
-            await self.bot.say("**Usage:** !r6 <PlayerName>")
+            await self.bot.say("**Usage:** !r6 PlayerName")
         else:
             name = args[0]
             urlS = "http://rainbowsix7nightbot.herokuapp.com/rainbowsix7.php?platform=uplay&nick=" + name + "&command=stats"
@@ -133,7 +133,7 @@ class BotGamingCommands:
         isInt = False
         print("Steam:Arguments:" + str(len(args)))
         if len(args) == 0 or len(args) > 1:   # parameters aren't correct - print the correct usage of the command
-            await self.bot.say("**Usage:** !steam <name>")
+            await self.bot.say("**Usage:** !steam PlayerID")
         else:
             username = args[0]
             try:
@@ -218,7 +218,7 @@ class BotGamingCommands:
             print("Skin Param:" + name)
             await self.bot.say("https://mcapi.ca/skin/" + name + "/300")
         else:  # parameters aren't correct - print the correct usage of the command
-            await self.bot.say("**Usage:** !mcskin <McName>")
+            await self.bot.say("**Usage:** !mcskin McName")
         print("-------------------------")
 
     @commands.command()
@@ -232,7 +232,7 @@ class BotGamingCommands:
             print("param:" + name)
             await self.bot.say("https://mcapi.ca/avatar/" + name + "/100/true")
         else:  # parameters aren't correct - print the correct usage of the command
-            await self.bot.say("**Usage:** !mchead <McName>")
+            await self.bot.say("**Usage:** !mchead McName")
         print("-------------------------")
 
     @commands.command()
@@ -266,7 +266,7 @@ class BotGamingCommands:
                 finalString += "```"
                 await self.bot.say(finalString)
         else:  # parameters aren't correct - print the correct usage of the command
-            await self.bot.say("**Usage:** !hy <McName>")
+            await self.bot.say("**Usage:** !hy McName")
         print("-------------------------")
 
     # ---------------------------------------------------------------------

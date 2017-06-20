@@ -13,7 +13,7 @@ class BotVariables:
 
     maxCleverbotRequests = 10  # max number of requests in case of errors
 
-    version = "0.90"
+    version = "0.91"
 
     # maintenanceMode = False  # indicate if the bot is in maintenanceMode (only admins can use it)
     # maintenanceMode has moved as bot attr (useful because i can access the bot attrs from every class)
