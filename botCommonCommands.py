@@ -9,6 +9,7 @@ import discord
 import requests
 import goslate
 
+from urllib import error
 from random import randint
 from botVariablesClass import BotVariables
 from botMethodsClass import BotMethods
@@ -227,7 +228,10 @@ class BotCommonCommands:
         if len(args) == 2:
             messageReceived = str(args[0])
             language = str(args[1])
-            await self.bot.send_message(ctx.message.channel, self.gs.translate(messageReceived, language))
+            try:
+                await self.bot.send_message(ctx.message.channel, self.gs.translate(messageReceived, language))
+            except error.HTTPError:
+                await self.bot.send_message(ctx.message.channel, "HTTP Error 503: Service Unavailable")
         else:
             await self.bot.send_message(ctx.message.channel, "**Usage:** !translate <\"message\"> <language(it/en/de...)>")
 

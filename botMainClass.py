@@ -162,7 +162,7 @@ if str(__name__) == "__main__":
         print("------------------------")
 
     print("ACTION-->Bot Login...")
-    # bot.run(botVariables.getdiscordbottoken(False)) token FinalBot
+    # bot.run(botVariables.get_discord_bot_token(False))  # token FinalBot
     bot.run(botVariables.get_discord_bot_token(True))
 
     # END OF PROGRAM
