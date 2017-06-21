@@ -15,12 +15,17 @@ from discord.ext import commands
 # ---------------------------------------------------------------------
 # INITIALIZATION
 
-botVariables = BotVariables()
+botVariables = BotVariables(True)
 
-cw = CleverWrap(botVariables.cleverKey)  # clever api object
+cw = CleverWrap(botVariables.get_clever_key())  # clever api object
 
-bot = commands.Bot(command_prefix=botVariables.commands_prefix, description=botVariables.description)  # creation of bot prefix and description
+# creation of bot prefix and description
+bot = commands.Bot(command_prefix=botVariables.get_command_prefix(), description=botVariables.get_description())
 bot.get_command("help").hidden = True  # hiding the !help command
+
+privateMessagesOwner = botVariables.get_owner_private_messages()
+maxCleverbotRequests = botVariables.get_max_cleverbot_requests()
+startUpExtensions = botVariables.get_startup_extensions()
 
 # ---------------------------------------------------------------------
 
@@ -33,8 +38,8 @@ async def on_message(message):
         else:
             if message.channel.name is None:
                 # send private message to bot owner
-                if not str(message.author.id) == botVariables.ownerPrivateMessagesID:
-                    await bot.send_message(discord.User(id=botVariables.ownerPrivateMessagesID), "Message from " + str(message.author.name) + "(ID=" + str(message.author.id) + "):" + message.content)
+                if not str(message.author.id) == privateMessagesOwner:
+                    await bot.send_message(discord.User(id=privateMessagesOwner), "Message from " + str(message.author.name) + "(ID=" + str(message.author.id) + "):" + message.content)
             # ---------------------------------------------------------------------
         if message.server is None:
             mention = bot.user.mention
@@ -42,24 +47,24 @@ async def on_message(message):
             mention = message.server.me.mention
         if message.content.startswith("<"):  # message starts with a mention, check if it's mine
             if mention[2] == '!' and message.content[2] != '!':  # from mobile the mention has a !
-                newString = "<@!" + message.content[2:]
-                stringToCompare = newString
+                new_string = "<@!" + message.content[2:]
+                string_to_compare = new_string
             else:
-                stringToCompare = message.content
-            if stringToCompare.startswith(mention):  # yes the message starts with a mention
-                newMessage = message.content[22:]  # get the cleverbot question
+                string_to_compare = message.content
+            if string_to_compare.startswith(mention):  # yes the message starts with a mention
+                new_message = message.content[22:]  # get the cleverbot question
                 # ---------------------------------------------------------------------
                 if bot.maintenanceMode and not BotMethods.is_owner(message.author):  # if it's in maintenance Mode
                     return
                 print("-------------------------")
-                newMessage = newMessage.lstrip()  # remove additional spaces from cleverbot question
-                print("Cleverbot Question:" + newMessage)
+                new_message = new_message.lstrip()  # remove additional spaces from cleverbot question
+                print("Cleverbot Question:" + new_message)
                 reply = ""
                 try:
                     request_index = 0
                     # i have to wait for a complete reply(errors could happen with that api)
-                    while reply == "" and request_index < botVariables.maxCleverbotRequests:
-                        reply = cw.say(newMessage)
+                    while reply == "" and request_index < maxCleverbotRequests:
+                        reply = cw.say(new_message)
                         print("Cleverbot Reply:" + reply)
                         request_index += 1
                     if reply == "":
@@ -134,7 +139,7 @@ async def clearclever():
 async def on_ready():
     print("------------------------")
     print('Logged as:' + bot.user.name + " ID:" + bot.user.id)
-    url = botVariables.readStateUrl
+    url = botVariables.get_server_read_status_url()
     try:
         r = requests.get(url)  # get the last in-game status from server
         if r.text != "Error":
@@ -143,7 +148,7 @@ async def on_ready():
             await bot.change_presence(game=discord.Game(name=r.text))
         else:
             print("Request error - changing status to default")
-            await bot.change_presence(game=discord.Game(name=botVariables.defaultStatus))
+            await bot.change_presence(game=discord.Game(name=botVariables.get_default_status()))
     except websockets.exceptions.ConnectionClosed:
         print("ERROR trying to change bot status")
     print("------------------------")
@@ -152,10 +157,10 @@ async def on_ready():
 # MAIN EXECUTION (STARTUP AND SHUTDOWN)
 if str(__name__) == "__main__":
     print("ACTION-->Loading bot, importing extensions...")
-    print(botVariables.startup_extensions)
+    print(startUpExtensions)
     setattr(bot, 'maintenanceMode', False)
     print("------------------------")
-    for extension in botVariables.startup_extensions:
+    for extension in startUpExtensions:
         print("LOADING-->"+extension)
         try:
             bot.load_extension(extension)
@@ -165,12 +170,12 @@ if str(__name__) == "__main__":
         print("------------------------")
 
     print("ACTION-->Bot Login...")
-    # bot.run(botVariables.get_discord_bot_token(False))  # token FinalBot
-    bot.run(botVariables.get_discord_bot_token(True))
+    # bot.run(botVariables.get_discord_bot_token(False))  # token Final Bot
+    bot.run(botVariables.get_discord_bot_token(True))  # token beta Bot
 
     # END OF PROGRAM
 
-    for extension in botVariables.startup_extensions:
+    for extension in startUpExtensions:
         print("UNLOADING-->"+extension)
         try:
             bot.unload_extension(extension)

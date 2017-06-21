@@ -20,7 +20,7 @@ class BotCommonCommands:
     """ Class with Bot 'Gaming' commands (statistics for gamers) """
     # ---------------------------------------------------------------------
 
-    botVariables = BotVariables()  # used for username and for emoji array
+    botVariables = BotVariables(False)  # used for username and for emoji array
     gs = goslate.Goslate()  # translator
 
     # ---------------------------------------------------------------------
@@ -72,48 +72,48 @@ class BotCommonCommands:
         example 2:'!meme "Hello there Discord" "How are you?" 47235368'
         """
         print("-------------------------")
-        error = 0
-        genID = 0
-        Phrase1 = ""
-        Phrase2 = ""
-        genLink = "https://api.imgflip.com/get_memes"
+        error_count = 0
+        generator_id = 0
+        phrase1 = ""
+        phrase2 = ""
+        generator_link = "https://api.imgflip.com/get_memes"
         if len(args) == 1:
-            Phrase1 = args[0]
-            print("Param1:" + Phrase1)
+            phrase1 = args[0]
+            print("Param1:" + phrase1)
         if len(args) > 1:
-            Phrase1 = args[0]
-            print("Param2:" + Phrase1)
+            phrase1 = args[0]
+            print("Param2:" + phrase1)
             try:
-                genID = int(args[1])
-                print("GenID:" + str(genID))
+                generator_id = int(args[1])
+                print("GenID:" + str(generator_id))
             except ValueError:
-                Phrase2 = args[1]
+                phrase2 = args[1]
                 print("Param2 - not a number")
         if len(args) == 3:
             try:
-                genID = int(args[2])
-                print("GenID:" + str(genID))
+                generator_id = int(args[2])
+                print("GenID:" + str(generator_id))
             except ValueError:
                 await self.bot.say("The third param it's not a number!")
-                error = 1
+                error_count = 1
                 print("GenID Not Correct")
-        if 3 >= len(args) > 0 == error:
-            if len(args) < 3 and genID == 0:
-                r = requests.get(genLink)
+        if 3 >= len(args) > 0 == error_count:
+            if len(args) < 3 and generator_id == 0:
+                r = requests.get(generator_link)
                 generator = r.json()
                 if generator['success']:
-                    genID = generator['data']['memes'][random.randint(0, len(generator['data']['memes']) - 1)]['id']
+                    generator_id = generator['data']['memes'][random.randint(0, len(generator['data']['memes']) - 1)]['id']
                 else:
                     print("Error getting meme generators")
             r = requests.post("https://api.imgflip.com/caption_image",
-                              data={'template_id': int(genID),
-                                    'username': self.botVariables.memeGeneratorUsername,
-                                    'password': self.botVariables.memeGeneratorPassword,
-                                    'text0': Phrase1,
-                                    'text1': Phrase2})
+                              data={'template_id': int(generator_id),
+                                    'username': self.botVariables.get_meme_generator_username(),
+                                    'password': self.botVariables.get_meme_generator_password(),
+                                    'text0': phrase1,
+                                    'text1': phrase2})
             result = r.json()
             if result['success']:
-                await self.bot.say(str(result['data']['url']) + " ID Meme:" + str(genID))
+                await self.bot.say(str(result['data']['url']) + " ID Meme:" + str(generator_id))
             else:
                 print("Error:" + str(result['error_message']))
         else:
@@ -128,18 +128,18 @@ class BotCommonCommands:
         Usage: !party
         """
         print("-------------------------")
-        normalParrot = "https://cdn.discordapp.com/attachments/276674976210485248/304557572416077824/parrot.gif"
-        congaParrot = "https://cdn.discordapp.com/attachments/276667503034499072/309781525971337226/congaparrot.gif"
-        shuffleParrot = "https://cdn.discordapp.com/attachments/276667503034499072/309781549639794688/shuffleparrot.gif"
+        normal_parrot = "https://cdn.discordapp.com/attachments/276674976210485248/304557572416077824/parrot.gif"
+        conga_parrot = "https://cdn.discordapp.com/attachments/276667503034499072/309781525971337226/congaparrot.gif"
+        shuffle_parrot = "https://cdn.discordapp.com/attachments/276667503034499072/309781549639794688/shuffleparrot.gif"
         link = ""
         number = randint(0, 2)
         print("Number:" + str(number))
         if number == 0:
-            link = normalParrot
+            link = normal_parrot
         if number == 1:
-            link = congaParrot
+            link = conga_parrot
         if number == 2:
-            link = shuffleParrot
+            link = shuffle_parrot
         try:
             if ctx.message.content == "!party" and ctx.message.server is not None:
                 print("Deleting the message...")
@@ -160,49 +160,49 @@ class BotCommonCommands:
         Usage: !printtext "Hello there"
         """
         if len(args) == 1:
-            receivedString = args[0]
-            if receivedString.startswith('"') and receivedString.endswith('"'):
-                receivedString = receivedString[1:-1]
-            pos = receivedString.find("\\")
+            received_string = args[0]
+            if received_string.startswith('"') and received_string.endswith('"'):
+                received_string = received_string[1:-1]
+            pos = received_string.find("\\")
             if not pos == -1:
-                if not receivedString[pos + 1] == " ":
-                    print("Error:" + receivedString[pos + 1])
+                if not received_string[pos + 1] == " ":
+                    print("Error:" + received_string[pos + 1])
                     return
-            pos = receivedString.find("\"")
+            pos = received_string.find("\"")
             if not pos == -1:
-                print("Error:" + receivedString[pos + 1])
+                print("Error:" + received_string[pos + 1])
                 return
             # print(str(stringa))
-            finalString = ""
-            numbersEmoji = self.botVariables.numbersEmoji
-            for c in receivedString:
+            final_string = ""
+            number_emoji = self.botVariables.numbersEmoji
+            for c in received_string:
                 # print(c)
                 if c.isalnum():
                     try:
                         val = int(c)
                         if val < 10:
-                            finalString += numbersEmoji[val] + " "
+                            final_string += number_emoji[val] + " "
                         else:
                             print("fatal Error!!!-" + str(val))
 
                     except ValueError:
                         c = c.lower()
                         if c == "è" or c == "é" or c == "à" or c == "ù" or c == "ì":
-                            finalString += c + " "
+                            final_string += c + " "
                         else:
-                            finalString += ":regional_indicator_" + c + ":" + " "
+                            final_string += ":regional_indicator_" + c + ":" + " "
                 else:
                     if c == "!" or c == "?" or c == "#":
                         if c == "!":
-                            finalString += ":exclamation:" + " "
+                            final_string += ":exclamation:" + " "
                         else:
                             if c == "#":
-                                finalString += ":hash:" + " "
+                                final_string += ":hash:" + " "
                             else:
-                                finalString += ":question:" + " "
+                                final_string += ":question:" + " "
                     else:
-                        finalString += c + " "
-            await self.bot.say(finalString)
+                        final_string += c + " "
+            await self.bot.say(final_string)
         else:
             await self.bot.say("**Usage:** !printtext \"phrase\"")
 
@@ -226,10 +226,10 @@ class BotCommonCommands:
         Usage: !translate "hello there" fr
         """
         if len(args) == 2:
-            messageReceived = str(args[0])
+            message_received = str(args[0])
             language = str(args[1])
             try:
-                await self.bot.send_message(ctx.message.channel, self.gs.translate(messageReceived, language))
+                await self.bot.send_message(ctx.message.channel, self.gs.translate(message_received, language))
             except error.HTTPError:
                 await self.bot.send_message(ctx.message.channel, "HTTP Error 503: Service Unavailable")
         else:
@@ -265,8 +265,8 @@ class BotCommonCommands:
                 embed.set_footer(text="Using haveibeenpwned.com")
                 await self.bot.say(embed=embed)
             else:
-                jsonCodeReceived = r.json()
-                print(len(jsonCodeReceived))
+                json_received = r.json()
+                print(len(json_received))
                 embed = discord.Embed(title="Hacked?", url='https://haveibeenpwned.com/',
                                       description="Websites where you are registered that have been hacked:",
                                       color=0xff0000)
@@ -274,13 +274,13 @@ class BotCommonCommands:
                                  icon_url=ctx.message.author.avatar_url)
                 embed.set_thumbnail(
                     url='https://cdn.discordapp.com/attachments/276674976210485248/304963039545786368/1492797249_shield-error.png')
-                for index in range(len(jsonCodeReceived)):
-                    valueToPrint = "**Website:** " + str(jsonCodeReceived[index]['Domain']) + "\n**Date:** " + str(
-                        jsonCodeReceived[index]['BreachDate'])
-                    valueToPrint += "\n**Stolen:** "
-                    for currentIndex in range(len(jsonCodeReceived[index]['DataClasses'])):
-                        valueToPrint += str(jsonCodeReceived[index]['DataClasses'][currentIndex]) + ", "
-                    embed.add_field(name=str(jsonCodeReceived[index]['Title']), value=valueToPrint, inline=False)
+                for index in range(len(json_received)):
+                    value_to_print = "**Website:** " + str(json_received[index]['Domain']) + "\n**Date:** " + str(
+                        json_received[index]['BreachDate'])
+                    value_to_print += "\n**Stolen:** "
+                    for currentIndex in range(len(json_received[index]['DataClasses'])):
+                        value_to_print += str(json_received[index]['DataClasses'][currentIndex]) + ", "
+                    embed.add_field(name=str(json_received[index]['Title']), value=value_to_print, inline=False)
                 embed.set_footer(text="Using haveibeenpwned.com")
                 await self.bot.say(embed=embed)
         else:

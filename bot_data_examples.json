@@ -1,0 +1,48 @@
+{
+   "apiKeys":{
+      "cleverbot":"YourKey",
+      "hypixel":"YourKey",
+      "steam":"YourKey",
+      "gif":"YourKey"
+   },
+   "maxCleverbotRequests":10,
+   "version":"0.92",
+   "description":"Bot by ScrappyCocco!",
+   "defaultStatus":"Branzini 4 Ever",
+   "commands_prefix":"!",
+   "owners_data":{
+      "owners_list":[
+         {
+            "name":"ScrappyCocco#4468"
+         },
+         {
+            "name":"..."
+         }
+      ],
+      "ownerPrivateMessagesID":"144488066998992896"
+   },
+   "startup_extensions":[
+      {
+         "name":"botGamingApi"
+      },
+      {
+         "name":"botMaintenanceCommands"
+      },
+      {
+         "name":"botCommonCommands"
+      }
+   ],
+   "server_state_saving":{
+      "readStateUrl":"http://URL/readState.php",
+      "writeStateUrl":"http://URL/writeState.php",
+      "writeStateParamName":"GameString"
+   },
+   "meme_generator":{
+      "username":"",
+      "password":""
+   },
+   "discord_tokens":{
+      "discordFinalBotApiToken":"YourKey",
+      "discordBetaBotApiToken":"YourKey"
+   }
+}

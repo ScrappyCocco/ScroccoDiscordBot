@@ -22,7 +22,7 @@ class BotGamingCommands:
     """ Class with Bot 'Gaming' commands (statistics for gamers) """
     # ---------------------------------------------------------------------
 
-    botVariables = BotVariables()  # used for 2 api keys
+    botVariables = BotVariables(False)  # used for 2 api keys
     client = Hypixthon(botVariables.get_hypixel_key())  # hypixel api connection
     core.APIConnection(api_key=botVariables.get_steam_key())  # steam api connection
 
@@ -38,11 +38,11 @@ class BotGamingCommands:
             await self.bot.say("**Usage:** !ow \"Name-Tag\" eu(default)/us[optional]")
         else:
             if len(args) == 1:  # server not passed, going with default server
-                OwRegion = "eu"
+                ow_region = "eu"
             else:  # server passed, changing default server
-                OwRegion = args[1]
+                ow_region = args[1]
             name = args[0]
-            url = "http://ow-api.herokuapp.com/profile/pc/" + OwRegion + "/" + name
+            url = "http://ow-api.herokuapp.com/profile/pc/" + ow_region + "/" + name
             print("OW Request:" + url)
             r = requests.get(url)
             if str(r) == "<Response [404]>":  # user not found
@@ -51,8 +51,8 @@ class BotGamingCommands:
             # creating the discord Embed response
             embed = discord.Embed(title="Overwatch Stats",
                                   colour=discord.Colour(0xefd1a0),
-                                  url="http://masteroverwatch.com/profile/pc/" + OwRegion + "/" + name,
-                                  description="Stats of \"" + name + "\" playing in \"" + OwRegion + "\"",
+                                  url="http://masteroverwatch.com/profile/pc/" + ow_region + "/" + name,
+                                  description="Stats of \"" + name + "\" playing in \"" + ow_region + "\"",
                                   timestamp=datetime.utcfromtimestamp(time.time())
                                   )
             if not r.json()['star'] == "":
@@ -70,13 +70,13 @@ class BotGamingCommands:
             embed.add_field(name="Competitive Rank:", value=rank)
             try:
                 embed.add_field(name="QuickPlay Wins:", value=r.json()['games']['quickplay']['wins'])
-                CompWins = str(r.json()['games']['competitive']['wins']) + " Wins"
+                comp_wins = str(r.json()['games']['competitive']['wins']) + " Wins"
             except KeyError:
                 print("Wins Key Error, trying with Won key...")
                 embed.add_field(name="QuickPlay Wins:", value=r.json()['games']['quickplay']['won'])
-                CompWins = str(r.json()['games']['competitive']['won']) + " Wins"
-            CompTot = str(r.json()['games']['competitive']['played']) + " Played"
-            embed.add_field(name="Competitive Play:", value=CompWins + "/" + CompTot)
+                comp_wins = str(r.json()['games']['competitive']['won']) + " Wins"
+            comp_tot = str(r.json()['games']['competitive']['played']) + " Played"
+            embed.add_field(name="Competitive Play:", value=comp_wins + "/" + comp_tot)
 
             await self.bot.say(embed=embed)  # send the discord embed message with user stats
         print("-------------------------")
@@ -93,16 +93,16 @@ class BotGamingCommands:
             await self.bot.say("**Usage:** !r6 PlayerName")
         else:
             name = args[0]
-            urlS = "http://rainbowsix7nightbot.herokuapp.com/rainbowsix7.php?platform=uplay&nick=" + name + "&command=stats"
-            urlT = "http://rainbowsix7nightbot.herokuapp.com/rainbowsix7.php?platform=uplay&nick=" + name + "&command=time"
-            urlR = "http://rainbowsix7nightbot.herokuapp.com/rainbowsix7.php?platform=uplay&nick=" + name + "&command=rank"
+            url_stats = "http://rainbowsix7nightbot.herokuapp.com/rainbowsix7.php?platform=uplay&nick=" + name + "&command=stats"
+            url_time = "http://rainbowsix7nightbot.herokuapp.com/rainbowsix7.php?platform=uplay&nick=" + name + "&command=time"
+            url_rank = "http://rainbowsix7nightbot.herokuapp.com/rainbowsix7.php?platform=uplay&nick=" + name + "&command=rank"
             # error strings
-            strConf1 = "00h 00m 00s (ranked + casual)"
-            strConf2 = "Couldn't retrieve 'profileId'! Maybe player doesn't exist? Check typos or manually parse the profileId found in the URL of your ubisoft profile page: https://game-rainbow6.ubi.com/"
-            r1 = requests.get(urlS)
-            r2 = requests.get(urlT)
-            r3 = requests.get(urlR)
-            if str(r2.text) == strConf1 or str(r2.text) == strConf2:  # An error occurred
+            string_compare_1 = "00h 00m 00s (ranked + casual)"
+            string_compare_2 = "Couldn't retrieve 'profileId'! Maybe player doesn't exist? Check typos or manually parse the profileId found in the URL of your ubisoft profile page: https://game-rainbow6.ubi.com/"
+            r1 = requests.get(url_stats)
+            r2 = requests.get(url_time)
+            r3 = requests.get(url_rank)
+            if str(r2.text) == string_compare_1 or str(r2.text) == string_compare_2:  # An error occurred
                 await self.bot.say("Error - User not found!")
                 return
             # creating the discord Embed response
@@ -130,35 +130,35 @@ class BotGamingCommands:
         Usage: !steam <UserID>
         """
         print("-------------------------")
-        isInt = False
+        is_integer = False
         print("Steam:Arguments:" + str(len(args)))
         if len(args) == 0 or len(args) > 1:   # parameters aren't correct - print the correct usage of the command
             await self.bot.say("**Usage:** !steam PlayerID")
         else:
             username = args[0]
             try:
-                userID = int(username)
-                isInt = True
+                user_id = int(username)
+                is_integer = True
             except ValueError:  # Not an ID, but a vanity URL.
-                userID = username
+                user_id = username
             try:
-                if isInt:  # convert it
-                    print("SteamId64 Request:" + str(userID))
-                    steam_user = user.SteamUser(userid=userID)
+                if is_integer:  # convert it
+                    print("SteamId64 Request:" + str(user_id))
+                    steam_user = user.SteamUser(userid=user_id)
                 else:
                     # i need to get the SteamID from the Username
-                    print("SteamIdURL Request:" + str(userID))
-                    steamApiKey = self.botVariables.get_steam_key()
-                    steamApiUrl = "http://api.steampowered.com/ISteamUser/ResolveVanityURL/v0001/"
-                    steamApiUrl += "?key=" + steamApiKey + "&vanityurl=" + str(userID)
-                    r = requests.get(steamApiUrl)
+                    print("SteamIdURL Request:" + str(user_id))
+                    steam_api_key = self.botVariables.get_steam_key()
+                    steam_api_url = "http://api.steampowered.com/ISteamUser/ResolveVanityURL/v0001/"
+                    steam_api_url += "?key=" + steam_api_key + "&vanityurl=" + str(user_id)
+                    r = requests.get(steam_api_url)
                     if not r.json()['response']['success'] == 1:
                         await self.bot.say("Error - User not found...")
                         return
                     else:
-                        userID = int(r.json()['response']['steamid'])
-                        print("SteamId64 Request:" + str(userID))
-                        steam_user = user.SteamUser(userid=userID)
+                        user_id = int(r.json()['response']['steamid'])
+                        print("SteamId64 Request:" + str(user_id))
+                        steam_user = user.SteamUser(userid=user_id)
             except steamapi.errors.UserNotFoundError:  # Not an ID, but a vanity URL.
                 await self.bot.say("Error - User not found...")
                 return
@@ -255,16 +255,16 @@ class BotGamingCommands:
                 await self.bot.say("*Player not found...*")
             if not error:
                 stats = self.client.getPlayer(uuid=uuid)
-                finalString = "```"  # creating final string
-                finalString += ("Name:" + stats['player']['displayname']) + "\n"
-                finalString += ("Karma:" + str(stats['player']['karma'])) + "\n"
+                final_string = "```"  # creating final string
+                final_string += ("Name:" + stats['player']['displayname']) + "\n"
+                final_string += ("Karma:" + str(stats['player']['karma'])) + "\n"
                 try:
                     # the "timePlaying" seems to be bugged because it never change, not my fault
-                    finalString += ("Time Playing:" + str(stats['player']['timePlaying'])) + "h (Bug?) \n"
+                    final_string += ("Time Playing:" + str(stats['player']['timePlaying'])) + "h (Bug?) \n"
                 except KeyError:
-                    finalString += ("Time Playing:" + "Value not found \n")
-                finalString += "```"
-                await self.bot.say(finalString)
+                    final_string += ("Time Playing:" + "Value not found \n")
+                final_string += "```"
+                await self.bot.say(final_string)
         else:  # parameters aren't correct - print the correct usage of the command
             await self.bot.say("**Usage:** !hy McName")
         print("-------------------------")

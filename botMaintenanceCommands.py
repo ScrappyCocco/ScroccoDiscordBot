@@ -16,7 +16,7 @@ class BotMaintenanceCommands:
     """ Class with Bot 'Maintenance' commands (for example turning off the bot or changing user roles) """
     # ---------------------------------------------------------------------
 
-    botVariables = BotVariables()  # used for version and In-Game state-write url
+    botVariables = BotVariables(False)  # used for version and In-Game state-write url
 
     # ---------------------------------------------------------------------
 
@@ -62,26 +62,26 @@ class BotMaintenanceCommands:
         if BotMethods.is_owner(ctx.message.author):
             print("-------------------------")
             print("Changing bot state")
-            newStatus = discord.Status
+            new_status = discord.Status
             if len(args) == 1:  # switch between all states
-                stateReceived = int(args[0])
-                if stateReceived == 0:
-                    newStatus = discord.Status.online
+                status_received = int(args[0])
+                if status_received == 0:
+                    new_status = discord.Status.online
                     print("State 0 - Online")
-                if stateReceived == 1:
-                    newStatus = discord.Status.idle
+                if status_received == 1:
+                    new_status = discord.Status.idle
                     print("State 1 - Idle")
-                if stateReceived == 2:
-                    newStatus = discord.Status.do_not_disturb
+                if status_received == 2:
+                    new_status = discord.Status.do_not_disturb
                     print("State 2 - Dnd")
-                if stateReceived == 3:
-                    newStatus = discord.Status.invisible
+                if status_received == 3:
+                    new_status = discord.Status.invisible
                     print("State 3 - Invisible")
-                if stateReceived < 0 or stateReceived > 3:
+                if status_received < 0 or status_received > 3:
                     print("State Not Correct, going online")
-                    newStatus = discord.Status.online
+                    new_status = discord.Status.online
                 # apply the state with the old in-game status
-                await self.bot.change_presence(status=newStatus, game=discord.Game(name=self.bot.lastInGameStatus))
+                await self.bot.change_presence(status=new_status, game=discord.Game(name=self.bot.lastInGameStatus))
             print("-------------------------")
         else:
             await self.bot.say("You don't have access to this command  :stuck_out_tongue: ")
@@ -97,9 +97,9 @@ class BotMaintenanceCommands:
                 print("Can't find region in private chat")
             else:
                 region = str(ctx.message.server.region)
-                serverName = str(ctx.message.server.name)
+                server_name = str(ctx.message.server.name)
                 print("Region Found: " + region)
-                await self.bot.say("Server Location: **" + serverName + "**: " + region)
+                await self.bot.say("Server Location: **" + server_name + "**: " + region)
         print("-------------------------")
 
     # ---------------------------------------------------------------------
@@ -140,20 +140,20 @@ class BotMaintenanceCommands:
             if len(args) == 0 or len(args) > 1:
                 await self.bot.say("I need only a parameter!")
             else:
-                newState = str(args[0])
-                self.bot.lastInGameStatus = newState  # update last state
-                print("Changing my status in:" + newState)
-                url = self.botVariables.writeStateUrl
+                new_state = str(args[0])
+                self.bot.lastInGameStatus = new_state  # update last state
+                print("Changing my status in:" + new_state)
+                url = self.botVariables.get_server_write_status_url()
                 # request to save the state on the web
                 r = requests.post(url,
-                                  data={self.botVariables.writeStateParamName: newState,
+                                  data={self.botVariables.get_server_write_status_parameter(): new_state,
                                         })
                 if r.text == "Error":
                     print("ERROR SAVING NEW STATUS ON THE SERVER...")
                 else:
                     print("Status correctly saved on server...")
                 # change the bot in-game status
-                await self.bot.change_presence(game=discord.Game(name=newState))
+                await self.bot.change_presence(game=discord.Game(name=new_state))
                 await self.bot.say("Status correctly changed and saved on server!")
         else:
             await self.bot.say("You don't have access to this command  :stuck_out_tongue: ")
@@ -211,17 +211,17 @@ class BotMaintenanceCommands:
             print("-------------------------")
             if ctx.message.server is None:
                 return
-            serverMembers = ctx.message.server.members
-            oldRole = discord.utils.get(ctx.message.server.roles, name=str(args[0]))
-            newRole = discord.utils.get(ctx.message.server.roles, name=str(args[1]))
-            if oldRole is None or newRole is None:
+            server_members = ctx.message.server.members
+            old_role = discord.utils.get(ctx.message.server.roles, name=str(args[0]))
+            new_role = discord.utils.get(ctx.message.server.roles, name=str(args[1]))
+            if old_role is None or new_role is None:
                 await self.bot.say("Errors - can't find given roles...")
                 return
-            print("Found " + str(len(serverMembers)) + " members to analyze")
-            for CurrentMember in serverMembers:
-                if oldRole in CurrentMember.roles:
-                        await self.bot.remove_roles(CurrentMember, oldRole)
-                        await self.bot.add_roles(CurrentMember, newRole)
+            print("Found " + str(len(server_members)) + " members to analyze")
+            for CurrentMember in server_members:
+                if old_role in CurrentMember.roles:
+                        await self.bot.remove_roles(CurrentMember, old_role)
+                        await self.bot.add_roles(CurrentMember, new_role)
                         print("Role Updated for user:" + CurrentMember.name)
             print("-------------------------")
         else:
@@ -242,21 +242,20 @@ class BotMaintenanceCommands:
             print("-------------------------")
             if ctx.message.server is None:
                 return
-            serverMembers = ctx.message.server.members
+            server_members = ctx.message.server.members
             action = str(args[0])
-            selectedRole = discord.utils.get(ctx.message.server.roles, name=str(args[1]))
-            if selectedRole is None:
+            selected_role = discord.utils.get(ctx.message.server.roles, name=str(args[1]))
+            if selected_role is None:
                 await self.bot.say("Errors - can't find given roles...")
                 return
-            print("Found " + str(len(serverMembers)) + " members to analyze")
-            for CurrentMember in serverMembers:
-                if selectedRole in CurrentMember.roles:
-                    if action == "remove" or action == "-":  # remove the role
-                        await self.bot.remove_roles(CurrentMember, selectedRole)
-                        print("Role removed for user:" + CurrentMember.name)
-                    if action == "add" or action == "+":  # add the role
-                        await self.bot.add_roles(CurrentMember, selectedRole)
-                        print("Role added for user:" + CurrentMember.name)
+            print("Found " + str(len(server_members)) + " members to analyze")
+            for CurrentMember in server_members:
+                if (action == "remove" or action == "-") and (selected_role in CurrentMember.roles):  # remove the role
+                    await self.bot.remove_roles(CurrentMember, selected_role)
+                    print("Role removed for user:" + CurrentMember.name)
+                if (action == "add" or action == "+") and (selected_role not in CurrentMember.roles):  # add the role
+                    await self.bot.add_roles(CurrentMember, selected_role)
+                    print("Role added for user:" + CurrentMember.name)
             print("-------------------------")
         else:
             await self.bot.say("You don't have access to this command  :stuck_out_tongue: ")
@@ -278,16 +277,16 @@ class BotMaintenanceCommands:
             if ctx.message.server is None:  # it's a private message
                 return
             action = str(args[0])
-            userFound = discord.utils.get(ctx.message.server.members, name=str(args[1]))
-            roleToSet = discord.utils.get(ctx.message.server.roles, name=str(args[2]))
-            if roleToSet is None or userFound is None:  # error searching the user
+            user_found = discord.utils.get(ctx.message.server.members, name=str(args[1]))
+            user_to_update = discord.utils.get(ctx.message.server.roles, name=str(args[2]))
+            if user_to_update is None or user_found is None:  # error searching the user
                 await self.bot.say("Errors - can't find given roles...")
             else:
                 if action == "add" or action == "+":
-                    await self.bot.add_roles(userFound, roleToSet)
+                    await self.bot.add_roles(user_found, user_to_update)
                 if action == "remove" or action == "-":
-                    await self.bot.remove_roles(userFound, roleToSet)
-                print("Role Updated for user:" + userFound.name)
+                    await self.bot.remove_roles(user_found, user_to_update)
+                print("Role Updated for user:" + user_found.name)
             print("-------------------------")
         else:
             await self.bot.say("You don't have access to this command  :stuck_out_tongue: ")

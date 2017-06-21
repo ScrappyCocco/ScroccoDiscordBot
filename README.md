@@ -13,7 +13,8 @@ To running the bot you'll need Python (i used python-3.5.2) and to install all t
 pip install -r requirements.txt
 ```
 
-You need also all the API key you'll find in botVariablesClass.py (cleverbot, steam, hypixel, ...)
+You need also all the API key you'll find in "bot_data_examples.json" (cleverbot, steam, hypixel, ...),
+so you must fill all the variables in "bot_data_examples.json" and rename it in "bot_data.json"
 
 After you installed everything you can try to run the main class (botMainClass.py) with the command:
 ```

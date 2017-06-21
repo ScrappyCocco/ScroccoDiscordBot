@@ -29,9 +29,12 @@ class BotMethods:
             :param author: The author to check.
             :return: return true is the author is authorized, If it is not then return false
         """
-        if str(author) in BotVariables.owners:
+        ref = BotVariables(False)
+        if str(author) in ref.get_owners_list():
+            del ref
             return True
         else:
+            del ref
             return False
 
     @staticmethod
