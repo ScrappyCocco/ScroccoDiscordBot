@@ -58,7 +58,7 @@ class BotVariables:
             with open(self.file_name) as data_file:
                 self.bot_data_file = json.load(data_file)
         except FileNotFoundError:
-            print("FATAL ERROR-->" + self.file_name + " FILE NOT FOUND, CLOSING...")
+            print("FATAL ERROR-->" + self.file_name + " FILE NOT FOUND, ABORTING...")
             quit(1)
         if should_check:
             self.full_startup_check()
@@ -84,7 +84,7 @@ class BotVariables:
             :return: True if the key is ok, False if the Key is empty
         """
         if key == "" or key == self.emptyApiKey:
-            print("ERROR, KEY IS EMPTY - CHECK YOUR FILE")
+            print("ERROR, A KEY IS EMPTY - CHECK YOUR FILE")
             return False
         return True
 
@@ -99,7 +99,7 @@ class BotVariables:
         if self.check_empty_key(key):
             return key
         else:
-            print("ERROR GETTING THE CLEVERBOT KEY - ABORTING")
+            print("ERROR GETTING THE CLEVERBOT KEY (get yours from https://www.cleverbot.com/api/)- ABORTING")
             quit(1)
 
     def get_hypixel_key(self):
@@ -110,7 +110,7 @@ class BotVariables:
         if self.check_empty_key(key):
             return key
         else:
-            print("ERROR GETTING THE HYPIXEL KEY - ABORTING")
+            print("ERROR GETTING THE HYPIXEL KEY (get yours from https://api.hypixel.net/) - ABORTING")
             quit(1)
 
     def get_steam_key(self):
@@ -121,7 +121,7 @@ class BotVariables:
         if self.check_empty_key(key):
             return key
         else:
-            print("ERROR GETTING THE STEAM KEY - ABORTING")
+            print("ERROR GETTING THE STEAM KEY (get yours from https://steamcommunity.com/dev/apikey) - ABORTING")
             quit(1)
 
     def get_gif_key(self):
@@ -132,7 +132,7 @@ class BotVariables:
         if self.check_empty_key(key):
             return key
         else:
-            print("ERROR GETTING THE GIF KEY - ABORTING")
+            print("ERROR GETTING THE GIF KEY (get yours from http://api.giphy.com/) - ABORTING")
             quit(1)
 
     def get_version(self):
@@ -192,7 +192,7 @@ class BotVariables:
             return False
         if key == "True":  # bot in beta version
             return True
-        print("BOT DISTRIBUTION ERROR - CHECK is_beta IN JSON AND PUT True or False")
+        print("BOT DISTRIBUTION ERROR - CHECK \"is_beta\" IN JSON AND PUT True or False")
         return True
 
     def get_meme_generator_username(self):
@@ -203,7 +203,7 @@ class BotVariables:
         if self.check_empty_key(key):
             return key
         else:
-            print("ERROR GETTING THE MEME USERNAME - BOT ABORTING")
+            print("ERROR GETTING THE MEME USERNAME (register on https://api.imgflip.com/) - BOT ABORTING")
             quit(1)
 
     def get_meme_generator_password(self):
@@ -214,7 +214,7 @@ class BotVariables:
         if self.check_empty_key(key):
             return key
         else:
-            print("ERROR GETTING THE MEME PASSWORD - BOT ABORTING")
+            print("ERROR GETTING THE MEME PASSWORD (register on https://api.imgflip.com/) - BOT ABORTING")
             quit(1)
 
     def get_owner_private_messages(self):
@@ -236,7 +236,7 @@ class BotVariables:
         for entry in self.bot_data_file["owners_data"]["owners_list"]:
             final_list.append(str(entry["name"]))
         if len(final_list) == 0:
-            print("ERROR GETTING THE OWNERS LIST- BOT ABORTING")
+            print("ERROR GETTING THE OWNERS LIST (i need at least 1 owner) - BOT ABORTING")
             quit(1)
         else:
             return final_list
@@ -263,7 +263,7 @@ class BotVariables:
             else:
                 return keyfinal
         else:
-            print("ERROR GETTING THE DISCORD KEY - ABORTING")
+            print("ERROR GETTING THE DISCORD KEY (get yours from https://discordapp.com/developers/applications/me) - ABORTING")
             quit(1)
 
 
