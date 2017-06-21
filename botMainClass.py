@@ -170,8 +170,10 @@ if str(__name__) == "__main__":
         print("------------------------")
 
     print("ACTION-->Bot Login...")
-    # bot.run(botVariables.get_discord_bot_token(False))  # token Final Bot
-    bot.run(botVariables.get_discord_bot_token(True))  # token beta Bot
+    if botVariables.get_bot_distribution():  # is the bot in beta?
+        bot.run(botVariables.get_discord_bot_token(True))  # token beta Bot
+    else:
+        bot.run(botVariables.get_discord_bot_token(False))  # token Final Bot
 
     # END OF PROGRAM
 

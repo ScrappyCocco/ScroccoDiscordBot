@@ -183,6 +183,18 @@ class BotVariables:
         """
         return self.bot_data_file["server_state_saving"]["writeStateParamName"]
 
+    def get_bot_distribution(self):
+        """Function that return if the bot is in final or in beta version
+            :return: True if it's in beta, false if it's in final version
+        """
+        key = self.bot_data_file["is_beta"]
+        if key == "False":  # bot in final version
+            return False
+        if key == "True":  # bot in beta version
+            return True
+        print("BOT DISTRIBUTION ERROR - CHECK is_beta IN JSON AND PUT True or False")
+        return True
+
     def get_meme_generator_username(self):
         """Function that return the username for the meme generator
             :return: The username for the meme generator
