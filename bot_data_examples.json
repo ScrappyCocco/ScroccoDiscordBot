@@ -6,7 +6,7 @@
       "gif":"YourKey"
    },
    "maxCleverbotRequests":10,
-   "version":"0.92",
+   "version":"0.925",
    "is_beta": "False",
    "description":"Bot by ScrappyCocco!",
    "defaultStatus":"Branzini 4 Ever",
@@ -31,6 +31,9 @@
       },
       {
          "name":"botCommonCommands"
+      },
+      {
+         "name":"botModerationCommands"
       }
    ],
    "server_state_saving":{

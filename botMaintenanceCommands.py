@@ -179,6 +179,8 @@ class BotMaintenanceCommands:
         else:
             await self.bot.say("You don't have access to this command  :stuck_out_tongue: ")
 
+    # ---------------------------------------------------------------------
+
     @commands.command(pass_context=True, hidden=True)
     async def sendprivatemessage(self, ctx, *args):
         """Send a message in private
@@ -200,96 +202,21 @@ class BotMaintenanceCommands:
     # ---------------------------------------------------------------------
 
     @commands.command(pass_context=True, hidden=True)
-    async def promoteusers(self, ctx, *args):
-        """Function that change the role of ALL users from Old to New (in the server where it's called)
-        Usage: !promoteusers "NoobRole" "ProRole"
+    async def rename(self, ctx, *args):
+        """Function that change the username of the bot
+            Usage: !rename "NoobBot"
         """
-        if BotMethods.is_owner(ctx.message.author) or BotMethods.is_server_admin(ctx.message.author):
-            if not len(args) == 2:
-                await self.bot.say("Parameters not correct...")
-                return
+        if not BotMethods.is_owner(ctx.message.author):
+            await self.bot.say("You don't have access to this command  :stuck_out_tongue: ")
+            return
+        if len(args) == 1:
             print("-------------------------")
-            if ctx.message.server is None:
-                return
-            server_members = ctx.message.server.members
-            old_role = discord.utils.get(ctx.message.server.roles, name=str(args[0]))
-            new_role = discord.utils.get(ctx.message.server.roles, name=str(args[1]))
-            if old_role is None or new_role is None:
-                await self.bot.say("Errors - can't find given roles...")
-                return
-            print("Found " + str(len(server_members)) + " members to analyze")
-            for CurrentMember in server_members:
-                if old_role in CurrentMember.roles:
-                        await self.bot.remove_roles(CurrentMember, old_role)
-                        await self.bot.add_roles(CurrentMember, new_role)
-                        print("Role Updated for user:" + CurrentMember.name)
+            new_name = args[0]
+            print("BOT RENAME:"+new_name)
+            await self.bot.edit_profile(username=new_name)
             print("-------------------------")
         else:
-            await self.bot.say("You don't have access to this command  :stuck_out_tongue: ")
-
-    # ---------------------------------------------------------------------
-
-    @commands.command(pass_context=True, hidden=True)
-    async def editallroles(self, ctx, *args):
-        """Function that change the role of ALL users (add/remove a role)
-        Usage: !editallroles remove "NoobRole"
-        Usage: !editallroles add "ProRole"
-        """
-        if BotMethods.is_owner(ctx.message.author) or BotMethods.is_server_admin(ctx.message.author):
-            if not len(args) == 2:
-                await self.bot.say("Parameters not correct...")
-                return
-            print("-------------------------")
-            if ctx.message.server is None:
-                return
-            server_members = ctx.message.server.members
-            action = str(args[0])
-            selected_role = discord.utils.get(ctx.message.server.roles, name=str(args[1]))
-            if selected_role is None:
-                await self.bot.say("Errors - can't find given roles...")
-                return
-            print("Found " + str(len(server_members)) + " members to analyze")
-            for CurrentMember in server_members:
-                if (action == "remove" or action == "-") and (selected_role in CurrentMember.roles):  # remove the role
-                    await self.bot.remove_roles(CurrentMember, selected_role)
-                    print("Role removed for user:" + CurrentMember.name)
-                if (action == "add" or action == "+") and (selected_role not in CurrentMember.roles):  # add the role
-                    await self.bot.add_roles(CurrentMember, selected_role)
-                    print("Role added for user:" + CurrentMember.name)
-            print("-------------------------")
-        else:
-            await self.bot.say("You don't have access to this command  :stuck_out_tongue: ")
-
-    # ---------------------------------------------------------------------
-
-    @commands.command(pass_context=True, hidden=True)
-    async def editrole(self, ctx, *args):
-        """Function that edit a user role (in the server where it's called)
-        [DON'T work with mentions for now]
-        Usage: !editrole remove "ScrappyCocco" "NoobRole"
-        Usage: !editrole add "ScrappyCocco" "ProRole"
-        """
-        if BotMethods.is_owner(ctx.message.author) or BotMethods.is_server_admin(ctx.message.author):
-            if not len(args) == 3:
-                await self.bot.say("Parameters not correct...")
-                return
-            print("-------------------------")
-            if ctx.message.server is None:  # it's a private message
-                return
-            action = str(args[0])
-            user_found = discord.utils.get(ctx.message.server.members, name=str(args[1]))
-            user_to_update = discord.utils.get(ctx.message.server.roles, name=str(args[2]))
-            if user_to_update is None or user_found is None:  # error searching the user
-                await self.bot.say("Errors - can't find given roles...")
-            else:
-                if action == "add" or action == "+":
-                    await self.bot.add_roles(user_found, user_to_update)
-                if action == "remove" or action == "-":
-                    await self.bot.remove_roles(user_found, user_to_update)
-                print("Role Updated for user:" + user_found.name)
-            print("-------------------------")
-        else:
-            await self.bot.say("You don't have access to this command  :stuck_out_tongue: ")
+            await self.bot.say("Parameters not correct...")
 
     # ---------------------------------------------------------------------
 
