@@ -5,8 +5,13 @@
       "steam":"YourKey",
       "gif":"YourKey"
    },
+   "weather":{
+      "key":"YourKey",
+      "default_country":"IT"
+   },
    "maxCleverbotRequests":10,
-   "version":"0.925",
+   "version":"0.92",
+   "build":"31",
    "is_beta": "False",
    "description":"Bot by ScrappyCocco!",
    "defaultStatus":"Branzini 4 Ever",

@@ -76,6 +76,7 @@ class BotVariables:
         self.get_meme_generator_password()
         self.get_owner_private_messages()
         self.get_owners_list()
+        self.get_weather_key()
         self.get_discord_bot_token(False)
         print("---FULL JSON CHECK COMPLETED---")
 
@@ -135,11 +136,34 @@ class BotVariables:
             print("ERROR GETTING THE GIF KEY (get yours from http://api.giphy.com/) - ABORTING")
             quit(1)
 
+    def get_weather_key(self):
+        """Function that return the api key for the weather api.
+            :return: The Weather API-KEY
+        """
+        key = self.bot_data_file["weather"]["key"]
+        if self.check_empty_key(key):
+            return key
+        else:
+            print("ERROR GETTING THE WEATHER KEY (get yours from http://api.wunderground.com/) - ABORTING")
+            quit(1)
+
+    def get_weather_country(self):
+        """Function that return the current version of the bot.
+            :return: The current version of the bot
+        """
+        return self.bot_data_file["weather"]["default_country"]
+
     def get_version(self):
         """Function that return the current version of the bot.
             :return: The current version of the bot
         """
         return self.bot_data_file["version"]
+
+    def get_build(self):
+        """Function that return the current build number of the bot.
+            :return: The current build of the bot
+        """
+        return self.bot_data_file["build"]
 
     def get_description(self):
         """Function that return the description of the bot.

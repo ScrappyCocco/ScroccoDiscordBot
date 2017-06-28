@@ -36,7 +36,9 @@ class BotMaintenanceCommands:
 
     @commands.command(pass_context=True, hidden=True)
     async def maintenance(self, ctx, *args):
-        """Set the bot in maintenance Mode (1=enabled 2=disabled)"""
+        """Set the bot in maintenance Mode (1=enabled 2=disabled)
+        Usage: !maintenance 1
+        """
         if BotMethods.is_owner(ctx.message.author):
             print("-------------------------")
             if len(args) == 1:
@@ -58,7 +60,9 @@ class BotMaintenanceCommands:
 
     @commands.command(pass_context=True, hidden=True)
     async def changestate(self, ctx, *args):
-        """Change bot state"""
+        """Change bot state
+        Usage: !changestate 1
+        """
         if BotMethods.is_owner(ctx.message.author):
             print("-------------------------")
             print("Changing bot state")
@@ -107,13 +111,15 @@ class BotMaintenanceCommands:
     @commands.command()
     async def ver(self):
         """Print bot current version"""
-        await self.bot.say("**Current Version:** " + self.botVariables.get_version())
+        await self.bot.say("**Current Version:** " + self.botVariables.get_version()+" **Build:** "+self.botVariables.get_build())
 
     # ---------------------------------------------------------------------
 
     @commands.command(pass_context=True, hidden=True)
     async def channelid(self, ctx, *args):
-        """Search a channel with the given name(in bot servers), if it exist, then it print the channel if"""
+        """Search a channel with the given name(in bot servers), if it exist, then it print the channel if
+        Usage: !channelid public
+        """
         found = False
         if not BotMethods.is_owner(ctx.message.author):
             return
@@ -164,7 +170,7 @@ class BotMaintenanceCommands:
     @commands.command(pass_context=True, hidden=True)
     async def sendservermessage(self, ctx, *args):
         """Send a message in a server channel
-        Usage: !sendservermessage <ServerChannelId> "Message"
+        Usage: !sendservermessage "ServerChannelId" "Message"
         """
         if BotMethods.is_owner(ctx.message.author):
             if len(args) == 2:
@@ -183,8 +189,8 @@ class BotMaintenanceCommands:
 
     @commands.command(pass_context=True, hidden=True)
     async def sendprivatemessage(self, ctx, *args):
-        """Send a message in private
-        Usage: !sendprivatemessage <UserId> "Message"
+        """Send a message in private (IF POSSIBLE)
+        Usage: !sendprivatemessage "UserId" "Message"
         """
         if BotMethods.is_owner(ctx.message.author):
             if len(args) == 2:

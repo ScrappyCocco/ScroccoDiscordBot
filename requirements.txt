@@ -1,4 +1,4 @@
-aiohttp==2.1.0
+aiohttp==2.2.0
 appdirs==1.4.3
 async-timeout==1.2.1
 beautifulsoup4==4.6.0
@@ -20,7 +20,7 @@ Jinja2==2.9.6
 kitchen==1.2.4
 mailcap-fix==1.0.1
 MarkupSafe==1.0
-multidict==2.1.6
+multidict==3.1.0
 olefile==0.44
 packaging==16.8
 Pillow==4.1.1
@@ -37,5 +37,5 @@ urlopen==1.0.0
 virtualenv==15.1.0
 websockets==3.3
 Werkzeug==0.12.2
-yarl==0.10.3
+yarl==0.11.0
 youtube-dl==2016.7.11

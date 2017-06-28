@@ -31,7 +31,7 @@ class BotGamingCommands:
     @commands.command(pass_context=True)
     async def ow(self, ctx, *args):
         """Print Overwatch stats of a player
-        Usage:** !ow "Name-Tag" <eu(default)/us>[optional]
+        Usage:** !ow "Name-Tag" "eu(default)/us"[optional]
         """
         print("-------------------------")
         if len(args) == 0 or len(args) > 2:  # parameters aren't correct - print the correct usage of the command
@@ -127,7 +127,8 @@ class BotGamingCommands:
     @commands.command(pass_context=True)
     async def steam(self, ctx, *args):
         """Print the user Steam Profile
-        Usage: !steam <UserID>
+        Usage: !steam "UserID"
+        Example: !steam ScrappyEnterprise
         """
         print("-------------------------")
         is_integer = False
@@ -210,7 +211,7 @@ class BotGamingCommands:
     @commands.command()
     async def mcskin(self, *args):
         """Print the Minecraft skin of a user
-        Usage: !mcskin <MinecraftUsername>
+        Usage: !mcskin "MinecraftUsername"
         """
         print("-------------------------")
         if len(args) == 1:
@@ -224,7 +225,7 @@ class BotGamingCommands:
     @commands.command()
     async def mchead(self, *args):
         """Print the head of the Minecraft skin of a user
-        Usage: !mchead <MinecraftUsername>
+        Usage: !mchead "MinecraftUsername"
         """
         print("-------------------------")
         if len(args) == 1:
@@ -238,7 +239,7 @@ class BotGamingCommands:
     @commands.command()
     async def hy(self, *args):
         """Print the user's stats in the Hypixel Server
-        Usage: !hy <MinecraftUsername>
+        Usage: !hy "MinecraftUsername"
         """
         print("-------------------------")
         error = False

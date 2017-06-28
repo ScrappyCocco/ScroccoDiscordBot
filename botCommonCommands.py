@@ -8,8 +8,11 @@ import random
 import discord
 import requests
 import goslate
+import time
 
+from discord import errors
 from urllib import error
+from datetime import datetime
 from random import randint
 from botVariablesClass import BotVariables
 from botMethodsClass import BotMethods
@@ -68,8 +71,8 @@ class BotCommonCommands:
     @commands.command()
     async def meme(self, *args):
         """Generate a meme with 1 or 2 phrases (and with the generator id or without)
-        example 1:'!meme "Hello there Discord" 47235368'
-        example 2:'!meme "Hello there Discord" "How are you?" 47235368'
+        example 1: !meme "Hello there Discord" 47235368
+        example 2: !meme "Hello there Discord" "How are you?" 47235368
         """
         print("-------------------------")
         error_count = 0
@@ -234,6 +237,139 @@ class BotCommonCommands:
                 await self.bot.send_message(ctx.message.channel, "HTTP Error 503: Service Unavailable")
         else:
             await self.bot.send_message(ctx.message.channel, "**Usage:** !translate \"message\" language(it/en/de...)")
+
+    # ---------------------------------------------------------------------
+
+    @commands.command(pass_context=True)
+    async def weather(self, ctx, *args):
+        """Print the current weather in a given city
+        (0 is today, 1 tomorrow, ...., 7 is the max)
+        (the country code is in ISO-3166 = 2 letters)
+        Usage: !weather Venice
+        Usage: !weather IT Rome
+        Usage: !weather Rome 1
+        Usage: !weather DE Berlin 1
+        """
+        if len(args) < 1 or len(args) > 3:
+            await self.bot.say("**Please read:** !help weather")
+            return
+        else:
+            country_code = False
+            country_code_str = self.botVariables.get_weather_country()
+            city_name = ""
+            day = 0
+            if len(args) == 1:
+                city_name = str(args[0])
+            else:  # more than 1 param
+                if len(str(args[0])) == 2:  # taking the country code
+                    country_code = True
+                    country_code_str = str(args[0])
+                if len(args) == 2:  # if 2 params
+                    if not country_code:  # country code not present
+                        city_name = str(args[0])
+                        try:
+                            day = int(args[1])
+                        except ValueError:
+                            await self.bot.say("**Check the day code, please read:** !help weather")
+                            return
+                    else:
+                        city_name = str(args[1])
+                if len(args) == 3:
+                    if not country_code:
+                        await self.bot.say("**Check the country code, please read:** !help weather")
+                        return
+                    else:
+                        city_name = str(args[1])
+                        try:
+                            day = int(args[2])
+                        except ValueError:
+                            await self.bot.say("**Check the day code, please read:** !help weather")
+                            return
+            if day > 7:
+                await self.bot.say("**Check the day code, please read:** !help weather")
+                return
+            # I've everything now, starting getting the weather
+            print("-------------------------")
+            print("Making weather request")
+            url = "http://api.wunderground.com/api/"+self.botVariables.get_weather_key()+"/"
+            url += "forecast/q/"+country_code_str+"/"+city_name+".json"
+            r = requests.get(url)
+            request_result = r.json()  # convert the response to a json file
+            try:
+                await self.bot.say("**Error:** "+str(request_result["response"]["error"]["description"]) + "(check usage with !help weather)")
+                print("Error, weather request failed")
+                return
+            except KeyError:
+                try:  # simple try to see if the key exist
+                    str(request_result["forecast"]["txt_forecast"]["forecastday"][day]["title"])
+                except KeyError:
+                    print("Error - City not defined")
+                    final_message = "```\n"
+                    final_message += "Error: Multiple Cities found...\n"
+                    cont = 0
+                    for city in request_result["response"]["results"]:
+                        final_message += city["name"] + " - " + city["country_name"] + "(" + city["country"] + ")\n"
+                        cont += 1
+                        if cont > 4:
+                            final_message += "[More...]\n"
+                            break
+                    final_message += "```"
+                    await self.bot.say(final_message)
+                    return
+                print("No errors found in request, creating embed")
+                day_name = str(request_result["forecast"]["txt_forecast"]["forecastday"][day]["title"])
+                day_number = str(request_result["forecast"]["simpleforecast"]["forecastday"][day]["date"]["day"])
+                month_number = str(request_result["forecast"]["simpleforecast"]["forecastday"][day]["date"]["month"])
+                year_number = str(request_result["forecast"]["simpleforecast"]["forecastday"][day]["date"]["year"])
+                embed = discord.Embed(title="Weather",
+                                      colour=discord.Colour(0x088DA5),
+                                      url="https://www.wunderground.com/",
+                                      description="Weather in \"" + city_name + "\" during \"" + day_name + "\" " + day_number+"/"+month_number+"/"+year_number,
+                                      timestamp=datetime.utcfromtimestamp(time.time())
+                                      )
+                embed.set_thumbnail(url=request_result["forecast"]["txt_forecast"]["forecastday"][day]["icon_url"])
+                embed.set_author(name=ctx.message.author.name, url="", icon_url=ctx.message.author.avatar_url)
+                try:
+                    # description of the day
+                    day_description = request_result["forecast"]["txt_forecast"]["forecastday"][day]["fcttext_metric"]
+                except KeyError:
+                    day_description="Not found..."
+                embed.add_field(name="Short Description:", value=day_description, inline=False)
+
+                try:
+                    # min temperature of the day
+                    temp_min = request_result["forecast"]["simpleforecast"]["forecastday"][day]["low"]["celsius"]
+                except KeyError:
+                    temp_min = "Not found..."
+                embed.add_field(name="Min Temperature:", value=temp_min, inline=True)
+
+                try:
+                    # max temperature of the day
+                    temp_max = request_result["forecast"]["simpleforecast"]["forecastday"][day]["high"]["celsius"]
+                except KeyError:
+                    temp_max = "Not found..."
+                embed.add_field(name="Max Temperature:", value=temp_max, inline=True)
+
+                try:
+                    # Average Humidity temperature of the day
+                    avg_humid = str(request_result["forecast"]["simpleforecast"]["forecastday"][day]["avehumidity"]) + "%"
+                except KeyError:
+                    avg_humid = "Not found..."
+                embed.add_field(name="Average Humidity:", value=avg_humid, inline=True)
+
+                try:
+                    # short weather condition
+                    condition = request_result["forecast"]["simpleforecast"]["forecastday"][day]["conditions"]
+                except KeyError:
+                    condition = "Not found..."
+                embed.add_field(name="Conditions:", value=condition, inline=True)
+
+                embed.set_footer(text="Bot By ScrappyEnterprise", icon_url="http://scrappyenterprise.altervista.org/icon.png")
+                try:
+                    await self.bot.say(embed=embed)
+                except discord.errors.HTTPException:
+                    await self.bot.say("*A strange error occurred, cannot retrieve that city, sorry...*")
+            print("-------------------------")
 
     # ---------------------------------------------------------------------
 
