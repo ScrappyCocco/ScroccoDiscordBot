@@ -10,6 +10,7 @@ class BotVariables:
     bot_data_file = None
     file_name = "bot_data.json"
     emptyApiKey = "YourKey"  # used to check if a key is empty
+    emptyUrl = "http://URL/"
     numbersEmoji = [":zero:", ":one:", ":two:", ":three:", ":four:", ":five:", ":six:", ":seven:", ":eight:", ":nine:"]
     indexError = 0  # index used to count cleverbot errors
 

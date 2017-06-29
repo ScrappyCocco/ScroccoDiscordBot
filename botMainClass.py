@@ -141,13 +141,17 @@ async def on_ready():
     print('Logged as:' + bot.user.name + " ID:" + bot.user.id)
     url = botVariables.get_server_read_status_url()
     try:
-        r = requests.get(url)  # get the last in-game status from server
-        if r.text != "Error":
-            setattr(bot, 'lastInGameStatus', str(r.text))
-            print("No Error - changing state to:" + r.text)
-            await bot.change_presence(game=discord.Game(name=r.text))
+        if botVariables.emptyUrl not in url:
+            r = requests.get(url)  # get the last in-game status from server
+            if r.text != "Error":
+                setattr(bot, 'lastInGameStatus', str(r.text))
+                print("No Error - changing state to:" + r.text)
+                await bot.change_presence(game=discord.Game(name=r.text))
+            else:
+                print("Request error - changing status to default")
+                await bot.change_presence(game=discord.Game(name=botVariables.get_default_status()))
         else:
-            print("Request error - changing status to default")
+            print("URL request error - changing status to default - check bot data json file")
             await bot.change_presence(game=discord.Game(name=botVariables.get_default_status()))
     except websockets.exceptions.ConnectionClosed:
         print("ERROR trying to change bot status")

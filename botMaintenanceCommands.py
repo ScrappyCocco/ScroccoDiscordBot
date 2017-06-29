@@ -151,13 +151,16 @@ class BotMaintenanceCommands:
                 print("Changing my status in:" + new_state)
                 url = self.botVariables.get_server_write_status_url()
                 # request to save the state on the web
-                r = requests.post(url,
-                                  data={self.botVariables.get_server_write_status_parameter(): new_state,
-                                        })
-                if r.text == "Error":
-                    print("ERROR SAVING NEW STATUS ON THE SERVER...")
+                if self.botVariables.emptyUrl not in url:
+                    r = requests.post(url,
+                                      data={self.botVariables.get_server_write_status_parameter(): new_state,
+                                            })
+                    if r.text == "Error":
+                        print("ERROR SAVING NEW STATUS ON THE SERVER...")
+                    else:
+                        print("Status correctly saved on server...")
                 else:
-                    print("Status correctly saved on server...")
+                    print("URL ERROR - ERROR SAVING NEW STATUS ON THE SERVER... Check bot data json")
                 # change the bot in-game status
                 await self.bot.change_presence(game=discord.Game(name=new_state))
                 await self.bot.say("Status correctly changed and saved on server!")
