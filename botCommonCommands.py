@@ -333,7 +333,7 @@ class BotCommonCommands:
                     # description of the day
                     day_description = request_result["forecast"]["txt_forecast"]["forecastday"][day]["fcttext_metric"]
                 except KeyError:
-                    day_description="Not found..."
+                    day_description = "Not found..."
                 embed.add_field(name="Short Description:", value=day_description, inline=False)
 
                 try:
@@ -364,7 +364,7 @@ class BotCommonCommands:
                     condition = "Not found..."
                 embed.add_field(name="Conditions:", value=condition, inline=True)
 
-                embed.set_footer(text="Bot By ScrappyEnterprise", icon_url="http://scrappyenterprise.altervista.org/icon.png")
+                embed.set_footer(text=self.botVariables.get_description(), icon_url=self.botVariables.get_bot_icon())
                 try:
                     await self.bot.say(embed=embed)
                 except discord.errors.HTTPException:

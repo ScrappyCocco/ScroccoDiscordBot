@@ -13,7 +13,8 @@
    "version":"0.92",
    "build":"31",
    "is_beta": "False",
-   "description":"Bot by ScrappyCocco!",
+   "description":"Bot by ScrappyCocco",
+   "bot_icon":"https://discordapp.com/assets/2c21aeda16de354ba5334551a883b481.png",
    "defaultStatus":"Branzini 4 Ever",
    "commands_prefix":"!",
    "owners_data":{

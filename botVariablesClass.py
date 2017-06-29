@@ -171,6 +171,13 @@ class BotVariables:
         """
         return self.bot_data_file["description"]
 
+    def get_bot_icon(self):
+        """Function that return the current bot icon.
+        This icon is used for embed messages
+            :return: The current icon for the bot
+        """
+        return self.bot_data_file["bot_icon"]
+
     def get_default_status(self):
         """Function that return the current default status of the bot.
             :return: The current default status of the bot

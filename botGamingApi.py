@@ -59,7 +59,7 @@ class BotGamingCommands:
                 embed.set_image(url=str(r.json()['star']))
             embed.set_thumbnail(url=r.json()['portrait'])
             embed.set_author(name=ctx.message.author.name, url="", icon_url=ctx.message.author.avatar_url)
-            embed.set_footer(text="Bot By ScrappyEnterprise", icon_url="http://scrappyenterprise.altervista.org/icon.png")
+            embed.set_footer(text=self.botVariables.get_description(), icon_url=self.botVariables.get_bot_icon())
 
             embed.add_field(name="In-Game Name:", value=r.json()['username'])
             embed.add_field(name="Level:", value=str(r.json()['level']))
@@ -113,7 +113,7 @@ class BotGamingCommands:
                                   timestamp=datetime.utcfromtimestamp(time.time())
                                   )
             embed.set_author(name=ctx.message.author.name, url="", icon_url=ctx.message.author.avatar_url)
-            embed.set_footer(text="Bot By ScrappyEnterprise", icon_url="http://scrappyenterprise.altervista.org/icon.png")
+            embed.set_footer(text=self.botVariables.get_description(), icon_url=self.botVariables.get_bot_icon())
 
             embed.add_field(name="Stats:", value=str(r1.text))
             embed.add_field(name="Play-Time:", value=str(r2.text))
@@ -184,8 +184,7 @@ class BotGamingCommands:
                                   )
             embed.set_thumbnail(url=img)
             embed.set_author(name=ctx.message.author.name, url="", icon_url=ctx.message.author.avatar_url)
-            embed.set_footer(text="Bot By ScrappyEnterprise",
-                             icon_url="http://scrappyenterprise.altervista.org/icon.png")
+            embed.set_footer(text=self.botVariables.get_description(), icon_url=self.botVariables.get_bot_icon())
 
             embed.add_field(name="Level:", value=str(level))
             embed.add_field(name="Games:", value=str(games))
