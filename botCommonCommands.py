@@ -10,7 +10,7 @@ import requests
 import goslate
 import time
 
-from discord import errors
+from discord.errors import HTTPException
 from urllib import error
 from datetime import datetime
 from random import randint
@@ -243,7 +243,7 @@ class BotCommonCommands:
     @commands.command(pass_context=True)
     async def weather(self, ctx, *args):
         """Print the current weather in a given city
-        (0 is today, 1 tomorrow, ...., 7 is the max)
+        (0 is now, 1 is 12h later, 2 tomorrow, ...., 19 is the max[12h for 10 days])
         (the country code is in ISO-3166 = 2 letters)
         Usage: !weather Venice
         Usage: !weather IT Rome
@@ -285,14 +285,16 @@ class BotCommonCommands:
                         except ValueError:
                             await self.bot.say("**Check the day code, please read:** !help weather")
                             return
-            if day > 7:
+            if day > 19:
                 await self.bot.say("**Check the day code, please read:** !help weather")
                 return
             # I've everything now, starting getting the weather
             print("-------------------------")
             print("Making weather request")
+            half_day = BotMethods.convert_hours_to_day(day)  # this because the weather is divided in 10 days and 20 times 12h
             url = "http://api.wunderground.com/api/"+self.botVariables.get_weather_key()+"/"
-            url += "forecast/q/"+country_code_str+"/"+city_name+".json"
+            # url += "forecast/q/"+country_code_str+"/"+city_name+".json" old weather, before the 10 days
+            url += "forecast10day/q/" + country_code_str + "/" + city_name + ".json"
             r = requests.get(url)
             request_result = r.json()  # convert the response to a json file
             try:
@@ -318,9 +320,9 @@ class BotCommonCommands:
                     return
                 print("No errors found in request, creating embed")
                 day_name = str(request_result["forecast"]["txt_forecast"]["forecastday"][day]["title"])
-                day_number = str(request_result["forecast"]["simpleforecast"]["forecastday"][day]["date"]["day"])
-                month_number = str(request_result["forecast"]["simpleforecast"]["forecastday"][day]["date"]["month"])
-                year_number = str(request_result["forecast"]["simpleforecast"]["forecastday"][day]["date"]["year"])
+                day_number = str(request_result["forecast"]["simpleforecast"]["forecastday"][half_day]["date"]["day"])
+                month_number = str(request_result["forecast"]["simpleforecast"]["forecastday"][half_day]["date"]["month"])
+                year_number = str(request_result["forecast"]["simpleforecast"]["forecastday"][half_day]["date"]["year"])
                 embed = discord.Embed(title="Weather",
                                       colour=discord.Colour(0x088DA5),
                                       url="https://www.wunderground.com/",
@@ -338,28 +340,28 @@ class BotCommonCommands:
 
                 try:
                     # min temperature of the day
-                    temp_min = request_result["forecast"]["simpleforecast"]["forecastday"][day]["low"]["celsius"]
+                    temp_min = request_result["forecast"]["simpleforecast"]["forecastday"][half_day]["low"]["celsius"]
                 except KeyError:
                     temp_min = "Not found..."
                 embed.add_field(name="Min Temperature:", value=temp_min, inline=True)
 
                 try:
                     # max temperature of the day
-                    temp_max = request_result["forecast"]["simpleforecast"]["forecastday"][day]["high"]["celsius"]
+                    temp_max = request_result["forecast"]["simpleforecast"]["forecastday"][half_day]["high"]["celsius"]
                 except KeyError:
                     temp_max = "Not found..."
                 embed.add_field(name="Max Temperature:", value=temp_max, inline=True)
 
                 try:
                     # Average Humidity temperature of the day
-                    avg_humid = str(request_result["forecast"]["simpleforecast"]["forecastday"][day]["avehumidity"]) + "%"
+                    avg_humid = str(request_result["forecast"]["simpleforecast"]["forecastday"][half_day]["avehumidity"]) + "%"
                 except KeyError:
                     avg_humid = "Not found..."
                 embed.add_field(name="Average Humidity:", value=avg_humid, inline=True)
 
                 try:
                     # short weather condition
-                    condition = request_result["forecast"]["simpleforecast"]["forecastday"][day]["conditions"]
+                    condition = request_result["forecast"]["simpleforecast"]["forecastday"][half_day]["conditions"]
                 except KeyError:
                     condition = "Not found..."
                 embed.add_field(name="Conditions:", value=condition, inline=True)
@@ -367,7 +369,7 @@ class BotCommonCommands:
                 embed.set_footer(text=self.botVariables.get_description(), icon_url=self.botVariables.get_bot_icon())
                 try:
                     await self.bot.say(embed=embed)
-                except discord.errors.HTTPException:
+                except HTTPException:
                     await self.bot.say("*A strange error occurred, cannot retrieve that city, sorry...*")
             print("-------------------------")
 
