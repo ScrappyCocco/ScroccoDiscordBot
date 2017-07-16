@@ -73,4 +73,19 @@ class BotMethods:
         if time_var == 18 or time_var == 19:
             return 9
 
+    @staticmethod
+    def platform_to_number(platform_name: str):
+        """ This function is used for rocket league api: convert the platform name to his number
+        :param platform_name: the platform name (steam, ps4 or xbox)
+        :return: the number corresponding to the platform , -1 is the platform is not valid
+        """
+        platform = platform_name.lower()
+        if platform == "steam":
+            return 1
+        if platform == "ps4" or platform == "ps":
+            return 2
+        if platform == "xbox" or platform == "xboxone":
+            return 3
+        return -1
+
 # ---------------------------------------------------------------------

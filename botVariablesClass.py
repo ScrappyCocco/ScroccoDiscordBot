@@ -19,6 +19,9 @@ class BotVariables:
     # hypixelKey = "YourKey"  https://api.hypixel.net/
     # steamKey = "YourKey"  https://steamcommunity.com/dev/apikey
     # gifKey = "YourKey"  http://api.giphy.com/
+    # weather key http://api.wunderground.com/
+    # rocket league stats api key = https://developers.rocketleaguestats.com
+    # rocket league default platform could be Steam, Ps4 OR XboxOne
 
     # maxCleverbotRequests  # max number of requests in case of errors
 
@@ -78,6 +81,7 @@ class BotVariables:
         self.get_owner_private_messages()
         self.get_owners_list()
         self.get_weather_key()
+        self.get_rocket_league_key()
         self.get_discord_bot_token(False)
         print("---FULL JSON CHECK COMPLETED---")
 
@@ -149,10 +153,27 @@ class BotVariables:
             quit(1)
 
     def get_weather_country(self):
-        """Function that return the current version of the bot.
-            :return: The current version of the bot
+        """Function that return the default weather country to use
+            :return: The default weather country
         """
         return self.bot_data_file["weather"]["default_country"]
+
+    def get_rocket_league_key(self):
+        """Function that return the api key for the rocket league stats api.
+            :return: The rocket league stats API-KEY
+        """
+        key = self.bot_data_file["rocketleague"]["key"]
+        if self.check_empty_key(key):
+            return key
+        else:
+            print("ERROR GETTING THE ROCKET LEAGUE KEY (get yours from https://developers.rocketleaguestats.com) - ABORTING")
+            quit(1)
+
+    def get_rocket_league_platform(self):
+        """Function that return the default rocket league platform to use
+            :return: The default rocket league api platform
+        """
+        return self.bot_data_file["rocketleague"]["default_platform"]
 
     def get_version(self):
         """Function that return the current version of the bot.

@@ -9,9 +9,13 @@
       "key":"YourKey",
       "default_country":"IT"
    },
+   "rocketleague":{
+      "key":"YourKey",
+      "default_platform":"Steam"
+   },
    "maxCleverbotRequests":10,
    "version":"0.92",
-   "build":"35",
+   "build":"50",
    "is_beta": "False",
    "description":"Bot by ScrappyCocco",
    "bot_icon":"https://discordapp.com/assets/2c21aeda16de354ba5334551a883b481.png",

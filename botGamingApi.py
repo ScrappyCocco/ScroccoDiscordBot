@@ -12,6 +12,7 @@ import json
 from steamapi import core
 from hypixthon import Hypixthon
 from botVariablesClass import BotVariables
+from botMethodsClass import BotMethods
 from steamapi import user
 from datetime import datetime
 
@@ -269,6 +270,61 @@ class BotGamingCommands:
             await self.bot.say("**Usage:** !hy McName")
         print("-------------------------")
 
+    # ---------------------------------------------------------------------
+
+    @commands.command()
+    async def rl(self, *args):
+        """Print the user's rocket league stats in an image
+        Usage: !rl "Steam64ID/PSN Username/Xbox GamerTag or XUID" "Steam/Ps4/Xbox"(Optional)
+        """
+        if len(args) == 1 and str(self.botVariables.get_rocket_league_platform()) == "Steam":
+            is_integer = False
+            username = args[0]
+            try:
+                user_id = int(username)
+                is_integer = True
+            except ValueError:  # Not an ID, but a vanity URL.
+                user_id = username
+            if not is_integer:  # convert the name to a steam 64 ID
+                print("SteamIdURL Request:" + str(user_id))
+                steam_api_key = self.botVariables.get_steam_key()
+                steam_api_url = "http://api.steampowered.com/ISteamUser/ResolveVanityURL/v0001/"
+                steam_api_url += "?key=" + steam_api_key + "&vanityurl=" + str(user_id)
+                r = requests.get(steam_api_url)
+                if not r.json()['response']['success'] == 1:
+                    await self.bot.say("Error - Steam User not found... Check your steamID")
+                    return
+                else:
+                    user_id = int(r.json()['response']['steamid'])
+                    print("SteamId64 Request:" + str(user_id))
+        else:  # steam is not the default platform, get the username
+            user_id = args[0]
+        # now i have the steam id or the username, let's make the api-request
+        request_header = {'Authorization': self.botVariables.get_rocket_league_key()}
+        default_platform = self.botVariables.get_rocket_league_platform()
+        platform_number = str(BotMethods.platform_to_number(default_platform))
+        if len(args) == 1:  # use default platform
+            request_url = "https://api.rocketleaguestats.com/v1/player?unique_id="+str(
+                user_id)+"&platform_id="+platform_number
+            r = requests.get(request_url, headers=request_header)  # make the request with header auth
+        else:  # check the platform
+            platform_number = str(BotMethods.platform_to_number(str(args[1])))
+            if not platform_number == str(-1):
+                request_url = "https://api.rocketleaguestats.com/v1/player?unique_id=" + str(
+                    user_id) + "&platform_id=" + platform_number
+                r = requests.get(request_url, headers=request_header)  # make the request with header auth
+            else:
+                await self.bot.say("Platform not found, check !help rl")
+                return
+        try:
+            request_result = r.json()  # try convert the request result to json
+        except json.JSONDecodeError:
+            await self.bot.say("Error getting the image... contact the bot owner ")
+            return
+        try:
+            await self.bot.say(request_result['signatureUrl'])
+        except KeyError:
+            await self.bot.say("Error getting the image... check !help rl ")
     # ---------------------------------------------------------------------
 
     def __init__(self, bot):
