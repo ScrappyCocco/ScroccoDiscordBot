@@ -58,15 +58,17 @@ async def on_message(message):
                     return
                 print("-------------------------")
                 new_message = new_message.lstrip()  # remove additional spaces from cleverbot question
-                print("Cleverbot Question:" + new_message)
+                print("Cleverbot Question received, asking cleverbot...")
                 reply = ""
                 try:
                     request_index = 0
                     # i have to wait for a complete reply(errors could happen with that api)
                     while reply == "" and request_index < maxCleverbotRequests:
                         reply = cw.say(new_message)
-                        print("Cleverbot Reply:" + reply)
+                        print("Cleverbot Reply - say completed")
                         request_index += 1
+                        if reply == "":
+                            print("Cleverbot Reply Looks Empty...")
                     if reply == "":
                         await bot.send_message(message.channel, "Cleverbot error")  # send the cleverbot response
                     else:

@@ -5,7 +5,10 @@ from discord.ext import commands
 
 import discord
 import requests
+import time
 
+from discord import channel
+from datetime import datetime
 from botVariablesClass import BotVariables
 from botMethodsClass import BotMethods
 
@@ -52,6 +55,8 @@ class BotMaintenanceCommands:
                     await self.bot.change_presence(status=discord.Status.online,
                                                    game=discord.Game(name=self.bot.lastInGameStatus))
                     self.bot.maintenanceMode = False
+            else:
+                await self.bot.say("Parameters not correct")
             print("-------------------------")
         else:
             await self.bot.say("You don't have access to this command  :stuck_out_tongue: ")
@@ -119,6 +124,7 @@ class BotMaintenanceCommands:
     async def channelid(self, ctx, *args):
         """Search a channel with the given name(in bot servers), if it exist, then it print the channel if
         Usage: !channelid public
+        Usage: !channelid * (big command, take long time)
         """
         found = False
         if not BotMethods.is_owner(ctx.message.author):
@@ -126,13 +132,68 @@ class BotMaintenanceCommands:
         if not len(args) == 1:  # params not correct
             return
         for currentServer in self.bot.servers:
-            for channel in currentServer.channels:
-                if channel.type == discord.ChannelType.text:  # if it's a text channel and not a voice channel
-                    if channel.name == str(args[0]):  # the name is equal
+            for current_channel in currentServer.channels:
+                if current_channel.type == discord.ChannelType.text:  # if it's a text channel and not a voice channel
+                    if current_channel.name == str(args[0]) or str(args[0]) == "*":  # the name is equal
                         found = True
-                        await self.bot.send_message(ctx.message.channel, "**Channel Found:** " + channel.name + " - " + channel.server.name + " --> ID= " + channel.id)
+                        await self.bot.send_message(ctx.message.channel, "**Channel Found:** " + current_channel.name + " - " + current_channel.server.name + " --> ID= " + current_channel.id)
         if not found:
             await self.bot.send_message(ctx.message.channel, "Nothing found...")
+
+    # ---------------------------------------------------------------------
+
+    @commands.command(pass_context=True, hidden=True)
+    async def servers(self, ctx):
+        """Show all the servers where the bot is present
+        Usage: !servers
+        """
+        found = False
+        final_string = ""
+        if not BotMethods.is_owner(ctx.message.author):
+            return
+        for currentServer in self.bot.servers:
+            found = True
+            final_string += currentServer.name + " - ID: " + str(currentServer.id) + " - " + str(currentServer.member_count) + " Members \n"
+        if not found:
+            await self.bot.send_message(ctx.message.channel, "Nothing found...")
+        else:
+            await self.bot.send_message(ctx.message.channel, final_string)
+
+    # ---------------------------------------------------------------------
+
+    @commands.command(pass_context=True)
+    async def serverinfo(self, ctx):
+        """Show the current server's info
+        Usage: !serverinfo
+        """
+        if ctx.message.server is None:
+            return
+        server_selected = ctx.message.server
+        embed = discord.Embed(title=server_selected.name,
+                              colour=discord.Colour(0x169DDF),
+                              description=server_selected.name+" server info",
+                              timestamp=datetime.utcfromtimestamp(time.time())
+                              )
+        embed.set_thumbnail(url=server_selected.icon_url)
+        embed.set_author(name=ctx.message.author.name, url="", icon_url=ctx.message.author.avatar_url)
+        embed.set_footer(text=self.botVariables.get_description(), icon_url=self.botVariables.get_bot_icon())
+
+        voice_channels_count = 0
+        text_channels_count = 0
+        for current_channel in server_selected.channels:
+            if current_channel.type == channel.ChannelType.text:
+                text_channels_count += 1
+            if current_channel.type == channel.ChannelType.voice:
+                voice_channels_count += 1
+
+        embed.add_field(name="Server Region:", value=str(server_selected.region))
+        embed.add_field(name="Server Owner:", value=str(server_selected.owner.name))
+        embed.add_field(name="Server Members:", value=str(server_selected.member_count))
+        embed.add_field(name="Server Creation:", value=str(server_selected.created_at))
+        embed.add_field(name="Server Text Channels:", value=str(text_channels_count))
+        embed.add_field(name="Server Voice Channels:", value=str(voice_channels_count))
+
+        await self.bot.say(embed=embed)  # send the discord embed message with the servers info
 
     # ---------------------------------------------------------------------
 
