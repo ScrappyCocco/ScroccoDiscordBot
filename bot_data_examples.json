@@ -21,6 +21,7 @@
    "bot_icon":"https://discordapp.com/assets/2c21aeda16de354ba5334551a883b481.png",
    "defaultStatus":"Branzini 4 Ever",
    "commands_prefix":"!",
+   "open_source_link":"https://github.com/ScrappyCocco/ScroccoDiscordBot",
    "owners_data":{
       "owners_list":[
          {

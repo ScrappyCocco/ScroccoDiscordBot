@@ -114,6 +114,13 @@ class BotMaintenanceCommands:
     # ---------------------------------------------------------------------
 
     @commands.command()
+    async def source(self):
+        """Print a link to bot source code"""
+        await self.bot.say("Go, and explore my source code at: " + self.botVariables.get_open_source_link())
+
+    # ---------------------------------------------------------------------
+
+    @commands.command()
     async def ver(self):
         """Print bot current version"""
         await self.bot.say("**Current Version:** " + self.botVariables.get_version()+" **Build:** "+self.botVariables.get_build())

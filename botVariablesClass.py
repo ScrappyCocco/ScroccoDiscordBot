@@ -38,6 +38,8 @@ class BotVariables:
 
     # commands_prefix = "!" : the prefix of the commands (in this case !command)
 
+    # open_source_link : bot source code page
+
     # owners = ["ScrappyCocco#4468"] discord username of who can admin the bot
     # ownerPrivateMessagesID = "144488066998992896" discord id where private messages will be sent, empty if you want to deactivate it
 
@@ -231,6 +233,12 @@ class BotVariables:
             :return: The current command prefix of the bot
         """
         return self.bot_data_file["commands_prefix"]
+
+    def get_open_source_link(self):
+        """Function that return the bot source code link.
+            :return: The bot source code link
+        """
+        return self.bot_data_file["open_source_link"]
 
     def get_max_cleverbot_requests(self):
         """Function that return the max_cleverbot_requests.
