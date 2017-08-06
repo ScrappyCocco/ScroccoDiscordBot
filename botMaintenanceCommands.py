@@ -216,7 +216,7 @@ class BotMaintenanceCommands:
                     r = requests.post(url,
                                       data={self.botVariables.get_server_write_status_parameter(): new_state,
                                             })
-                    if r.text == "Error":
+                    if r.text == "Error" or not (r.status_code == 200):
                         print("ERROR SAVING NEW STATUS ON THE SERVER...")
                     else:
                         print("Status correctly saved on server...")

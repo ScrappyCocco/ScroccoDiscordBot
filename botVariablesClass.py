@@ -7,42 +7,51 @@ import json
 
 class BotVariables:
 
-    bot_data_file = None
-    file_name = "bot_data.json"
-    emptyApiKey = "YourKey"  # used to check if a key is empty
-    emptyUrl = "http://URL/"
-    numbersEmoji = [":zero:", ":one:", ":two:", ":three:", ":four:", ":five:", ":six:", ":seven:", ":eight:", ":nine:"]
-    indexError = 0  # index used to count cleverbot errors
-
+    # ------------------------------------------------------
+    # BOT JSON DOCUMENTATION
+    # ------------------------------------------------------
     # JSON VARIABLES WITH EXPLANATION
-    # cleverKey = "YourKey"  https://www.cleverbot.com/api/
-    # hypixelKey = "YourKey"  https://api.hypixel.net/
-    # steamKey = "YourKey"  https://steamcommunity.com/dev/apikey
-    # gifKey = "YourKey"  http://api.giphy.com/
-    # weather key http://api.wunderground.com/
-    # rocket league stats api key = https://developers.rocketleaguestats.com
-    # rocket league default platform could be Steam, Ps4 OR XboxOne
 
-    # maxCleverbotRequests  # max number of requests in case of errors
+    # API KEYS LIST
+    # cleverKey = "YourKey" : get yours from  https://www.cleverbot.com/api/
+    # hypixelKey = "YourKey" : get yours from https://api.hypixel.net/
+    # steamKey = "YourKey" : get yours from https://steamcommunity.com/dev/apikey
+    # gifKey = "YourKey" : get yours from http://api.giphy.com/
+    # weather key : get yours from http://api.wunderground.com/
+    #   weather default_country must be in the "ISO 3166-1 alpha-2" format
+    # rocket league stats api key : get yours from https://developers.rocketleaguestats.com
+    #   rocket league default platform could be Steam, Ps4 OR XboxOne
+    # REMEMBER THAT if an api key is empty the bot won't start or the command won't work correctly
+    # IF YOU don't want a command you have to manually remove the api key check and the command
 
-    # description = bot description
-    # commands_prefix = "!" the prefix of the commands
+    # maxCleverbotRequests : max number of requests to the cleverbot in case of errors (an error return an empty reply)
 
-    # owners = ["ScrappyCocco#4468"]  # discord username of who can admin the bot
-    # ownerPrivateMessagesID = "144488066998992896"  # discord id where private messages will be sent
+    # version and build : specify the bot version, you should NOT change those values if you don't edit the bot source
+
+    # is_beta : specify if the bot have to use the beta api key or the final api key
+
+    # description : bot simple description, write what you want in here
+
+    # bot_icon : the url of the bot default icon (used only in some embed codes)
+
+    # defaultStatus : the default bot IN-GAME status (if the bot can't download the last on startup, will use this state)
+
+    # commands_prefix = "!" : the prefix of the commands (in this case !command)
+
+    # owners = ["ScrappyCocco#4468"] discord username of who can admin the bot
+    # ownerPrivateMessagesID = "144488066998992896" discord id where private messages will be sent, empty if you want to deactivate it
 
     # startup_extensions = [...]
-    # discord extensions to load on startup
-
-    # defaultStatus = "Branzini 4 Ever"
+    # discord extensions to load on startup DO NOT touch that list if you don't edited the bot source code
 
     # read and write url where i store the current in-game status to read it in case of reboot or update
+    # YOU CAN LEAVE THEM EMPTY, BOT WILL USE "defaultStatus" THAT YOU CAN CHANGE WITH !game, but on reboot it will use again "defaultStatus"
     # readStateUrl = "http://.../readState.php"
     # writeStateUrl = "http://.../writeState.php"
-    # writeStateParamName = "GameString"  # the param name for the post request at writeStateUrl
-    #  when i update the in-game status i make a post-request to "writeStateUrl" passing the new status in a
-    #  param called "writeStateParamName" to save the status on server, from there i can read it making
-    #  a simple request to "readStateUrl"
+    # writeStateParamName = "GameString"  # the param name for the POST request at writeStateUrl
+    #   when i update the in-game status i make a post-request to "writeStateUrl" passing the new status in a
+    #   param called "writeStateParamName" to save the status on server (do it as you want, up to you),
+    #   from there i can read it (on bot startup) making a simple request to "readStateUrl"
 
     # memeGeneratorUsername = "yourUsername"
     # memeGeneratorPassword = "yourPassword"
@@ -50,9 +59,20 @@ class BotVariables:
 
     # discordFinalBotApiToken = "YourKey"
     # discordBetaBotApiToken = "YourKey"
-    # there are 2 api keys because i use the "beta" key before publishing the bot in his "final" version
-    # you can create apps from https://discordapp.com/developers/applications/me
-    # if you have or want only 1 api key, put that kay in both discordFinalBotApiToken and discordBetaBotApiToken
+    #   there are 2 api keys because i use the "beta" key before publishing the bot in his "final" version
+    #   you can create apps from https://discordapp.com/developers/applications/me
+    #   if you have or want only 1 api key, put that kay in both discordFinalBotApiToken and discordBetaBotApiToken
+
+    # ------------------------------------------------------
+    # END BOT JSON DOCUMENTATION
+    # ------------------------------------------------------
+
+    bot_data_file = None
+    file_name = "bot_data.json"
+    emptyApiKey = "YourKey"  # used to check if a key is empty
+    emptyUrl = "http://URL/"
+    numbersEmoji = [":zero:", ":one:", ":two:", ":three:", ":four:", ":five:", ":six:", ":seven:", ":eight:", ":nine:"]
+    indexError = 0  # index used to count cleverbot errors
 
     # -------------------------------------------------
 
@@ -276,8 +296,8 @@ class BotVariables:
         """
         owner_id = self.bot_data_file["owners_data"]["ownerPrivateMessagesID"]
         if owner_id == "":
-            print("ERROR GETTING THE OWNER ID - BOT ABORTING")
-            quit(1)
+            print("ERROR GETTING THE OWNER ID - EMPTY")
+            return ""
         else:
             return owner_id
 

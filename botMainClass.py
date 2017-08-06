@@ -38,7 +38,9 @@ async def on_message(message):
         else:
             if message.channel.name is None:
                 # send private message to bot owner
-                if not str(message.author.id) == privateMessagesOwner:
+                if privateMessagesOwner == "":  # function not active
+                    return
+                if not str(message.author.id) == privateMessagesOwner:  # not sending messages to myself
                     await bot.send_message(discord.User(id=privateMessagesOwner), "Message from " + str(message.author.name) + "(ID=" + str(message.author.id) + "):" + message.content)
             # ---------------------------------------------------------------------
         if message.server is None:
@@ -145,7 +147,7 @@ async def on_ready():
     try:
         if botVariables.emptyUrl not in url:
             r = requests.get(url)  # get the last in-game status from server
-            if r.text != "Error":
+            if r.text != "Error" and r.status_code == 200:
                 setattr(bot, 'lastInGameStatus', str(r.text))
                 print("No Error - changing state to:" + r.text)
                 await bot.change_presence(game=discord.Game(name=r.text))
@@ -175,7 +177,7 @@ if str(__name__) == "__main__":
             print('LOADING FAIL-->Failed to load extension {}\n{}'.format(extension, exc))
         print("------------------------")
 
-    print("ACTION-->Bot Login...")
+    print("ACTION-->Bot Login... Wait Please...")
     if botVariables.get_bot_distribution():  # is the bot in beta?
         bot.run(botVariables.get_discord_bot_token(True))  # token beta Bot
     else:

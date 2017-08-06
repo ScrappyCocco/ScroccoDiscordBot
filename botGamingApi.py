@@ -325,6 +325,7 @@ class BotGamingCommands:
             await self.bot.say(request_result['signatureUrl'])
         except KeyError:
             await self.bot.say("Error getting the image... check !help rl ")
+
     # ---------------------------------------------------------------------
 
     def __init__(self, bot):
