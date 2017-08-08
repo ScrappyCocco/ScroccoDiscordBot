@@ -38,9 +38,7 @@ async def on_message(message):
         else:
             if message.channel.name is None:
                 # send private message to bot owner
-                if privateMessagesOwner == "":  # function not active
-                    return
-                if not str(message.author.id) == privateMessagesOwner:  # not sending messages to myself
+                if not (str(message.author.id) == privateMessagesOwner) and not (privateMessagesOwner == ""):  # not sending messages to myself or not if the function is not active
                     await bot.send_message(discord.User(id=privateMessagesOwner), "Message from " + str(message.author.name) + "(ID=" + str(message.author.id) + "):" + message.content)
             # ---------------------------------------------------------------------
         if message.server is None:
