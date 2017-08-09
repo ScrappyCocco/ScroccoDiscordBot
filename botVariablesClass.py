@@ -13,6 +13,8 @@ class BotVariables:
     # JSON VARIABLES WITH EXPLANATION
 
     # API KEYS LIST
+    # REMEMBER THAT if an api key is empty the bot won't start or the command won't work correctly
+    # IF YOU don't want a command you have to MANUALLY remove the api key check (down here) and the command
     # cleverKey = "YourKey" : get yours from  https://www.cleverbot.com/api/
     # hypixelKey = "YourKey" : get yours from https://api.hypixel.net/
     # steamKey = "YourKey" : get yours from https://steamcommunity.com/dev/apikey
@@ -21,8 +23,6 @@ class BotVariables:
     #   weather default_country must be in the "ISO 3166-1 alpha-2" format
     # rocket league stats api key : get yours from https://developers.rocketleaguestats.com
     #   rocket league default platform could be Steam, Ps4 OR XboxOne
-    # REMEMBER THAT if an api key is empty the bot won't start or the command won't work correctly
-    # IF YOU don't want a command you have to manually remove the api key check and the command
 
     # maxCleverbotRequests : max number of requests to the cleverbot in case of errors (an error return an empty reply)
 
@@ -40,30 +40,31 @@ class BotVariables:
 
     # open_source_link : bot source code page
 
-    # owners = ["ScrappyCocco#4468"] discord username of who can admin the bot
-    # ownerPrivateMessagesID = "144488066998992896" discord id where private messages will be sent, empty if you want to deactivate it
+    # owners_list = ["ScrappyCocco#4468"] discord username of who can admin the bot
+    # ownerPrivateMessagesID = "144488066998992896" discord id (in my case) where private messages will be sent, empty ( = "") if you want to deactivate it
 
     # startup_extensions = [...]
     # discord extensions to load on startup DO NOT touch that list if you don't edited the bot source code
 
     # read and write url where i store the current in-game status to read it in case of reboot or update
     # YOU CAN LEAVE THEM EMPTY, BOT WILL USE "defaultStatus" THAT YOU CAN CHANGE WITH !game, but on reboot it will use again "defaultStatus"
-    # readStateUrl = "http://.../readState.php"
-    # writeStateUrl = "http://.../writeState.php"
-    # writeStateParamName = "GameString"  # the param name for the POST request at writeStateUrl
+    # (remember that casual reboots happens in some hosting services)
+    # readStateUrl = "http://URL/readState.php"
+    # writeStateUrl = "http://URL/writeState.php"
+    # writeStateParamName = "GameString" the param name for the POST request at writeStateUrl
     #   when i update the in-game status i make a post-request to "writeStateUrl" passing the new status in a
     #   param called "writeStateParamName" to save the status on server (do it as you want, up to you),
     #   from there i can read it (on bot startup) making a simple request to "readStateUrl"
 
     # memeGeneratorUsername = "yourUsername"
     # memeGeneratorPassword = "yourPassword"
-    # username and password of meme generator (https://api.imgflip.com/)
+    # username and password of meme generator (get yours from https://api.imgflip.com/)
 
     # discordFinalBotApiToken = "YourKey"
     # discordBetaBotApiToken = "YourKey"
     #   there are 2 api keys because i use the "beta" key before publishing the bot in his "final" version
     #   you can create apps from https://discordapp.com/developers/applications/me
-    #   if you have or want only 1 api key, put that kay in both discordFinalBotApiToken and discordBetaBotApiToken
+    #   if you have (or want) only 1 api key, put that kay in BOTH discordFinalBotApiToken and discordBetaBotApiToken
 
     # ------------------------------------------------------
     # END BOT JSON DOCUMENTATION

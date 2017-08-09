@@ -15,7 +15,7 @@
    },
    "maxCleverbotRequests":10,
    "version":"0.93",
-   "build":"15",
+   "build":"30",
    "is_beta": "False",
    "description":"Bot by ScrappyCocco (Some commands are hidden from !help)",
    "bot_icon":"https://discordapp.com/assets/2c21aeda16de354ba5334551a883b481.png",
@@ -31,7 +31,7 @@
             "name":"..."
          }
       ],
-      "ownerPrivateMessagesID":"144488066998992896"
+      "ownerPrivateMessagesID":""
    },
    "startup_extensions":[
       {

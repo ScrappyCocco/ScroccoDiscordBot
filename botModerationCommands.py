@@ -19,6 +19,9 @@ class BotModerationCommands:
         """Function that ban a user from the server
         Usage: !banuser @User
         """
+        if ctx.message.server is None:
+            await self.bot.say("*Can't execute this in private, execute the command in a server*")
+            return
         if BotMethods.is_server_admin(ctx.message.author):
             if not len(ctx.message.mentions) == 1:
                 await self.bot.say("Error with mentions...")
@@ -40,6 +43,9 @@ class BotModerationCommands:
         """Function that un-ban a user from the server
         Usage: !unbanuser @User
         """
+        if ctx.message.server is None:
+            await self.bot.say("*Can't execute this in private, execute the command in a server*")
+            return
         if BotMethods.is_server_admin(ctx.message.author):
             if not len(ctx.message.mentions) == 1:
                 await self.bot.say("Error with mentions...")
@@ -61,6 +67,9 @@ class BotModerationCommands:
         """Function that soft-ban (=ban and unban deleting the messages) a user from the server
         Usage: !softban @User
         """
+        if ctx.message.server is None:
+            await self.bot.say("*Can't execute this in private, execute the command in a server*")
+            return
         if BotMethods.is_server_admin(ctx.message.author):
             if not len(ctx.message.mentions) == 1:
                 await self.bot.say("Error with mentions...")
@@ -83,6 +92,9 @@ class BotModerationCommands:
         """Function that kick a user from the server
         Usage: !kickuser @User
         """
+        if ctx.message.server is None:
+            await self.bot.say("*Can't execute this in private, execute the command in a server*")
+            return
         if BotMethods.is_server_admin(ctx.message.author):
             if not len(ctx.message.mentions) == 1:
                 await self.bot.say("Error with mentions...")
@@ -106,13 +118,14 @@ class BotModerationCommands:
         Usage: !editallroles remove "NoobRole"
         Usage: !editallroles add "ProRole"
         """
+        if ctx.message.server is None:
+            await self.bot.say("*Can't edit roles in private, execute the command in a server*")
+            return
         if BotMethods.is_server_admin(ctx.message.author):
             if not len(args) == 2:
                 await self.bot.say("Parameters not correct...")
                 return
             print("-------------------------")
-            if ctx.message.server is None:
-                return
             server_members = ctx.message.server.members
             action = str(args[0])
             selected_role = discord.utils.get(ctx.message.server.roles, name=str(args[1]))
@@ -139,13 +152,14 @@ class BotModerationCommands:
         Usage: !editrole remove "ScrappyCocco" "NoobRole"
         Usage: !editrole add "ScrappyCocco" "ProRole"
         """
+        if ctx.message.server is None:
+            await self.bot.say("*Can't edit roles in private, execute the command in a server*")
+            return
         if BotMethods.is_server_admin(ctx.message.author):
             if not len(args) == 3:
                 await self.bot.say("Parameters not correct...")
                 return
             print("-------------------------")
-            if ctx.message.server is None:  # it's a private message
-                return
             action = str(args[0])
             if len(ctx.message.mentions) == 1:
                 print("I've gon one mention")
@@ -172,13 +186,14 @@ class BotModerationCommands:
         """Function that change the role of ALL users from Old to New (in the server where it's called)
         Usage: !promoteusers "NoobRole" "ProRole"
         """
+        if ctx.message.server is None:
+            await self.bot.say("*Can't edit roles in private, execute the command in a server*")
+            return
         if BotMethods.is_server_admin(ctx.message.author):
             if not len(args) == 2:
                 await self.bot.say("Parameters not correct...")
                 return
             print("-------------------------")
-            if ctx.message.server is None:
-                return
             server_members = ctx.message.server.members
             old_role = discord.utils.get(ctx.message.server.roles, name=str(args[0]))
             new_role = discord.utils.get(ctx.message.server.roles, name=str(args[1]))

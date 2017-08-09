@@ -104,6 +104,7 @@ class BotMaintenanceCommands:
         if ctx is not None:
             if ctx.message.server is None:  # private message
                 print("Can't find region in private chat")
+                await self.bot.say("*Can't get server-region in private*")
             else:
                 region = str(ctx.message.server.region)
                 server_name = str(ctx.message.server.name)
@@ -120,10 +121,30 @@ class BotMaintenanceCommands:
 
     # ---------------------------------------------------------------------
 
+    @commands.command(pass_context=True)
+    async def commands_list(self, ctx):
+        """Display all the commands of the bot (even the hidden commands)
+            Usage: !commands_list
+        """
+        if BotMethods.is_owner(ctx.message.author) or BotMethods.is_server_admin(ctx.message.author):
+            final_string = "```LIST OF ALL BOT COMMANDS, SEE !HELP COMMAND FOR OTHER INFORMATIONS \n \n"
+            for cmd in self.bot.commands:
+                final_string += str(cmd) + "\n"
+            final_string += "```"
+            await self.bot.send_message(ctx.message.author, final_string)
+            if ctx.message.server is not None:  # not in private message
+                await self.bot.say("*List sent in private*")
+        else:
+            await self.bot.say("You don't have access to this command :stuck_out_tongue: ")
+
+    # ---------------------------------------------------------------------
+
     @commands.command()
     async def ver(self):
         """Print bot current version"""
-        await self.bot.say("**Current Version:** " + self.botVariables.get_version()+" **Build:** "+self.botVariables.get_build())
+        await self.bot.say("**Current Bot Version:** " + self.botVariables.get_version()
+                           + " **Build:** " + self.botVariables.get_build()
+                           + " - **API Version:** " + discord.__version__)
 
     # ---------------------------------------------------------------------
 
@@ -135,6 +156,7 @@ class BotMaintenanceCommands:
         """
         found = False
         if not BotMethods.is_owner(ctx.message.author):
+            await self.bot.say("You don't have access to this command :stuck_out_tongue: ")
             return
         if not len(args) == 1:  # params not correct
             return
@@ -157,6 +179,7 @@ class BotMaintenanceCommands:
         found = False
         final_string = ""
         if not BotMethods.is_owner(ctx.message.author):
+            await self.bot.say("You don't have access to this command :stuck_out_tongue: ")
             return
         for currentServer in self.bot.servers:
             found = True
@@ -174,6 +197,7 @@ class BotMaintenanceCommands:
         Usage: !serverinfo
         """
         if ctx.message.server is None:
+            await self.bot.say("*Can't get server-info in private*")
             return
         server_selected = ctx.message.server
         embed = discord.Embed(title=server_selected.name,
@@ -231,7 +255,7 @@ class BotMaintenanceCommands:
                     print("URL ERROR - ERROR SAVING NEW STATUS ON THE SERVER... Check bot data json")
                 # change the bot in-game status
                 await self.bot.change_presence(game=discord.Game(name=new_state))
-                await self.bot.say("Status correctly changed and saved on server!")
+                await self.bot.say("Status correctly changed!")
         else:
             await self.bot.say("You don't have access to this command  :stuck_out_tongue: ")
         print("-------------------------")

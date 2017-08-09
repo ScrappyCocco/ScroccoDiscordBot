@@ -45,19 +45,17 @@ async def on_message(message):
             mention = bot.user.mention
         else:
             mention = message.server.me.mention
-        if message.content.startswith("<"):  # message starts with a mention, check if it's mine
-            if mention[2] == '!' and message.content[2] != '!':  # from mobile the mention has a !
-                new_string = "<@!" + message.content[2:]
-                string_to_compare = new_string
-            else:
-                string_to_compare = message.content
-            if string_to_compare.startswith(mention):  # yes the message starts with a mention
-                new_message = message.content[22:]  # get the cleverbot question
+        if len(message.mentions) >= 1:  # message starts with a mention, check if it's mine
+            if message.content.startswith(mention):  # yes the message starts with a mention, it's me?
+                new_message = message.content.replace(str(mention), "", 1)  # remove the mention from the message (only 1)
+                # new_message = new_message[1:]  # remove the additional space (not necessary)
+                for found_mention in message.mentions:  # convert all mentions to names to make the message clear
+                    new_message = new_message.replace(str(found_mention.mention), str(found_mention.name))
                 # ---------------------------------------------------------------------
                 if bot.maintenanceMode and not BotMethods.is_owner(message.author):  # if it's in maintenance Mode
                     return
                 print("-------------------------")
-                new_message = new_message.lstrip()  # remove additional spaces from cleverbot question
+                new_message = new_message.lstrip()  # remove additional spaces from cleverbot question (before and after)
                 print("Cleverbot Question received, asking cleverbot...")
                 reply = ""
                 try:
@@ -121,7 +119,7 @@ async def hello(ctx):
 
 # ---------------------------------------------------------------------
 
-@commands.command(hidden=True)
+@bot.command(hidden=True)
 async def clearclever():
     """Clean Cleverbot Conversation"""
     print("-------------------------")
@@ -129,6 +127,7 @@ async def clearclever():
     if cw:
         cw.reset()
         botVariables.indexError = 0
+        await bot.say("*Cleaning Complete*")
     else:
         print("Can't clean cleverbot chat")
     print("End of cleaning")
