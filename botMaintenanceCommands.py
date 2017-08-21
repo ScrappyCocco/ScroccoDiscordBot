@@ -117,7 +117,7 @@ class BotMaintenanceCommands:
     @commands.command()
     async def source(self):
         """Print a link to bot source code"""
-        await self.bot.say("Go, and explore my source code at: " + self.botVariables.get_open_source_link())
+        await self.bot.say("Go and explore my source code at: " + self.botVariables.get_open_source_link())
 
     # ---------------------------------------------------------------------
 
@@ -152,7 +152,7 @@ class BotMaintenanceCommands:
     async def channelid(self, ctx, *args):
         """Search a channel with the given name(in bot servers), if it exist, then it print the channel if
         Usage: !channelid public
-        Usage: !channelid * (big command, take long time)
+        Usage: !channelid * (show all channels in all servers, big command, take long time)
         """
         found = False
         if not BotMethods.is_owner(ctx.message.author):
@@ -160,14 +160,17 @@ class BotMaintenanceCommands:
             return
         if not len(args) == 1:  # params not correct
             return
+        final_string = ""
         for currentServer in self.bot.servers:
             for current_channel in currentServer.channels:
                 if current_channel.type == discord.ChannelType.text:  # if it's a text channel and not a voice channel
                     if current_channel.name == str(args[0]) or str(args[0]) == "*":  # the name is equal
                         found = True
-                        await self.bot.send_message(ctx.message.channel, "**Channel Found:** " + current_channel.name + " - " + current_channel.server.name + " --> ID= " + current_channel.id)
+                        final_string += "**Channel Found:** " + current_channel.name + " - " + current_channel.server.name + " --> ID= " + current_channel.id + "\n"
         if not found:
             await self.bot.send_message(ctx.message.channel, "Nothing found...")
+        else:
+            await self.bot.send_message(ctx.message.channel, final_string)
 
     # ---------------------------------------------------------------------
 
@@ -235,9 +238,12 @@ class BotMaintenanceCommands:
         """
         print("-------------------------")
         if BotMethods.is_owner(ctx.message.author):
-            if len(args) == 0 or len(args) > 1:
-                await self.bot.say("I need only a parameter!")
+            if len(args) == 0:
+                await self.bot.say("Current status: " + str(self.bot.lastInGameStatus))
             else:
+                if len(args) > 1:
+                    await self.bot.say("I need only a parameter!")
+                    return
                 new_state = str(args[0])
                 self.bot.lastInGameStatus = new_state  # update last state
                 print("Changing my status in:" + new_state)

@@ -82,10 +82,10 @@ class BotCommonCommands:
         generator_link = "https://api.imgflip.com/get_memes"
         if len(args) == 1:
             phrase1 = args[0]
-            print("Param1:" + phrase1)
+            print("Param-1:" + phrase1)
         if len(args) > 1:
             phrase1 = args[0]
-            print("Param2:" + phrase1)
+            print("Param-2:" + phrase1)
             try:
                 generator_id = int(args[1])
                 print("GenID:" + str(generator_id))
@@ -387,8 +387,7 @@ class BotCommonCommands:
                     print("Deleting the message...")
                     await self.bot.delete_message(ctx.message)
             except discord.errors.Forbidden:
-                print("Can't delete the message(I need 2FA?)...")
-
+                print("Can't delete the message...")
             url = "https://haveibeenpwned.com/api/v2/breachedaccount/"
             print("Request:" + url + "Email")
             r = requests.get(url + str(args[0]))  # the website use get

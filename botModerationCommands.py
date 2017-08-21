@@ -185,6 +185,7 @@ class BotModerationCommands:
     async def promoteusers(self, ctx, *args):
         """Function that change the role of ALL users from Old to New (in the server where it's called)
         Usage: !promoteusers "NoobRole" "ProRole"
+        Usage: !promoteusers "EMPTY" "ProRole"
         """
         if ctx.message.server is None:
             await self.bot.say("*Can't edit roles in private, execute the command in a server*")
@@ -195,17 +196,25 @@ class BotModerationCommands:
                 return
             print("-------------------------")
             server_members = ctx.message.server.members
-            old_role = discord.utils.get(ctx.message.server.roles, name=str(args[0]))
+            empty_role = False
+            old_role = None
+            if str(args[0]).lower() == "empty":  # promote users without a role
+                empty_role = True
+            else:
+                old_role = discord.utils.get(ctx.message.server.roles, name=str(args[0]))
             new_role = discord.utils.get(ctx.message.server.roles, name=str(args[1]))
-            if old_role is None or new_role is None:
+            if (old_role is None or new_role is None) and not empty_role:
                 await self.bot.say("Errors - can't find given roles...")
                 return
             print("Found " + str(len(server_members)) + " members to analyze")
             for CurrentMember in server_members:
-                if old_role in CurrentMember.roles:
-                    await self.bot.remove_roles(CurrentMember, old_role)
+                if len(CurrentMember.roles) == 0 and empty_role:
                     await self.bot.add_roles(CurrentMember, new_role)
-                    print("Role Updated for user:" + CurrentMember.name)
+                else:
+                    if old_role in CurrentMember.roles:
+                        await self.bot.remove_roles(CurrentMember, old_role)
+                        await self.bot.add_roles(CurrentMember, new_role)
+                        print("Role Updated for user:" + CurrentMember.name)
             print("-------------------------")
         else:
             await self.bot.say("You don't have access to this command  :stuck_out_tongue: ")

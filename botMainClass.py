@@ -15,32 +15,38 @@ from discord.ext import commands
 # ---------------------------------------------------------------------
 # INITIALIZATION
 
-botVariables = BotVariables(True)
+botVariables = BotVariables(True)  # create class checking the JSON file
 
-cw = CleverWrap(botVariables.get_clever_key())  # clever api object
+cw = CleverWrap(botVariables.get_clever_key())  # clever api object creation
 
 # creation of bot prefix and description
 bot = commands.Bot(command_prefix=botVariables.get_command_prefix(), description=botVariables.get_description())
 bot.get_command("help").hidden = True  # hiding the !help command
 
+# getting base informations
 privateMessagesOwner = botVariables.get_owner_private_messages()
 maxCleverbotRequests = botVariables.get_max_cleverbot_requests()
 startUpExtensions = botVariables.get_startup_extensions()
 
 # ---------------------------------------------------------------------
+# bot "on_message" event, called when a message is created and sent to a server.
 
 
 @bot.event
 async def on_message(message):
     try:
-        if message.author.bot:  # nothing to do
+        if message.author.bot:  # nothing to do, the message is from me
             return
         else:
             if message.channel.name is None:
                 # send private message to bot owner
                 if not (str(message.author.id) == privateMessagesOwner) and not (privateMessagesOwner == ""):  # not sending messages to myself or not if the function is not active
-                    await bot.send_message(discord.User(id=privateMessagesOwner), "Message from " + str(message.author.name) + "(ID=" + str(message.author.id) + "):" + message.content)
-            # ---------------------------------------------------------------------
+                    if len(message.attachments) > 0:  # not sending attachments
+                        await bot.send_message(message.channel, "Remember that attachments are not sent to bot owner... Message has not been sent!")
+                    else:
+                        await bot.send_message(discord.User(id=privateMessagesOwner), "Message from " + str(message.author.name) + "(ID=" + str(message.author.id) + "):" + message.content)
+        # ---------------------------------------------------------------------
+        # get bot mention
         if message.server is None:
             mention = bot.user.mention
         else:
@@ -92,7 +98,7 @@ async def on_message(message):
                 except discord.ext.commands.errors.CommandNotFound:  # command doesn't exist
                     print("Command not found...")
         else:
-            if message.content.find("\\") == -1:
+            if message.content.find("\\") == -1:  # error check
                 try:
                     if bot.maintenanceMode and not BotMethods.is_owner(message.author):  # if it's in maintenance Mode
                         return
@@ -134,6 +140,7 @@ async def clearclever():
     print("-------------------------")
 
 # ---------------------------------------------------------------------
+# bot "on_ready" event, called when the client is done preparing the data received from Discord
 
 
 @bot.event
@@ -157,6 +164,28 @@ async def on_ready():
     except websockets.exceptions.ConnectionClosed:
         print("ERROR trying to change bot status")
     print("------------------------")
+
+# ---------------------------------------------------------------------
+# bot "on_reaction_add" event, called when a message has a reaction added to it
+
+
+@bot.event
+async def on_reaction_add(reaction, user):
+    if not user == bot.user:  # if is not me
+        print("------------------------")
+        if isinstance(reaction.emoji, str):
+            print("Adding my reaction to the message... (Emoji: "+reaction.emoji + ")")
+        else:
+            if isinstance(reaction.emoji, discord.Emoji):
+                print("Adding my reaction to the message... (Emoji Object: " + reaction.emoji.name + ")")
+            else:
+                print("UNKNOWN EMOJI OBJECT, ABORTING ADDING REACTION")
+                return
+        try:  # try adding my reaction
+            await bot.add_reaction(reaction.message, reaction.emoji)
+        except discord.errors.Forbidden:
+            print("Can't add my reaction")
+        print("------------------------")
 
 # ---------------------------------------------------------------------
 # MAIN EXECUTION (STARTUP AND SHUTDOWN)
