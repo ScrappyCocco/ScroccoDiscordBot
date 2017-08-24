@@ -40,6 +40,8 @@ class BotVariables:
 
     # open_source_link : bot source code page
 
+    # private_chat_alert : the message the bot will send to users using the private chat with the bot for their first time
+
     # owners_list = ["ScrappyCocco#4468"] discord username of who can admin the bot
     # ownerPrivateMessagesID = "144488066998992896" discord id (in my case) where private messages will be sent, empty ( = "") if you want to deactivate it
 
@@ -72,6 +74,7 @@ class BotVariables:
 
     bot_data_file = None
     file_name = "bot_data.json"
+    privateChatUsers = []  # used to advise users that messages are sent to bot owner
     emptyApiKey = "YourKey"  # used to check if a key is empty
     emptyUrl = "http://URL/"
     numbersEmoji = [":zero:", ":one:", ":two:", ":three:", ":four:", ":five:", ":six:", ":seven:", ":eight:", ":nine:"]
@@ -240,6 +243,12 @@ class BotVariables:
             :return: The bot source code link
         """
         return self.bot_data_file["open_source_link"]
+
+    def get_private_chat_alert(self):
+        """Function that return the bot private chat alert message
+            :return: The bot private chat alert message
+        """
+        return self.bot_data_file["private_chat_alert"]
 
     def get_max_cleverbot_requests(self):
         """Function that return the max_cleverbot_requests.

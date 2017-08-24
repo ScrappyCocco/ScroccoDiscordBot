@@ -126,6 +126,9 @@ class BotMaintenanceCommands:
         """Display all the commands of the bot (even the hidden commands)
             Usage: !commands_list
         """
+        if ctx.message.server is None:  # private message
+            await self.bot.say("*Can't check if you're an admin in private chat. Execute this command in a server*")
+            return
         if BotMethods.is_owner(ctx.message.author) or BotMethods.is_server_admin(ctx.message.author):
             final_string = "```LIST OF ALL BOT COMMANDS, SEE !HELP COMMAND FOR OTHER INFORMATIONS \n \n"
             for cmd in self.bot.commands:

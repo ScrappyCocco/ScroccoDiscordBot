@@ -14,14 +14,15 @@
       "default_platform":"Steam"
    },
    "maxCleverbotRequests":10,
-   "version":"0.93",
-   "build":"50",
+   "version":"0.95",
+   "build":"10",
    "is_beta": "False",
    "description":"Bot by ScrappyCocco (Some commands are hidden from !help)",
    "bot_icon":"https://discordapp.com/assets/2c21aeda16de354ba5334551a883b481.png",
    "defaultStatus":"Branzini 4 Ever",
    "commands_prefix":"!",
    "open_source_link":"https://github.com/ScrappyCocco/ScroccoDiscordBot",
+   "private_chat_alert":"Remember that every non-command message you write will be sent to the bot owner, so it MUST BE important!",
    "owners_data":{
       "owners_list":[
          {

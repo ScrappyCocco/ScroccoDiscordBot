@@ -18,15 +18,50 @@ from discord.ext import commands
 botVariables = BotVariables(True)  # create class checking the JSON file
 
 cw = CleverWrap(botVariables.get_clever_key())  # clever api object creation
+bot_command_prefix_string = botVariables.get_command_prefix()  # get the command prefix
 
 # creation of bot prefix and description
-bot = commands.Bot(command_prefix=botVariables.get_command_prefix(), description=botVariables.get_description())
+bot = commands.Bot(command_prefix=bot_command_prefix_string, description=botVariables.get_description())
 bot.get_command("help").hidden = True  # hiding the !help command
 
 # getting base informations
 privateMessagesOwner = botVariables.get_owner_private_messages()
 maxCleverbotRequests = botVariables.get_max_cleverbot_requests()
 startUpExtensions = botVariables.get_startup_extensions()
+
+# ---------------------------------------------------------------------
+# NECESSARY FUNCTIONS
+
+# function that send a message when users use private chat with bot the first time
+async def first_chat_alert(channel, user):
+    if (not channel.type == discord.ChannelType.private) or (privateMessagesOwner == "") or (str(user.id) == privateMessagesOwner):  # if the function is not active
+        return False
+    else:
+        user_id = user.id
+        if user_id not in botVariables.privateChatUsers:  # if is the first time
+            botVariables.privateChatUsers.append(user_id)  # add the user ID to the array
+            await bot.send_message(channel, " :exclamation:  :exclamation:  :exclamation: :exclamation: :exclamation: \n" +
+                                            "**" + botVariables.get_private_chat_alert() + "**\n" +
+                                            " **(As your first message here, it's not processed)**\n " +
+                                            " :exclamation:  :exclamation:  :exclamation: :exclamation: :exclamation:  \n ")
+            return True  # i send the warning
+        else:  # message already sent
+            return False
+
+
+# function that forward the non-command message to bot owner (if the function is active)
+async def forwards_message(message):
+    if message.channel.name is None:
+        # send private message to bot owner if possible
+        if not (str(message.author.id) == privateMessagesOwner) and not (
+                    privateMessagesOwner == ""):  # not sending messages to myself or not if the function is not active
+            if len(message.attachments) > 0:  # not sending attachments
+                await bot.send_message(message.channel,
+                                       "***Remember that attachments ARE NOT sent to bot owner... Message has not been sent!***")
+            else:
+                await bot.send_message(discord.User(id=privateMessagesOwner),
+                                       "Message from " + str(message.author.name) + "(ID=" + str(
+                                           message.author.id) + "):" + message.content)
 
 # ---------------------------------------------------------------------
 # bot "on_message" event, called when a message is created and sent to a server.
@@ -37,14 +72,9 @@ async def on_message(message):
     try:
         if message.author.bot:  # nothing to do, the message is from me
             return
-        else:
-            if message.channel.name is None:
-                # send private message to bot owner
-                if not (str(message.author.id) == privateMessagesOwner) and not (privateMessagesOwner == ""):  # not sending messages to myself or not if the function is not active
-                    if len(message.attachments) > 0:  # not sending attachments
-                        await bot.send_message(message.channel, "Remember that attachments are not sent to bot owner... Message has not been sent!")
-                    else:
-                        await bot.send_message(discord.User(id=privateMessagesOwner), "Message from " + str(message.author.name) + "(ID=" + str(message.author.id) + "):" + message.content)
+        # ---------------------------------------------------------------------
+        if await first_chat_alert(message.channel, message.author):
+            return
         # ---------------------------------------------------------------------
         # get bot mention
         if message.server is None:
@@ -92,23 +122,25 @@ async def on_message(message):
                     print("-------------------------")
             else:  # the message don't start with a mention, maybe it's a command?
                 try:
-                    if bot.maintenanceMode and not BotMethods.is_owner(message.author):  # if it's in maintenance Mode
+                    if bot.maintenanceMode and not BotMethods.is_owner(message.author):  # if it's in maintenance Mode then quit
                         return
-                    await bot.process_commands(message)  # tell the bot to try to execute the command
+                    if message.content.startswith(bot_command_prefix_string):  # if starts with command-prefix then process as command
+                        await bot.process_commands(message)  # tell the bot to try to execute the command
+                    else:  # forward the message (if active)
+                        await forwards_message(message)
                 except discord.ext.commands.errors.CommandNotFound:  # command doesn't exist
                     print("Command not found...")
         else:
-            if message.content.find("\\") == -1:  # error check
+            if message.content.find("\\") == -1:  # error check for special chars
                 try:
-                    if bot.maintenanceMode and not BotMethods.is_owner(message.author):  # if it's in maintenance Mode
+                    if bot.maintenanceMode and not BotMethods.is_owner(message.author):  # if it's in maintenance Mode then quit
                         return
-                    await bot.process_commands(message)  # tell the bot to try to execute the command
+                    if message.content.startswith(bot_command_prefix_string):  # if starts with command-prefix then process as command
+                        await bot.process_commands(message)  # tell the bot to try to execute the command
+                    else:  # forward the message (if active)
+                        await forwards_message(message)
                 except discord.ext.commands.errors.CommandNotFound:  # command doesn't exist
                     print("Command not found...")
-            else:
-                if message.content.startswith("!"):
-                    if message.channel.name is not None:
-                        print("Error 1 executing the command...")
 
     except discord.ext.commands.errors.BadArgument:
         print("Error 2 executing the command...")
@@ -188,6 +220,16 @@ async def on_reaction_add(reaction, user):
         print("------------------------")
 
 # ---------------------------------------------------------------------
+# bot "on_typing" event, Called when someone begins typing a message.
+# doesn't works good in private chat
+
+
+@bot.event
+async def on_typing(channel, user, when):
+    await first_chat_alert(channel, user)
+
+
+# ---------------------------------------------------------------------
 # MAIN EXECUTION (STARTUP AND SHUTDOWN)
 if str(__name__) == "__main__":
     print("ACTION-->Loading bot, importing extensions...")
@@ -203,7 +245,7 @@ if str(__name__) == "__main__":
             print('LOADING FAIL-->Failed to load extension {}\n{}'.format(extension, exc))
         print("------------------------")
 
-    print("ACTION-->Bot Login... Wait Please...")
+    print("ACTION-->Bot Login... Please Wait...")
     if botVariables.get_bot_distribution():  # is the bot in beta?
         bot.run(botVariables.get_discord_bot_token(True))  # token beta Bot
     else:
