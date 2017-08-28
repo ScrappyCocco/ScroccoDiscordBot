@@ -24,8 +24,6 @@ class BotVariables:
     # rocket league stats api key : get yours from https://developers.rocketleaguestats.com
     #   rocket league default platform could be Steam, Ps4 OR XboxOne
 
-    # maxCleverbotRequests : max number of requests to the cleverbot in case of errors (an error return an empty reply)
-
     # version and build : specify the bot version, you should NOT change those values if you don't edit the bot source
 
     # is_beta : specify if the bot have to use the beta api key or the final api key
@@ -78,7 +76,6 @@ class BotVariables:
     emptyApiKey = "YourKey"  # used to check if a key is empty
     emptyUrl = "http://URL/"
     numbersEmoji = [":zero:", ":one:", ":two:", ":three:", ":four:", ":five:", ":six:", ":seven:", ":eight:", ":nine:"]
-    indexError = 0  # index used to count cleverbot errors
 
     # -------------------------------------------------
 

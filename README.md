@@ -7,7 +7,7 @@ These instructions will get you a copy of the project up and running on your loc
 
 ### Prerequisites
 
-To running the bot you'll need Python (i used python-3.5.2) and to install all the packages in requirements.txt
+To running the bot you'll need Python (i used python-3.6.2) and to install all the packages in requirements.txt
 
 ```
 pip install -r requirements.txt
@@ -27,7 +27,6 @@ This will start the bot or show the errors you have to fix.
 
 * [SlashNephy - Hypixthon](https://github.com/SlashNephy/Hypixthon) - Hypixthon API
 * [smiley - steamapi](https://github.com/smiley/steamapi) - Steam API
-* [edwardslabs - cleverwrap.py](https://github.com/edwardslabs/cleverwrap.py) - Cleverbot Wrapper
 * [More on [requirements.txt](requirements.txt)]
 
 ## Authors

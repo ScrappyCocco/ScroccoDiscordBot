@@ -6,10 +6,10 @@ from botMethodsClass import BotMethods
 
 import discord  # pip install discord.py
 import requests
-import json
 import websockets
+import aiohttp
+import urllib.parse
 
-from cleverwrap import CleverWrap
 from discord.ext import commands
 
 # ---------------------------------------------------------------------
@@ -17,7 +17,8 @@ from discord.ext import commands
 
 botVariables = BotVariables(True)  # create class checking the JSON file
 
-cw = CleverWrap(botVariables.get_clever_key())  # clever api object creation
+cleverbot_api_key = botVariables.get_clever_key()
+
 bot_command_prefix_string = botVariables.get_command_prefix()  # get the command prefix
 
 # creation of bot prefix and description
@@ -26,24 +27,39 @@ bot.get_command("help").hidden = True  # hiding the !help command
 
 # getting base informations
 privateMessagesOwner = botVariables.get_owner_private_messages()
-maxCleverbotRequests = botVariables.get_max_cleverbot_requests()
 startUpExtensions = botVariables.get_startup_extensions()
 
 # ---------------------------------------------------------------------
 # NECESSARY FUNCTIONS
 
+
+# function that create bot attributes
+def attributes_initialization(default_status: str):
+    print("---Creating bot attributes---")
+    setattr(bot, 'maintenanceMode', False)
+    setattr(bot, 'lastInGameStatus', str(default_status))
+    setattr(bot, 'cleverbot_cs_parameter', "")
+    setattr(bot, 'cleverbot_reply_number', 0)
+    print("---Finished creating attributes---")
+    print("------------------------")
+
 # function that send a message when users use private chat with bot the first time
 async def first_chat_alert(channel, user):
-    if (not channel.type == discord.ChannelType.private) or (privateMessagesOwner == "") or (str(user.id) == privateMessagesOwner):  # if the function is not active
+    if (channel.type != discord.ChannelType.private) or (privateMessagesOwner == "") or (str(user.id) == privateMessagesOwner):  # if the function is not active
         return False
     else:
         user_id = user.id
         if user_id not in botVariables.privateChatUsers:  # if is the first time
             botVariables.privateChatUsers.append(user_id)  # add the user ID to the array
-            await bot.send_message(channel, " :exclamation:  :exclamation:  :exclamation: :exclamation: :exclamation: \n" +
-                                            "**" + botVariables.get_private_chat_alert() + "**\n" +
-                                            " **(As your first message here, it's not processed)**\n " +
-                                            " :exclamation:  :exclamation:  :exclamation: :exclamation: :exclamation:  \n ")
+            message_sent = await bot.send_message(channel, " :exclamation:  :exclamation:  :exclamation: :exclamation: :exclamation: \n" +
+                                                  "**" + botVariables.get_private_chat_alert() + "**\n" +
+                                                  " **(As your first message here, it's not processed)**\n " +
+                                                  " :exclamation:  :exclamation:  :exclamation: :exclamation: :exclamation:  \n ")
+            try:
+                if len(await bot.pins_from(channel)) == 0:  # only if we begin the chat
+                    await bot.pin_message(message_sent)  # pins the message because is important
+            except (discord.Forbidden, discord.NotFound, discord.HTTPException):
+                print("ERROR pinning the message")
             return True  # i send the warning
         else:  # message already sent
             return False
@@ -53,8 +69,7 @@ async def first_chat_alert(channel, user):
 async def forwards_message(message):
     if message.channel.name is None:
         # send private message to bot owner if possible
-        if not (str(message.author.id) == privateMessagesOwner) and not (
-                    privateMessagesOwner == ""):  # not sending messages to myself or not if the function is not active
+        if (str(message.author.id) != privateMessagesOwner) and (privateMessagesOwner != ""):  # not sending messages to myself or not if the function is not active
             if len(message.attachments) > 0:  # not sending attachments
                 await bot.send_message(message.channel,
                                        "***Remember that attachments ARE NOT sent to bot owner... Message has not been sent!***")
@@ -62,6 +77,50 @@ async def forwards_message(message):
                 await bot.send_message(discord.User(id=privateMessagesOwner),
                                        "Message from " + str(message.author.name) + "(ID=" + str(
                                            message.author.id) + "):" + message.content)
+
+
+# cleverbot async request - more faster than using the wrapper
+async def cleverbot_request(channel, cleverbot_question):
+    formatted_question = urllib.parse.quote(cleverbot_question)  # convert question into url-string
+    if bot.cleverbot_cs_parameter == "":
+        request_url = "http://www.cleverbot.com/getreply?key=" + cleverbot_api_key + "&input=" + formatted_question
+    else:
+        request_url = "http://www.cleverbot.com/getreply?key=" + cleverbot_api_key + "&input=" + formatted_question + "&cs=" + bot.cleverbot_cs_parameter
+    response_error = False
+    async with aiohttp.ClientSession() as client_session:
+        async with client_session.get(request_url) as response:
+            try:
+                content = await response.json()
+            except UnicodeDecodeError:  # JSON ERROR
+                print("CLEVERBOT ERROR")
+                response_error = True
+                try:
+                    print("Cleverbot Attempt 1 - using read()...\n\n")
+                    content = str(await response.read())
+                except UnicodeDecodeError:
+                    try:
+                        print("Cleverbot Attempt 2 - using content()...\n\n")
+                        content = str(await response.content())
+                    except UnicodeDecodeError:
+                        await bot.send_message(channel, "*Cleverbot fatal error, please use " + bot_command_prefix_string + "clearclever")
+                        return
+    if response_error:  # an error occurred (JSON NOT CORRECT - USE THE CONTENT AS A STRING)
+        start_pos = content.find("\"output\":\"") + 10
+        end_pos = content.find("\"conversation_id\":") - 2
+        if start_pos == -1 or end_pos == -1:
+            print("Error calculating sub-string positions")
+        else:
+            reply = content[start_pos:start_pos+(end_pos-start_pos)]  # calculate cleverbot reply substring
+            await bot.send_message(channel, reply)
+        clear_cleverbot_parameters()  # clear cleverbot to begin a new conversation
+    else:  # normal cleverbot reply
+        request_result_cs = content["cs"]
+        print("Cleverbot interaction number:" + content["interaction_count"])
+        if bot.cleverbot_cs_parameter != request_result_cs and int(content["interaction_count"]) > bot.cleverbot_reply_number:
+            bot.cleverbot_reply_number = int(content["interaction_count"])
+            bot.cleverbot_cs_parameter = request_result_cs
+        await bot.send_message(channel, content["output"])
+
 
 # ---------------------------------------------------------------------
 # bot "on_message" event, called when a message is created and sent to a server.
@@ -90,36 +149,10 @@ async def on_message(message):
                 # ---------------------------------------------------------------------
                 if bot.maintenanceMode and not BotMethods.is_owner(message.author):  # if it's in maintenance Mode
                     return
-                print("-------------------------")
                 new_message = new_message.lstrip()  # remove additional spaces from cleverbot question (before and after)
                 print("Cleverbot Question received, asking cleverbot...")
-                reply = ""
-                try:
-                    request_index = 0
-                    # i have to wait for a complete reply(errors could happen with that api)
-                    while reply == "" and request_index < maxCleverbotRequests:
-                        reply = cw.say(new_message)
-                        print("Cleverbot Reply - say completed")
-                        request_index += 1
-                        if reply == "":
-                            print("Cleverbot Reply Looks Empty...")
-                    if reply == "":
-                        await bot.send_message(message.channel, "Cleverbot error")  # send the cleverbot response
-                    else:
-                        print("-------------------------")
-                        await bot.send_message(message.channel, reply)  # send the cleverbot response
-                except json.decoder.JSONDecodeError:  # an error occurred
-                    if botVariables.indexError == 0:  # first error
-                        print("Cleaning Cleverbot...")
-                        botVariables.indexError += 1
-                        if cw:  # try cleaning cleverbot history
-                            cw.reset()
-                        else:
-                            print("Cleaning Cleverbot...")
-                        print("Cleaning Done")
-                    else:  # error it's > 0
-                        await bot.send_message(message.channel, "*Cleverbot fatal error...*")
-                    print("-------------------------")
+                await cleverbot_request(message.channel, new_message)
+                print("-------------------------")
             else:  # the message don't start with a mention, maybe it's a command?
                 try:
                     if bot.maintenanceMode and not BotMethods.is_owner(message.author):  # if it's in maintenance Mode then quit
@@ -152,20 +185,30 @@ async def on_message(message):
 @bot.command(pass_context=True)
 async def hello(ctx):
     """Hello command - simple command for testing"""
-    await bot.say("Hello " + ctx.message.author.name + "!")
+    await bot.send_message(ctx.message.channel, "Hello " + ctx.message.author.name + "!")
 
 
 # ---------------------------------------------------------------------
+# function that clear cleverbot parameters to create a new conversation to avoid errors
+# this function is separated from the command (clearclever) because then i can call it on cleverbot errors in on_message()
+def clear_cleverbot_parameters():
+    print("Cleaning...")
+    if bot.cleverbot_cs_parameter != "":
+        bot.cleverbot_cs_parameter = ""
+        bot.cleverbot_reply_number = 0
+        return True
+    else:
+        print("Can't clean cleverbot chat")
+        return False
 
-@bot.command(hidden=True)
-async def clearclever():
+
+@bot.command(pass_context=True, hidden=True)
+async def clearclever(ctx):
     """Clean Cleverbot Conversation"""
     print("-------------------------")
     print("Cleaning...")
-    if cw:
-        cw.reset()
-        botVariables.indexError = 0
-        await bot.say("*Cleaning Complete*")
+    if clear_cleverbot_parameters():
+        await bot.send_message(ctx.message.channel, "*Cleaning Complete*")
     else:
         print("Can't clean cleverbot chat")
     print("End of cleaning")
@@ -184,9 +227,9 @@ async def on_ready():
         if botVariables.emptyUrl not in url:
             r = requests.get(url)  # get the last in-game status from server
             if r.text != "Error" and r.status_code == 200:
-                setattr(bot, 'lastInGameStatus', str(r.text))
                 print("No Error - changing state to:" + r.text)
                 await bot.change_presence(game=discord.Game(name=r.text))
+                bot.lastInGameStatus = r.text
             else:
                 print("Request error - changing status to default")
                 await bot.change_presence(game=discord.Game(name=botVariables.get_default_status()))
@@ -203,7 +246,7 @@ async def on_ready():
 
 @bot.event
 async def on_reaction_add(reaction, user):
-    if not user == bot.user:  # if is not me
+    if user != bot.user:  # if is not me
         print("------------------------")
         if isinstance(reaction.emoji, str):
             print("Adding my reaction to the message... (Emoji: "+reaction.emoji + ")")
@@ -234,7 +277,6 @@ async def on_typing(channel, user, when):
 if str(__name__) == "__main__":
     print("ACTION-->Loading bot, importing extensions...")
     print(startUpExtensions)
-    setattr(bot, 'maintenanceMode', False)
     print("------------------------")
     for extension in startUpExtensions:
         print("LOADING-->"+extension)
@@ -244,7 +286,7 @@ if str(__name__) == "__main__":
             exc = '{}: {}'.format(type(e).__name__, e)
             print('LOADING FAIL-->Failed to load extension {}\n{}'.format(extension, exc))
         print("------------------------")
-
+    attributes_initialization(botVariables.get_default_status())
     print("ACTION-->Bot Login... Please Wait...")
     if botVariables.get_bot_distribution():  # is the bot in beta?
         bot.run(botVariables.get_discord_bot_token(True))  # token beta Bot
@@ -262,6 +304,5 @@ if str(__name__) == "__main__":
             print('UNLOADING FAIL-->Failed to unload extension {}\n{}'.format(extension, exc))
     # cleaning some var(s)
     del botVariables
-    del cw
 
     print("ACTION-->End of program")

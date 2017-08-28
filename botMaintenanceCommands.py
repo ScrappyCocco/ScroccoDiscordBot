@@ -16,7 +16,7 @@ from botMethodsClass import BotMethods
 
 
 class BotMaintenanceCommands:
-    """ Class with Bot 'Maintenance' commands (for example turning off the bot or changing user roles) """
+    """ Class with Bot 'Maintenance' commands (for example turning off the bot or changing bot status) """
     # ---------------------------------------------------------------------
 
     botVariables = BotVariables(False)  # used for version and In-Game state-write url
@@ -29,17 +29,17 @@ class BotMaintenanceCommands:
         print("---------------------------------------------------------------------------")
         print("Shut Down Required")
         if BotMethods.is_owner(ctx.message.author):
-            await self.bot.say("Stopping bot... Bye!")
+            await self.bot.send_message(ctx.message.channel, "Stopping bot... Bye!")
             await self.bot.logout()
             await self.bot.close()
         else:
-            await self.bot.say("You don't have access to this command :stuck_out_tongue: ")
+            await self.bot.send_message(ctx.message.channel, "You don't have access to this command :stuck_out_tongue: ")
 
     # ---------------------------------------------------------------------
 
     @commands.command(pass_context=True, hidden=True)
     async def maintenance(self, ctx, *args):
-        """Set the bot in maintenance Mode (1=enabled 2=disabled)
+        """Set the bot in maintenance Mode (1=enabled other=disabled)
         Usage: !maintenance 1
         """
         if BotMethods.is_owner(ctx.message.author):
@@ -56,17 +56,18 @@ class BotMaintenanceCommands:
                                                    game=discord.Game(name=self.bot.lastInGameStatus))
                     self.bot.maintenanceMode = False
             else:
-                await self.bot.say("Parameters not correct")
+                await self.bot.send_message(ctx.message.channel, "Parameters not correct, see " + self.botVariables.get_command_prefix() + "help maintenance")
             print("-------------------------")
         else:
-            await self.bot.say("You don't have access to this command  :stuck_out_tongue: ")
+            await self.bot.send_message(ctx.message.channel,
+                                        "You don't have access to this command  :stuck_out_tongue: ")
 
     # ---------------------------------------------------------------------
 
     @commands.command(pass_context=True, hidden=True)
     async def changestate(self, ctx, *args):
         """Change bot state
-        Usage: !changestate 1
+        Usage: !changestate 0/1/2/3
         """
         if BotMethods.is_owner(ctx.message.author):
             print("-------------------------")
@@ -93,7 +94,8 @@ class BotMaintenanceCommands:
                 await self.bot.change_presence(status=new_status, game=discord.Game(name=self.bot.lastInGameStatus))
             print("-------------------------")
         else:
-            await self.bot.say("You don't have access to this command  :stuck_out_tongue: ")
+            await self.bot.send_message(ctx.message.channel,
+                                        "You don't have access to this command  :stuck_out_tongue: ")
 
     # ---------------------------------------------------------------------
 
@@ -104,20 +106,20 @@ class BotMaintenanceCommands:
         if ctx is not None:
             if ctx.message.server is None:  # private message
                 print("Can't find region in private chat")
-                await self.bot.say("*Can't get server-region in private*")
+                await self.bot.send_message(ctx.message.channel, "*Can't get server-region in private*")
             else:
                 region = str(ctx.message.server.region)
                 server_name = str(ctx.message.server.name)
                 print("Region Found: " + region)
-                await self.bot.say("Server Location: **" + server_name + "**: " + region)
+                await self.bot.send_message(ctx.message.channel, "Server Location: **" + server_name + "**: " + region)
         print("-------------------------")
 
     # ---------------------------------------------------------------------
 
-    @commands.command()
-    async def source(self):
+    @commands.command(pass_context=True)
+    async def source(self, ctx):
         """Print a link to bot source code"""
-        await self.bot.say("Go and explore my source code at: " + self.botVariables.get_open_source_link())
+        await self.bot.send_message(ctx.message.channel, "Go and explore my source code at: " + self.botVariables.get_open_source_link())
 
     # ---------------------------------------------------------------------
 
@@ -127,27 +129,28 @@ class BotMaintenanceCommands:
             Usage: !commands_list
         """
         if ctx.message.server is None:  # private message
-            await self.bot.say("*Can't check if you're an admin in private chat. Execute this command in a server*")
+            await self.bot.send_message(ctx.message.channel,
+                                        "*Can't check if you're an admin in private chat. Execute this command in a server*")
             return
         if BotMethods.is_owner(ctx.message.author) or BotMethods.is_server_admin(ctx.message.author):
-            final_string = "```LIST OF ALL BOT COMMANDS, SEE !HELP COMMAND FOR OTHER INFORMATIONS \n \n"
+            final_string = "```LIST OF ALL BOT COMMANDS, SEE " + self.botVariables.get_command_prefix() + "HELP COMMAND FOR OTHER INFORMATIONS \n \n"
             for cmd in self.bot.commands:
                 final_string += str(cmd) + "\n"
             final_string += "```"
             await self.bot.send_message(ctx.message.author, final_string)
             if ctx.message.server is not None:  # not in private message
-                await self.bot.say("*List sent in private*")
+                await self.bot.send_message(ctx.message.channel, "*List sent in private*")
         else:
-            await self.bot.say("You don't have access to this command :stuck_out_tongue: ")
+            await self.bot.send_message(ctx.message.channel, "You don't have access to this command :stuck_out_tongue: ")
 
     # ---------------------------------------------------------------------
 
-    @commands.command()
-    async def ver(self):
+    @commands.command(pass_context=True)
+    async def ver(self, ctx):
         """Print bot current version"""
-        await self.bot.say("**Current Bot Version:** " + self.botVariables.get_version()
-                           + " **Build:** " + self.botVariables.get_build()
-                           + " - **API Version:** " + discord.__version__)
+        await self.bot.send_message(ctx.message.channel, "**Current Bot Version:** " + self.botVariables.get_version()
+                                    + " **Build:** " + self.botVariables.get_build()
+                                    + " - **API Version:** " + discord.__version__)
 
     # ---------------------------------------------------------------------
 
@@ -159,9 +162,10 @@ class BotMaintenanceCommands:
         """
         found = False
         if not BotMethods.is_owner(ctx.message.author):
-            await self.bot.say("You don't have access to this command :stuck_out_tongue: ")
+            await self.bot.send_message(ctx.message.channel, "You don't have access to this command :stuck_out_tongue: ")
             return
-        if not len(args) == 1:  # params not correct
+        if len(args) != 1:  # params not correct
+            await self.bot.send_message(ctx.message.channel, "Parameters not correct, see " + self.botVariables.get_command_prefix() + "help channelid")
             return
         final_string = ""
         for currentServer in self.bot.servers:
@@ -185,7 +189,7 @@ class BotMaintenanceCommands:
         found = False
         final_string = ""
         if not BotMethods.is_owner(ctx.message.author):
-            await self.bot.say("You don't have access to this command :stuck_out_tongue: ")
+            await self.bot.send_message(ctx.message.channel, "You don't have access to this command :stuck_out_tongue: ")
             return
         for currentServer in self.bot.servers:
             found = True
@@ -203,7 +207,7 @@ class BotMaintenanceCommands:
         Usage: !serverinfo
         """
         if ctx.message.server is None:
-            await self.bot.say("*Can't get server-info in private*")
+            await self.bot.send_message(ctx.message.channel, "*Can't get server-info in private*")
             return
         server_selected = ctx.message.server
         embed = discord.Embed(title=server_selected.name,
@@ -230,7 +234,7 @@ class BotMaintenanceCommands:
         embed.add_field(name="Server Text Channels:", value=str(text_channels_count))
         embed.add_field(name="Server Voice Channels:", value=str(voice_channels_count))
 
-        await self.bot.say(embed=embed)  # send the discord embed message with the servers info
+        await self.bot.send_message(ctx.message.channel, embed=embed)  # send the discord embed message with the servers info
 
     # ---------------------------------------------------------------------
 
@@ -242,10 +246,10 @@ class BotMaintenanceCommands:
         print("-------------------------")
         if BotMethods.is_owner(ctx.message.author):
             if len(args) == 0:
-                await self.bot.say("Current status: " + str(self.bot.lastInGameStatus))
+                await self.bot.send_message(ctx.message.channel, "Current status: " + str(self.bot.lastInGameStatus))
             else:
                 if len(args) > 1:
-                    await self.bot.say("I need only a parameter!")
+                    await self.bot.send_message(ctx.message.channel, "I need only a parameter!")
                     return
                 new_state = str(args[0])
                 self.bot.lastInGameStatus = new_state  # update last state
@@ -256,7 +260,7 @@ class BotMaintenanceCommands:
                     r = requests.post(url,
                                       data={self.botVariables.get_server_write_status_parameter(): new_state,
                                             })
-                    if r.text == "Error" or not (r.status_code == 200):
+                    if r.text == "Error" or (r.status_code != 200):
                         print("ERROR SAVING NEW STATUS ON THE SERVER...")
                     else:
                         print("Status correctly saved on server...")
@@ -264,9 +268,10 @@ class BotMaintenanceCommands:
                     print("URL ERROR - ERROR SAVING NEW STATUS ON THE SERVER... Check bot data json")
                 # change the bot in-game status
                 await self.bot.change_presence(game=discord.Game(name=new_state))
-                await self.bot.say("Status correctly changed!")
+                await self.bot.send_message(ctx.message.channel, "Status correctly changed!")
         else:
-            await self.bot.say("You don't have access to this command  :stuck_out_tongue: ")
+            await self.bot.send_message(ctx.message.channel,
+                                        "You don't have access to this command  :stuck_out_tongue: ")
         print("-------------------------")
 
     # ---------------------------------------------------------------------
@@ -285,9 +290,10 @@ class BotMaintenanceCommands:
                 except discord.errors.Forbidden:
                     print("ERROR: Can't send the message")
             else:
-                await self.bot.say("Parameters not correct")
+                await self.bot.send_message(ctx.message.channel, "Parameters not correct, see " + self.botVariables.get_command_prefix() + "help sendservermessage")
         else:
-            await self.bot.say("You don't have access to this command  :stuck_out_tongue: ")
+            await self.bot.send_message(ctx.message.channel,
+                                        "You don't have access to this command  :stuck_out_tongue: ")
 
     # ---------------------------------------------------------------------
 
@@ -305,9 +311,10 @@ class BotMaintenanceCommands:
                 except discord.errors.Forbidden:
                     print("ERROR: Can't send the message")
             else:
-                await self.bot.say("Parameters not correct")
+                await self.bot.send_message(ctx.message.channel, "Parameters not correct, see " + self.botVariables.get_command_prefix() + "help sendprivatemessage")
         else:
-            await self.bot.say("You don't have access to this command  :stuck_out_tongue: ")
+            await self.bot.send_message(ctx.message.channel,
+                                        "You don't have access to this command  :stuck_out_tongue: ")
 
     # ---------------------------------------------------------------------
 
@@ -317,7 +324,8 @@ class BotMaintenanceCommands:
             Usage: !rename "NoobBot"
         """
         if not BotMethods.is_owner(ctx.message.author):
-            await self.bot.say("You don't have access to this command  :stuck_out_tongue: ")
+            await self.bot.send_message(ctx.message.channel,
+                                        "You don't have access to this command  :stuck_out_tongue: ")
             return
         if len(args) == 1:
             print("-------------------------")
@@ -326,7 +334,7 @@ class BotMaintenanceCommands:
             await self.bot.edit_profile(username=new_name)
             print("-------------------------")
         else:
-            await self.bot.say("Parameters not correct...")
+            await self.bot.send_message(ctx.message.channel, "Parameters not correct...")
 
     # ---------------------------------------------------------------------
 

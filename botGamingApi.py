@@ -8,6 +8,7 @@ import time
 import discord
 import requests
 import json
+import aiohttp
 
 from steamapi import core
 from hypixthon import Hypixthon
@@ -36,19 +37,24 @@ class BotGamingCommands:
         """
         print("-------------------------")
         if len(args) == 0 or len(args) > 2:  # parameters aren't correct - print the correct usage of the command
-            await self.bot.say("**Usage:** !ow \"Name-Tag\" eu(default)/us[optional]")
+            await self.bot.send_message(ctx.message.channel, "**Usage:** !ow \"Name-Tag\" eu(default)/us[optional]")
         else:
             if len(args) == 1:  # server not passed, going with default server
                 ow_region = "eu"
             else:  # server passed, changing default server
                 ow_region = args[1]
             name = args[0]
+            name = name.replace("#", "-", 1)
             url = "http://ow-api.herokuapp.com/profile/pc/" + ow_region + "/" + name
             print("OW Request:" + url)
-            r = requests.get(url)
-            if str(r) == "<Response [404]>":  # user not found
-                await self.bot.say("Error: 404 User not found")
-                return
+            async with aiohttp.ClientSession() as session:
+                async with session.get(url) as resp:
+                    r_text = await resp.text()
+                    # r = requests.get(url)
+                    if str(r_text) == "<Response [404]>" or str(r_text) == "Not Found":  # user not found
+                        await self.bot.send_message(ctx.message.channel, "Error: 404 User not found")
+                        return
+                    r = await resp.json()
             # creating the discord Embed response
             embed = discord.Embed(title="Overwatch Stats",
                                   colour=discord.Colour(0xefd1a0),
@@ -56,30 +62,30 @@ class BotGamingCommands:
                                   description="Stats of \"" + name + "\" playing in \"" + ow_region + "\"",
                                   timestamp=datetime.utcfromtimestamp(time.time())
                                   )
-            if not r.json()['star'] == "":
-                embed.set_image(url=str(r.json()['star']))
-            embed.set_thumbnail(url=r.json()['portrait'])
+            if r['star'] != "":
+                embed.set_image(url=str(r['star']))
+            embed.set_thumbnail(url=r['portrait'])
             embed.set_author(name=ctx.message.author.name, url="", icon_url=ctx.message.author.avatar_url)
             embed.set_footer(text=self.botVariables.get_description(), icon_url=self.botVariables.get_bot_icon())
 
-            embed.add_field(name="In-Game Name:", value=r.json()['username'])
-            embed.add_field(name="Level:", value=str(r.json()['level']))
-            if r.json()['competitive']["rank"] == "null":
+            embed.add_field(name="In-Game Name:", value=r['username'])
+            embed.add_field(name="Level:", value=str(r['level']))
+            if r['competitive']["rank"] == "null":
                 rank = "Not found"
             else:
-                rank = r.json()['competitive']["rank"]
+                rank = r['competitive']["rank"]
             embed.add_field(name="Competitive Rank:", value=rank)
             try:
-                embed.add_field(name="QuickPlay Wins:", value=r.json()['games']['quickplay']['wins'])
-                comp_wins = str(r.json()['games']['competitive']['wins']) + " Wins"
+                embed.add_field(name="QuickPlay Wins:", value=r['games']['quickplay']['wins'])
+                comp_wins = str(r['games']['competitive']['wins']) + " Wins"
             except KeyError:
                 print("Wins Key Error, trying with Won key...")
-                embed.add_field(name="QuickPlay Wins:", value=r.json()['games']['quickplay']['won'])
-                comp_wins = str(r.json()['games']['competitive']['won']) + " Wins"
-            comp_tot = str(r.json()['games']['competitive']['played']) + " Played"
+                embed.add_field(name="QuickPlay Wins:", value=r['games']['quickplay']['won'])
+                comp_wins = str(r['games']['competitive']['won']) + " Wins"
+            comp_tot = str(r['games']['competitive']['played']) + " Played"
             embed.add_field(name="Competitive Play:", value=comp_wins + "/" + comp_tot)
 
-            await self.bot.say(embed=embed)  # send the discord embed message with user stats
+            await self.bot.send_message(ctx.message.channel, embed=embed)  # send the discord embed message with user stats
         print("-------------------------")
 
     # ---------------------------------------------------------------------
@@ -87,24 +93,44 @@ class BotGamingCommands:
     @commands.command(pass_context=True)
     async def r6(self, ctx, *args):
         """Print Rainbow6 player's stats
-        Usage: !r6 PlayerName
+        Usage: !r6 PlayerName Platform
+        Example: !r6 Player1 psn
+        Example: !r6 Player2 uplay
         """
         print("-------------------------")
-        if len(args) == 0 or len(args) > 1:  # parameters aren't correct - print the correct usage of the command
-            await self.bot.say("**Usage:** !r6 PlayerName")
+        if len(args) == 0 or len(args) > 2:  # parameters aren't correct - print the correct usage of the command
+            await self.bot.send_message(ctx.message.channel, "**Usage:** !r6 PlayerName Platform, see help for more")
         else:
+            if len(args) == 2:
+                platform = str(args[1]).lower()
+                if platform != "xbl" and platform != "psn" and platform != "uplay":
+                    await self.bot.send_message(ctx.message.channel,
+                                                "Platform not correct - options: 'xbl', 'psn' or 'uplay'")
+                    return
+            else:
+                platform = "uplay"
             name = args[0]
-            url_stats = "http://rainbowsix7nightbot.herokuapp.com/rainbowsix7.php?platform=uplay&nick=" + name + "&command=stats"
-            url_time = "http://rainbowsix7nightbot.herokuapp.com/rainbowsix7.php?platform=uplay&nick=" + name + "&command=time"
-            url_rank = "http://rainbowsix7nightbot.herokuapp.com/rainbowsix7.php?platform=uplay&nick=" + name + "&command=rank"
+            url_stats = "http://rainbowsix7nightbot.herokuapp.com/rainbowsix7.php?platform=" + platform + "&nick=" + name + "&command=stats"
+            url_time = "http://rainbowsix7nightbot.herokuapp.com/rainbowsix7.php?platform=" + platform + "&nick=" + name + "&command=time"
+            url_rank = "http://rainbowsix7nightbot.herokuapp.com/rainbowsix7.php?platform=" + platform + "&nick=" + name + "&command=rank"
             # error strings
             string_compare_1 = "00h 00m 00s (ranked + casual)"
             string_compare_2 = "Couldn't retrieve 'profileId'! Maybe player doesn't exist? Check typos or manually parse the profileId found in the URL of your ubisoft profile page: https://game-rainbow6.ubi.com/"
-            r1 = requests.get(url_stats)
-            r2 = requests.get(url_time)
-            r3 = requests.get(url_rank)
-            if str(r2.text) == string_compare_1 or str(r2.text) == string_compare_2:  # An error occurred
-                await self.bot.say("Error - User not found!")
+            try:
+                async with aiohttp.ClientSession() as session:
+                    async with session.get(url_stats) as resp:
+                        r1 = await resp.text()
+                    async with session.get(url_time) as resp:
+                        r2 = await resp.text()
+                    async with session.get(url_rank) as resp:
+                        r3 = await resp.text()
+            except aiohttp.client_exceptions.ServerDisconnectedError:
+                print("R6 request failed")
+                await self.bot.send_message(ctx.message.channel, "*Can't retrieve R6 user data...*")
+                return
+            print("R6 request completed")
+            if str(r2) == string_compare_1 or str(r2) == string_compare_2:  # An error occurred
+                await self.bot.send_message(ctx.message.channel, "Error - User not found!")
                 return
             # creating the discord Embed response
             embed = discord.Embed(title="Rainbow6 Stats",
@@ -116,11 +142,11 @@ class BotGamingCommands:
             embed.set_author(name=ctx.message.author.name, url="", icon_url=ctx.message.author.avatar_url)
             embed.set_footer(text=self.botVariables.get_description(), icon_url=self.botVariables.get_bot_icon())
 
-            embed.add_field(name="Stats:", value=str(r1.text))
-            embed.add_field(name="Play-Time:", value=str(r2.text))
-            embed.add_field(name="Competitive Rank:", value=str(r3.text))
+            embed.add_field(name="Stats:", value=str(r1))
+            embed.add_field(name="Play-Time:", value=str(r2))
+            embed.add_field(name="Competitive Rank:", value=str(r3))
 
-            await self.bot.say(embed=embed)  # send the discord embed message with user stats
+            await self.bot.send_message(ctx.message.channel, embed=embed)  # send the discord embed message with user stats
         print("-------------------------")
 
     # ---------------------------------------------------------------------
@@ -135,7 +161,7 @@ class BotGamingCommands:
         is_integer = False
         print("Steam:Arguments:" + str(len(args)))
         if len(args) == 0 or len(args) > 1:   # parameters aren't correct - print the correct usage of the command
-            await self.bot.say("**Usage:** !steam PlayerID")
+            await self.bot.send_message(ctx.message.channel, "**Usage:** !steam PlayerID")
         else:
             username = args[0]
             try:
@@ -153,16 +179,18 @@ class BotGamingCommands:
                     steam_api_key = self.botVariables.get_steam_key()
                     steam_api_url = "http://api.steampowered.com/ISteamUser/ResolveVanityURL/v0001/"
                     steam_api_url += "?key=" + steam_api_key + "&vanityurl=" + str(user_id)
-                    r = requests.get(steam_api_url)
-                    if not r.json()['response']['success'] == 1:
-                        await self.bot.say("Error - User not found...")
+                    async with aiohttp.ClientSession() as session:
+                        async with session.get(steam_api_url) as resp:
+                            r = await resp.json()
+                    if r['response']['success'] != 1:
+                        await self.bot.send_message(ctx.message.channel, "Error - User not found...")
                         return
                     else:
-                        user_id = int(r.json()['response']['steamid'])
+                        user_id = int(r['response']['steamid'])
                         print("SteamId64 Request:" + str(user_id))
                         steam_user = user.SteamUser(userid=user_id)
             except steamapi.errors.UserNotFoundError:  # Not an ID, but a vanity URL.
-                await self.bot.say("Error - User not found...")
+                await self.bot.send_message(ctx.message.channel, "Error - User not found...")
                 return
             # now i have the username, let's create the reply
             try:
@@ -174,7 +202,7 @@ class BotGamingCommands:
                 profile_url = steam_user.profile_url
                 level = steam_user.level
             except (steamapi.errors.APIUnauthorized, steamapi.errors.UserNotFoundError, KeyError, AttributeError):
-                await self.bot.say("Error - Can't get user data!")
+                await self.bot.send_message(ctx.message.channel, "Error - Can't get user data!")
                 return
             # create the final message
             embed = discord.Embed(title="Go To Steam Profile",
@@ -203,13 +231,13 @@ class BotGamingCommands:
                     recently += str(SteamGame) + "\n"
 
             embed.add_field(name="Recent Activity:", value=recently)
-            await self.bot.say(embed=embed)
+            await self.bot.send_message(ctx.message.channel, embed=embed)
         print("-------------------------")
 
     # ---------------------------------------------------------------------
 
-    @commands.command()
-    async def mcskin(self, *args):
+    @commands.command(pass_context=True)
+    async def mcskin(self, ctx, *args):
         """Print the Minecraft skin of a user
         Usage: !mcskin "MinecraftUsername"
         """
@@ -217,13 +245,13 @@ class BotGamingCommands:
         if len(args) == 1:
             name = args[0]
             print("Skin Param:" + name)
-            await self.bot.say("https://mcapi.ca/skin/" + name + "/300")
+            await self.bot.send_message(ctx.message.channel, "https://mcapi.ca/skin/" + name + "/300")
         else:  # parameters aren't correct - print the correct usage of the command
-            await self.bot.say("**Usage:** !mcskin McName")
+            await self.bot.send_message(ctx.message.channel, "**Usage:** !mcskin McName")
         print("-------------------------")
 
-    @commands.command()
-    async def mchead(self, *args):
+    @commands.command(pass_context=True)
+    async def mchead(self, ctx, *args):
         """Print the head of the Minecraft skin of a user
         Usage: !mchead "MinecraftUsername"
         """
@@ -231,13 +259,13 @@ class BotGamingCommands:
         if len(args) == 1:
             name = args[0]
             print("param:" + name)
-            await self.bot.say("https://mcapi.ca/avatar/" + name + "/100/true")
+            await self.bot.send_message(ctx.message.channel, "https://mcapi.ca/avatar/" + name + "/100/true")
         else:  # parameters aren't correct - print the correct usage of the command
-            await self.bot.say("**Usage:** !mchead McName")
+            await self.bot.send_message(ctx.message.channel, "**Usage:** !mchead McName")
         print("-------------------------")
 
-    @commands.command()
-    async def hy(self, *args):
+    @commands.command(pass_context=True)
+    async def hy(self, ctx, *args):
         """Print the user's stats in the Hypixel Server
         Usage: !hy "MinecraftUsername"
         """
@@ -253,7 +281,7 @@ class BotGamingCommands:
             except json.decoder.JSONDecodeError:
                 error = True
                 print("Error getting PlayerID")
-                await self.bot.say("*Player not found...*")
+                await self.bot.send_message(ctx.message.channel, "*Player not found...*")
             if not error:
                 stats = self.client.getPlayer(uuid=uuid)
                 final_string = "```"  # creating final string
@@ -265,15 +293,15 @@ class BotGamingCommands:
                 except KeyError:
                     final_string += ("Time Playing:" + "Value not found \n")
                 final_string += "```"
-                await self.bot.say(final_string)
+                await self.bot.send_message(ctx.message.channel, final_string)
         else:  # parameters aren't correct - print the correct usage of the command
-            await self.bot.say("**Usage:** !hy McName")
+            await self.bot.send_message(ctx.message.channel, "**Usage:** !hy McName")
         print("-------------------------")
 
     # ---------------------------------------------------------------------
 
-    @commands.command()
-    async def rl(self, *args):
+    @commands.command(pass_context=True)
+    async def rl(self, ctx, *args):
         """Print the user's rocket league stats in an image
         Usage: !rl "Steam64ID/PSN Username/Xbox GamerTag or XUID" "Steam/Ps4/Xbox"(Optional)
         """
@@ -290,12 +318,15 @@ class BotGamingCommands:
                 steam_api_key = self.botVariables.get_steam_key()
                 steam_api_url = "http://api.steampowered.com/ISteamUser/ResolveVanityURL/v0001/"
                 steam_api_url += "?key=" + steam_api_key + "&vanityurl=" + str(user_id)
-                r = requests.get(steam_api_url)
-                if not r.json()['response']['success'] == 1:
-                    await self.bot.say("Error - Steam User not found... Check your steamID")
+                async with aiohttp.ClientSession() as session:
+                    async with session.get(steam_api_url) as resp:
+                        r = await resp.json()
+                if r['response']['success'] != 1:
+                    await self.bot.send_message(ctx.message.channel,
+                                                "Error - Steam User not found... Check your steamID")
                     return
                 else:
-                    user_id = int(r.json()['response']['steamid'])
+                    user_id = int(r['response']['steamid'])
                     print("SteamId64 Request:" + str(user_id))
         else:  # steam is not the default platform, get the username
             user_id = args[0]
@@ -309,22 +340,22 @@ class BotGamingCommands:
             r = requests.get(request_url, headers=request_header)  # make the request with header auth
         else:  # check the platform
             platform_number = str(BotMethods.platform_to_number(str(args[1])))
-            if not platform_number == str(-1):
+            if platform_number != str(-1):
                 request_url = "https://api.rocketleaguestats.com/v1/player?unique_id=" + str(
                     user_id) + "&platform_id=" + platform_number
                 r = requests.get(request_url, headers=request_header)  # make the request with header auth
             else:
-                await self.bot.say("Platform not found, check !help rl")
+                await self.bot.send_message(ctx.message.channel, "Platform not found, check " + self.botVariables.get_command_prefix() + "help rl")
                 return
         try:
             request_result = r.json()  # try convert the request result to json
         except json.JSONDecodeError:
-            await self.bot.say("Error getting the image... contact the bot owner ")
+            await self.bot.send_message(ctx.message.channel, "Error getting the image... contact the bot owner ")
             return
         try:
-            await self.bot.say(request_result['signatureUrl'])
+            await self.bot.send_message(ctx.message.channel, request_result['signatureUrl'])
         except KeyError:
-            await self.bot.say("Error getting the image... check !help rl ")
+            await self.bot.send_message(ctx.message.channel, "Error getting the image... check " + self.botVariables.get_command_prefix() + "help rl ")
 
     # ---------------------------------------------------------------------
 
