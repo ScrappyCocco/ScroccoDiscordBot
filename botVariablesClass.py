@@ -23,6 +23,10 @@ class BotVariables:
     #   weather default_country must be in the "ISO 3166-1 alpha-2" format
     # rocket league stats api key : get yours from https://developers.rocketleaguestats.com
     #   rocket league default platform could be Steam, Ps4 OR XboxOne
+    # youtube api key: get yours from https://developers.google.com/youtube/v3/getting-started
+    #   youtube channel id : the youtube channel-id to check new videos
+    #   discord channel id : the discord channel where to send youtube notifications
+    #   notificationMessage : the message to send at the beginning of the youtube alert
 
     # version and build : specify the bot version, you should NOT change those values if you don't edit the bot source
 
@@ -105,6 +109,7 @@ class BotVariables:
         self.get_owners_list()
         self.get_weather_key()
         self.get_rocket_league_key()
+        self.get_youtube_api_key()
         self.get_discord_bot_token(False)
         print("---FULL JSON CHECK COMPLETED---")
 
@@ -197,6 +202,35 @@ class BotVariables:
             :return: The default rocket league api platform
         """
         return self.bot_data_file["rocketleague"]["default_platform"]
+
+    def get_youtube_api_key(self):
+        """Function that return the api key for the youtube api.
+            :return: The youtube API-KEY
+        """
+        key = self.bot_data_file["youtube"]["key"]
+        if self.check_empty_key(key):
+            return key
+        else:
+            print("ERROR GETTING THE YOUTUBE KEY (get yours from https://developers.google.com/youtube/v3/getting-started) - ABORTING")
+            quit(1)
+
+    def get_youtube_channel_id(self):
+        """Function that return the youtube channel ID to use in the request
+            :return: The youtube channel ID to use in the request
+        """
+        return self.bot_data_file["youtube"]["YTchannelID"]
+
+    def get_discord_channel_id_youtube(self):
+        """Function that return the discord channel id to send youtube notifications
+            :return: The discord channel id to send youtube notifications
+        """
+        return self.bot_data_file["youtube"]["DISCORDchannelID"]
+
+    def get_youtube_alert_message(self):
+        """Function that return the youtube alert message to send at the beginning of the message
+            :return: The youtube alert message
+        """
+        return self.bot_data_file["youtube"]["notificationMessage"]
 
     def get_version(self):
         """Function that return the current version of the bot.

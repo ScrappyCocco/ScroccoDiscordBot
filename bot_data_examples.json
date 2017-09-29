@@ -13,8 +13,14 @@
       "key":"YourKey",
       "default_platform":"Steam"
    },
+   "youtube":{
+      "key":"YourKey",
+      "YTchannelID":"",
+      "DISCORDchannelID":"",
+      "notificationMessage":"New video published!"
+   },
    "version":"0.96",
-   "build":"15",
+   "build":"25",
    "is_beta": "False",
    "description":"Bot by ScrappyCocco (Some commands are hidden from help)",
    "bot_icon":"https://discordapp.com/assets/2c21aeda16de354ba5334551a883b481.png",

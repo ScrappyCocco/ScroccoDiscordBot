@@ -43,6 +43,7 @@ def attributes_initialization(default_status: str):
     print("---Finished creating attributes---")
     print("------------------------")
 
+
 # function that send a message when users use private chat with bot the first time
 async def first_chat_alert(channel, user):
     if (channel.type != discord.ChannelType.private) or (privateMessagesOwner == "") or (str(user.id) == privateMessagesOwner):  # if the function is not active

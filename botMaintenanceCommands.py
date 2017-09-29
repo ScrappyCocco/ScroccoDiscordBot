@@ -9,6 +9,7 @@ import time
 
 from discord import channel
 from datetime import datetime
+from botTimedTasks import BotTimedTasks
 from botVariablesClass import BotVariables
 from botMethodsClass import BotMethods
 
@@ -21,6 +22,9 @@ class BotMaintenanceCommands:
 
     botVariables = BotVariables(False)  # used for version and In-Game state-write url
 
+    TaskManager = None  # reference to "botTimedTasks" to create/stop tasks
+    YouTube_Task = None  # reference to youtube task (check for a new video)
+
     # ---------------------------------------------------------------------
 
     @commands.command(pass_context=True, hidden=True)
@@ -30,6 +34,8 @@ class BotMaintenanceCommands:
         print("Shut Down Required")
         if BotMethods.is_owner(ctx.message.author):
             await self.bot.send_message(ctx.message.channel, "Stopping bot... Bye!")
+            # stopping tasks
+            self.YouTube_Task.cancel()
             await self.bot.logout()
             await self.bot.close()
         else:
@@ -48,7 +54,7 @@ class BotMaintenanceCommands:
                 if str(args[0]) == "1" or str(args[0]).lower() == "on":
                     print("Turning on maintenance mode")
                     await self.bot.change_presence(status=discord.Status.do_not_disturb,
-                                                   game=discord.Game(name='IN MAINTENANCE'))
+                                                   game=discord.Game(name='UNDER MAINTENANCE'))
                     self.bot.maintenanceMode = True
                 else:
                     print("Turning off maintenance mode")
@@ -341,6 +347,9 @@ class BotMaintenanceCommands:
     def __init__(self, bot):
         print("CALLING CLASS-->"+self.__class__.__name__+" class called")
         self.bot = bot
+        # create youtube task
+        self.TaskManager = BotTimedTasks(self.bot)
+        self.YouTube_Task = self.bot.loop.create_task(self.TaskManager.youtube_check())
 
     def __del__(self):
         print("DESTROYING CLASS-->" + self.__class__.__name__ + " class called")
