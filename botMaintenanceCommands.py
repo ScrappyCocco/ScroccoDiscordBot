@@ -13,6 +13,7 @@ from botTimedTasks import BotTimedTasks
 from botVariablesClass import BotVariables
 from botMethodsClass import BotMethods
 
+
 # ---------------------------------------------------------------------
 
 
@@ -21,9 +22,10 @@ class BotMaintenanceCommands:
     # ---------------------------------------------------------------------
 
     botVariables = BotVariables(False)  # used for version and In-Game state-write url
+    command_prefix = botVariables.command_prefix
 
     TaskManager = None  # reference to "botTimedTasks" to create/stop tasks
-    YouTube_Task = None  # reference to youtube task (check for a new video)
+    Timed_Tasks = []
 
     # ---------------------------------------------------------------------
 
@@ -35,11 +37,15 @@ class BotMaintenanceCommands:
         if BotMethods.is_owner(ctx.message.author):
             await self.bot.send_message(ctx.message.channel, "Stopping bot... Bye!")
             # stopping tasks
-            self.YouTube_Task.cancel()
+            for C_Task in self.Timed_Tasks:
+                C_Task.cancel()
+                print("UNLOADING-->Timed-Task cancelled")
+            del self.TaskManager  # delete the task manager
             await self.bot.logout()
-            await self.bot.close()
+            # await self.bot.close() not necessary apparently
         else:
-            await self.bot.send_message(ctx.message.channel, "You don't have access to this command :stuck_out_tongue: ")
+            await self.bot.send_message(ctx.message.channel,
+                                        "You don't have access to this command :stuck_out_tongue: ")
 
     # ---------------------------------------------------------------------
 
@@ -62,7 +68,8 @@ class BotMaintenanceCommands:
                                                    game=discord.Game(name=self.bot.lastInGameStatus))
                     self.bot.maintenanceMode = False
             else:
-                await self.bot.send_message(ctx.message.channel, "Parameters not correct, see " + self.botVariables.get_command_prefix() + "help maintenance")
+                await self.bot.send_message(ctx.message.channel,
+                                            "Parameters not correct, see " + self.command_prefix + "help maintenance")
             print("-------------------------")
         else:
             await self.bot.send_message(ctx.message.channel,
@@ -125,7 +132,8 @@ class BotMaintenanceCommands:
     @commands.command(pass_context=True)
     async def source(self, ctx):
         """Print a link to bot source code"""
-        await self.bot.send_message(ctx.message.channel, "Go and explore my source code at: " + self.botVariables.get_open_source_link())
+        await self.bot.send_message(ctx.message.channel,
+                                    "Go and explore my source code at: " + self.botVariables.get_open_source_link())
 
     # ---------------------------------------------------------------------
 
@@ -139,7 +147,7 @@ class BotMaintenanceCommands:
                                         "*Can't check if you're an admin in private chat. Execute this command in a server*")
             return
         if BotMethods.is_owner(ctx.message.author) or BotMethods.is_server_admin(ctx.message.author):
-            final_string = "```LIST OF ALL BOT COMMANDS, SEE " + self.botVariables.get_command_prefix() + "HELP COMMAND FOR OTHER INFORMATIONS \n \n"
+            final_string = "```LIST OF ALL BOT COMMANDS, SEE " + self.command_prefix + "HELP COMMAND FOR OTHER INFORMATIONS \n \n"
             for cmd in self.bot.commands:
                 final_string += str(cmd) + "\n"
             final_string += "```"
@@ -147,7 +155,8 @@ class BotMaintenanceCommands:
             if ctx.message.server is not None:  # not in private message
                 await self.bot.send_message(ctx.message.channel, "*List sent in private*")
         else:
-            await self.bot.send_message(ctx.message.channel, "You don't have access to this command :stuck_out_tongue: ")
+            await self.bot.send_message(ctx.message.channel,
+                                        "You don't have access to this command :stuck_out_tongue: ")
 
     # ---------------------------------------------------------------------
 
@@ -168,10 +177,12 @@ class BotMaintenanceCommands:
         """
         found = False
         if not BotMethods.is_owner(ctx.message.author):
-            await self.bot.send_message(ctx.message.channel, "You don't have access to this command :stuck_out_tongue: ")
+            await self.bot.send_message(ctx.message.channel,
+                                        "You don't have access to this command :stuck_out_tongue: ")
             return
         if len(args) != 1:  # params not correct
-            await self.bot.send_message(ctx.message.channel, "Parameters not correct, see " + self.botVariables.get_command_prefix() + "help channelid")
+            await self.bot.send_message(ctx.message.channel,
+                                        "Parameters not correct, see " + self.command_prefix + "help channelid")
             return
         final_string = ""
         for currentServer in self.bot.servers:
@@ -195,11 +206,13 @@ class BotMaintenanceCommands:
         found = False
         final_string = ""
         if not BotMethods.is_owner(ctx.message.author):
-            await self.bot.send_message(ctx.message.channel, "You don't have access to this command :stuck_out_tongue: ")
+            await self.bot.send_message(ctx.message.channel,
+                                        "You don't have access to this command :stuck_out_tongue: ")
             return
         for currentServer in self.bot.servers:
             found = True
-            final_string += currentServer.name + " - ID: " + str(currentServer.id) + " - " + str(currentServer.member_count) + " Members \n"
+            final_string += currentServer.name + " - ID: " + str(currentServer.id) + " - " + str(
+                currentServer.member_count) + " Members \n"
         if not found:
             await self.bot.send_message(ctx.message.channel, "Nothing found...")
         else:
@@ -218,7 +231,7 @@ class BotMaintenanceCommands:
         server_selected = ctx.message.server
         embed = discord.Embed(title=server_selected.name,
                               colour=discord.Colour(0x169DDF),
-                              description=server_selected.name+" server info",
+                              description=server_selected.name + " server info",
                               timestamp=datetime.utcfromtimestamp(time.time())
                               )
         embed.set_thumbnail(url=server_selected.icon_url)
@@ -240,7 +253,8 @@ class BotMaintenanceCommands:
         embed.add_field(name="Server Text Channels:", value=str(text_channels_count))
         embed.add_field(name="Server Voice Channels:", value=str(voice_channels_count))
 
-        await self.bot.send_message(ctx.message.channel, embed=embed)  # send the discord embed message with the servers info
+        await self.bot.send_message(ctx.message.channel,
+                                    embed=embed)  # send the discord embed message with the servers info
 
     # ---------------------------------------------------------------------
 
@@ -296,7 +310,8 @@ class BotMaintenanceCommands:
                 except discord.errors.Forbidden:
                     print("ERROR: Can't send the message")
             else:
-                await self.bot.send_message(ctx.message.channel, "Parameters not correct, see " + self.botVariables.get_command_prefix() + "help sendservermessage")
+                await self.bot.send_message(ctx.message.channel,
+                                            "Parameters not correct, see " + self.command_prefix + "help sendservermessage")
         else:
             await self.bot.send_message(ctx.message.channel,
                                         "You don't have access to this command  :stuck_out_tongue: ")
@@ -313,11 +328,13 @@ class BotMaintenanceCommands:
                 recipient = args[0]
                 message = args[1]
                 try:
-                    await self.bot.send_message(discord.User(id=int(recipient)), "**Message from " + ctx.message.author.name + ":**" + message)
+                    await self.bot.send_message(discord.User(id=int(recipient)),
+                                                "**Message from " + ctx.message.author.name + ":**" + message)
                 except discord.errors.Forbidden:
                     print("ERROR: Can't send the message")
             else:
-                await self.bot.send_message(ctx.message.channel, "Parameters not correct, see " + self.botVariables.get_command_prefix() + "help sendprivatemessage")
+                await self.bot.send_message(ctx.message.channel,
+                                            "Parameters not correct, see " + self.command_prefix + "help sendprivatemessage")
         else:
             await self.bot.send_message(ctx.message.channel,
                                         "You don't have access to this command  :stuck_out_tongue: ")
@@ -336,7 +353,7 @@ class BotMaintenanceCommands:
         if len(args) == 1:
             print("-------------------------")
             new_name = args[0]
-            print("BOT RENAME:"+new_name)
+            print("BOT RENAME:" + new_name)
             await self.bot.edit_profile(username=new_name)
             print("-------------------------")
         else:
@@ -345,11 +362,12 @@ class BotMaintenanceCommands:
     # ---------------------------------------------------------------------
 
     def __init__(self, bot):
-        print("CALLING CLASS-->"+self.__class__.__name__+" class called")
+        print("CALLING CLASS-->" + self.__class__.__name__ + " class called")
         self.bot = bot
-        # create youtube task
+        # create youtube and discord-status task
         self.TaskManager = BotTimedTasks(self.bot)
-        self.YouTube_Task = self.bot.loop.create_task(self.TaskManager.youtube_check())
+        self.Timed_Tasks.append(self.bot.loop.create_task(self.TaskManager.youtube_check()))
+        self.Timed_Tasks.append(self.bot.loop.create_task(self.TaskManager.discord_status_check()))
 
     def __del__(self):
         print("DESTROYING CLASS-->" + self.__class__.__name__ + " class called")

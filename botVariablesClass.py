@@ -1,12 +1,13 @@
 # ---------------------------------------------------------------------
 # IMPORTS
+
 import json
+
 
 # ---------------------------------------------------------------------
 
 
 class BotVariables:
-
     # ------------------------------------------------------
     # BOT JSON DOCUMENTATION
     # ------------------------------------------------------
@@ -19,6 +20,8 @@ class BotVariables:
     # hypixelKey = "YourKey" : get yours from https://api.hypixel.net/
     # steamKey = "YourKey" : get yours from https://steamcommunity.com/dev/apikey
     # gifKey = "YourKey" : get yours from http://api.giphy.com/
+    # google_shortener = "YourKey" : google shortener api key,
+    #   get yours from https://developers.google.com/url-shortener/v1/getting_started#APIKey
     # weather key : get yours from http://api.wunderground.com/
     #   weather default_country must be in the "ISO 3166-1 alpha-2" format
     # rocket league stats api key : get yours from https://developers.rocketleaguestats.com
@@ -80,6 +83,7 @@ class BotVariables:
     emptyApiKey = "YourKey"  # used to check if a key is empty
     emptyUrl = "http://URL/"
     numbersEmoji = [":zero:", ":one:", ":two:", ":three:", ":four:", ":five:", ":six:", ":seven:", ":eight:", ":nine:"]
+    command_prefix = ""  # initialized after the check
 
     # -------------------------------------------------
 
@@ -93,6 +97,7 @@ class BotVariables:
             quit(1)
         if should_check:
             self.full_startup_check()
+        self.command_prefix = self.get_command_prefix()
 
     def __del__(self):
         print("DESTROYING MINI-CLASS-->" + self.__class__.__name__ + " class called")
@@ -102,6 +107,7 @@ class BotVariables:
         self.get_clever_key()
         self.get_hypixel_key()
         self.get_gif_key()
+        self.get_google_shortener_key()
         self.get_steam_key()
         self.get_meme_generator_username()
         self.get_meme_generator_password()
@@ -169,6 +175,17 @@ class BotVariables:
             print("ERROR GETTING THE GIF KEY (get yours from http://api.giphy.com/) - ABORTING")
             quit(1)
 
+    def get_google_shortener_key(self):
+        """Function that return the api key for the google shortener api.
+            :return: The google shortener API-KEY.
+        """
+        key = self.bot_data_file["apiKeys"]["google_shortener"]
+        if self.check_empty_key(key):
+            return key
+        else:
+            print("ERROR GETTING THE GOOGLE SHORTENER KEY (check bot documentation) - ABORTING")
+            quit(1)
+
     def get_weather_key(self):
         """Function that return the api key for the weather api.
             :return: The Weather API-KEY
@@ -194,7 +211,8 @@ class BotVariables:
         if self.check_empty_key(key):
             return key
         else:
-            print("ERROR GETTING THE ROCKET LEAGUE KEY (get yours from https://developers.rocketleaguestats.com) - ABORTING")
+            print(
+                "ERROR GETTING THE ROCKET LEAGUE KEY (get yours from https://developers.rocketleaguestats.com) - ABORTING")
             quit(1)
 
     def get_rocket_league_platform(self):
@@ -211,7 +229,8 @@ class BotVariables:
         if self.check_empty_key(key):
             return key
         else:
-            print("ERROR GETTING THE YOUTUBE KEY (get yours from https://developers.google.com/youtube/v3/getting-started) - ABORTING")
+            print(
+                "ERROR GETTING THE YOUTUBE KEY (get yours from https://developers.google.com/youtube/v3/getting-started) - ABORTING")
             quit(1)
 
     def get_youtube_channel_id(self):
@@ -385,8 +404,8 @@ class BotVariables:
             else:
                 return keyfinal
         else:
-            print("ERROR GETTING THE DISCORD KEY (get yours from https://discordapp.com/developers/applications/me) - ABORTING")
+            print(
+                "ERROR GETTING THE DISCORD KEY (get yours from https://discordapp.com/developers/applications/me) - ABORTING")
             quit(1)
-
 
 # ---------------------------------------------------------------------

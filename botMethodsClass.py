@@ -6,11 +6,13 @@ import discord
 
 from botVariablesClass import BotVariables
 
+
 # ---------------------------------------------------------------------
 
 
 class BotMethods:
     """ Little class for static methods that i need to use multiple times in some classes """
+
     # ---------------------------------------------------------------------
 
     @staticmethod
@@ -64,7 +66,7 @@ class BotMethods:
         if time_var % 2 == 0:
             return int(time_var / 2)
         else:
-            return int((time_var-1) / 2)
+            return int((time_var - 1) / 2)
 
     # ---------------------------------------------------------------------
 
@@ -83,6 +85,6 @@ class BotMethods:
             return 3
         return -1
 
-    # ---------------------------------------------------------------------
+        # ---------------------------------------------------------------------
 
 # ---------------------------------------------------------------------

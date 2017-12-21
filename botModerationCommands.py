@@ -7,11 +7,13 @@ import discord
 
 from botMethodsClass import BotMethods
 
+
 # ---------------------------------------------------------------------
 
 
 class BotModerationCommands:
     """ Class with Bot 'Moderation' commands (for example ban and kick users) """
+
     # ---------------------------------------------------------------------
 
     @commands.command(pass_context=True)
@@ -20,7 +22,8 @@ class BotModerationCommands:
         Usage: !banuser @User
         """
         if ctx.message.server is None:
-            await self.bot.send_message(ctx.message.channel, "*Can't execute this in private, execute the command in a server*")
+            await self.bot.send_message(ctx.message.channel,
+                                        "*Can't execute this in private, execute the command in a server*")
             return
         if BotMethods.is_server_admin(ctx.message.author):
             if len(ctx.message.mentions) != 1:
@@ -34,7 +37,8 @@ class BotModerationCommands:
                 await self.bot.send_message(ctx.message.channel, "Sorry, I don't have the `ban` permission")
             print("-------------------------")
         else:
-            await self.bot.send_message(ctx.message.channel, "You don't have access to this command  :stuck_out_tongue: ")
+            await self.bot.send_message(ctx.message.channel,
+                                        "You don't have access to this command  :stuck_out_tongue: ")
 
     # ---------------------------------------------------------------------
 
@@ -44,7 +48,8 @@ class BotModerationCommands:
         Usage: !unbanuser @User
         """
         if ctx.message.server is None:
-            await self.bot.send_message(ctx.message.channel, "*Can't execute this in private, execute the command in a server*")
+            await self.bot.send_message(ctx.message.channel,
+                                        "*Can't execute this in private, execute the command in a server*")
             return
         if BotMethods.is_server_admin(ctx.message.author):
             if len(ctx.message.mentions) != 1:
@@ -53,12 +58,14 @@ class BotModerationCommands:
             print("-------------------------")
             try:
                 await self.bot.unban(ctx.message.server, ctx.message.mentions[0])
-                await self.bot.send_message(ctx.message.channel, str(ctx.message.mentions[0].name) + " has been un-banned")
+                await self.bot.send_message(ctx.message.channel,
+                                            str(ctx.message.mentions[0].name) + " has been un-banned")
             except discord.errors.Forbidden:
                 await self.bot.send_message(ctx.message.channel, "Sorry, I don't have the `ban` permission")
             print("-------------------------")
         else:
-            await self.bot.send_message(ctx.message.channel, "You don't have access to this command  :stuck_out_tongue: ")
+            await self.bot.send_message(ctx.message.channel,
+                                        "You don't have access to this command  :stuck_out_tongue: ")
 
     # ---------------------------------------------------------------------
 
@@ -68,7 +75,8 @@ class BotModerationCommands:
         Usage: !softban @User
         """
         if ctx.message.server is None:
-            await self.bot.send_message(ctx.message.channel, "*Can't execute this in private, execute the command in a server*")
+            await self.bot.send_message(ctx.message.channel,
+                                        "*Can't execute this in private, execute the command in a server*")
             return
         if BotMethods.is_server_admin(ctx.message.author):
             if len(ctx.message.mentions) != 1:
@@ -78,12 +86,14 @@ class BotModerationCommands:
             try:
                 await self.bot.ban(ctx.message.mentions[0], delete_message_days=100)
                 await self.bot.unban(ctx.message.server, ctx.message.mentions[0])
-                await self.bot.send_message(ctx.message.channel, str(ctx.message.mentions[0].name) + " has been soft-banned ")
+                await self.bot.send_message(ctx.message.channel,
+                                            str(ctx.message.mentions[0].name) + " has been soft-banned ")
             except discord.errors.Forbidden:
                 await self.bot.send_message(ctx.message.channel, "Sorry, I don't have the `softban` permission")
             print("-------------------------")
         else:
-            await self.bot.send_message(ctx.message.channel, "You don't have access to this command  :stuck_out_tongue: ")
+            await self.bot.send_message(ctx.message.channel,
+                                        "You don't have access to this command  :stuck_out_tongue: ")
 
     # ---------------------------------------------------------------------
 
@@ -93,7 +103,8 @@ class BotModerationCommands:
         Usage: !kickuser @User
         """
         if ctx.message.server is None:
-            await self.bot.send_message(ctx.message.channel, "*Can't execute this in private, execute the command in a server*")
+            await self.bot.send_message(ctx.message.channel,
+                                        "*Can't execute this in private, execute the command in a server*")
             return
         if BotMethods.is_server_admin(ctx.message.author):
             if len(ctx.message.mentions) != 1:
@@ -107,7 +118,8 @@ class BotModerationCommands:
                 await self.bot.send_message(ctx.message.channel, "Sorry, I don't have the `kick` permission")
             print("-------------------------")
         else:
-            await self.bot.send_message(ctx.message.channel, "You don't have access to this command  :stuck_out_tongue: ")
+            await self.bot.send_message(ctx.message.channel,
+                                        "You don't have access to this command  :stuck_out_tongue: ")
 
     # ---------------------------------------------------------------------
 
@@ -119,7 +131,8 @@ class BotModerationCommands:
         Usage: !editallroles add "ProRole"
         """
         if ctx.message.server is None:
-            await self.bot.send_message(ctx.message.channel, "*Can't edit roles in private, execute the command in a server*")
+            await self.bot.send_message(ctx.message.channel,
+                                        "*Can't edit roles in private, execute the command in a server*")
             return
         if BotMethods.is_server_admin(ctx.message.author):
             if len(args) != 2:
@@ -142,7 +155,8 @@ class BotModerationCommands:
                     print("Role added for user:" + CurrentMember.name)
             print("-------------------------")
         else:
-            await self.bot.send_message(ctx.message.channel, "You don't have access to this command  :stuck_out_tongue: ")
+            await self.bot.send_message(ctx.message.channel,
+                                        "You don't have access to this command  :stuck_out_tongue: ")
 
     # ---------------------------------------------------------------------
 
@@ -153,7 +167,8 @@ class BotModerationCommands:
         Usage: !editrole add "ScrappyCocco" "ProRole"
         """
         if ctx.message.server is None:
-            await self.bot.send_message(ctx.message.channel, "*Can't edit roles in private, execute the command in a server*")
+            await self.bot.send_message(ctx.message.channel,
+                                        "*Can't edit roles in private, execute the command in a server*")
             return
         if BotMethods.is_server_admin(ctx.message.author):
             if len(args) != 3:
@@ -177,7 +192,8 @@ class BotModerationCommands:
                 print("Role Updated for user:" + user_found.name)
             print("-------------------------")
         else:
-            await self.bot.send_message(ctx.message.channel, "You don't have access to this command  :stuck_out_tongue: ")
+            await self.bot.send_message(ctx.message.channel,
+                                        "You don't have access to this command  :stuck_out_tongue: ")
 
     # -------------------------------------------------------------------
 
@@ -188,7 +204,8 @@ class BotModerationCommands:
         Usage: !promoteusers "EMPTY" "ProRole"
         """
         if ctx.message.server is None:
-            await self.bot.send_message(ctx.message.channel, "*Can't edit roles in private, execute the command in a server*")
+            await self.bot.send_message(ctx.message.channel,
+                                        "*Can't edit roles in private, execute the command in a server*")
             return
         if BotMethods.is_server_admin(ctx.message.author):
             if len(args) != 2:
@@ -217,7 +234,8 @@ class BotModerationCommands:
                         print("Role Updated for user:" + CurrentMember.name)
             print("-------------------------")
         else:
-            await self.bot.send_message(ctx.message.channel, "You don't have access to this command  :stuck_out_tongue: ")
+            await self.bot.send_message(ctx.message.channel,
+                                        "You don't have access to this command  :stuck_out_tongue: ")
 
     # ---------------------------------------------------------------------
 

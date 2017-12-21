@@ -29,6 +29,7 @@ bot.get_command("help").hidden = True  # hiding the !help command
 privateMessagesOwner = botVariables.get_owner_private_messages()
 startUpExtensions = botVariables.get_startup_extensions()
 
+
 # ---------------------------------------------------------------------
 # NECESSARY FUNCTIONS
 
@@ -46,13 +47,15 @@ def attributes_initialization(default_status: str):
 
 # function that send a message when users use private chat with bot the first time
 async def first_chat_alert(channel, user):
-    if (channel.type != discord.ChannelType.private) or (privateMessagesOwner == "") or (str(user.id) == privateMessagesOwner):  # if the function is not active
+    if (channel.type != discord.ChannelType.private) or (privateMessagesOwner == "") or (
+            str(user.id) == privateMessagesOwner):  # if the function is not active
         return False
     else:
         user_id = user.id
         if user_id not in botVariables.privateChatUsers:  # if is the first time
             botVariables.privateChatUsers.append(user_id)  # add the user ID to the array
-            message_sent = await bot.send_message(channel, " :exclamation:  :exclamation:  :exclamation: :exclamation: :exclamation: \n" +
+            message_sent = await bot.send_message(channel,
+                                                  " :exclamation:  :exclamation:  :exclamation: :exclamation: :exclamation: \n" +
                                                   "**" + botVariables.get_private_chat_alert() + "**\n" +
                                                   " **(As your first message here, it's not processed)**\n " +
                                                   " :exclamation:  :exclamation:  :exclamation: :exclamation: :exclamation:  \n ")
@@ -70,7 +73,8 @@ async def first_chat_alert(channel, user):
 async def forwards_message(message):
     if message.channel.name is None:
         # send private message to bot owner if possible
-        if (str(message.author.id) != privateMessagesOwner) and (privateMessagesOwner != ""):  # not sending messages to myself or not if the function is not active
+        if (str(message.author.id) != privateMessagesOwner) and (
+                privateMessagesOwner != ""):  # not sending messages to myself or not if the function is not active
             if len(message.attachments) > 0:  # not sending attachments
                 await bot.send_message(message.channel,
                                        "***Remember that attachments ARE NOT sent to bot owner... Message has not been sent!***")
@@ -103,7 +107,8 @@ async def cleverbot_request(channel, cleverbot_question):
                         print("Cleverbot Attempt 2 - using content()...\n\n")
                         content = str(await response.content())
                     except UnicodeDecodeError:
-                        await bot.send_message(channel, "*Cleverbot fatal error, please use " + bot_command_prefix_string + "clearclever")
+                        await bot.send_message(channel,
+                                               "*Cleverbot fatal error, please use " + bot_command_prefix_string + "clearclever")
                         return
     if response_error:  # an error occurred (JSON NOT CORRECT - USE THE CONTENT AS A STRING)
         start_pos = content.find("\"output\":\"") + 10
@@ -111,13 +116,14 @@ async def cleverbot_request(channel, cleverbot_question):
         if start_pos == -1 or end_pos == -1:
             print("Error calculating sub-string positions")
         else:
-            reply = content[start_pos:start_pos+(end_pos-start_pos)]  # calculate cleverbot reply substring
+            reply = content[start_pos:start_pos + (end_pos - start_pos)]  # calculate cleverbot reply substring
             await bot.send_message(channel, reply)
         clear_cleverbot_parameters()  # clear cleverbot to begin a new conversation
-    else:  # normal cleverbot reply
+    else:  # normal cleverbot reply (json file)
         request_result_cs = content["cs"]
         print("Cleverbot interaction number:" + content["interaction_count"])
-        if bot.cleverbot_cs_parameter != request_result_cs and int(content["interaction_count"]) > bot.cleverbot_reply_number:
+        if bot.cleverbot_cs_parameter != request_result_cs and int(
+                content["interaction_count"]) > bot.cleverbot_reply_number:
             bot.cleverbot_reply_number = int(content["interaction_count"])
             bot.cleverbot_cs_parameter = request_result_cs
         await bot.send_message(channel, content["output"])
@@ -143,7 +149,8 @@ async def on_message(message):
             mention = message.server.me.mention
         if len(message.mentions) >= 1:  # message starts with a mention, check if it's mine
             if message.content.startswith(mention):  # yes the message starts with a mention, it's me?
-                new_message = message.content.replace(str(mention), "", 1)  # remove the mention from the message (only 1)
+                new_message = message.content.replace(str(mention), "",
+                                                      1)  # remove the mention from the message (only 1)
                 # new_message = new_message[1:]  # remove the additional space (not necessary)
                 for found_mention in message.mentions:  # convert all mentions to names to make the message clear
                     new_message = new_message.replace(str(found_mention.mention), str(found_mention.name))
@@ -156,9 +163,11 @@ async def on_message(message):
                 print("-------------------------")
             else:  # the message don't start with a mention, maybe it's a command?
                 try:
-                    if bot.maintenanceMode and not BotMethods.is_owner(message.author):  # if it's in maintenance Mode then quit
+                    if bot.maintenanceMode and not BotMethods.is_owner(
+                            message.author):  # if it's in maintenance Mode then quit
                         return
-                    if message.content.startswith(bot_command_prefix_string):  # if starts with command-prefix then process as command
+                    if message.content.startswith(
+                            bot_command_prefix_string):  # if starts with command-prefix then process as command
                         await bot.process_commands(message)  # tell the bot to try to execute the command
                     else:  # forward the message (if active)
                         await forwards_message(message)
@@ -167,9 +176,11 @@ async def on_message(message):
         else:
             if message.content.find("\\") == -1:  # error check for special chars
                 try:
-                    if bot.maintenanceMode and not BotMethods.is_owner(message.author):  # if it's in maintenance Mode then quit
+                    if bot.maintenanceMode and not BotMethods.is_owner(
+                            message.author):  # if it's in maintenance Mode then quit
                         return
-                    if message.content.startswith(bot_command_prefix_string):  # if starts with command-prefix then process as command
+                    if message.content.startswith(
+                            bot_command_prefix_string):  # if starts with command-prefix then process as command
                         await bot.process_commands(message)  # tell the bot to try to execute the command
                     else:  # forward the message (if active)
                         await forwards_message(message)
@@ -179,6 +190,7 @@ async def on_message(message):
     except discord.ext.commands.errors.BadArgument:
         print("Error 2 executing the command...")
         return
+
 
 # ---------------------------------------------------------------------
 
@@ -215,6 +227,7 @@ async def clearclever(ctx):
     print("End of cleaning")
     print("-------------------------")
 
+
 # ---------------------------------------------------------------------
 # bot "on_ready" event, called when the client is done preparing the data received from Discord
 
@@ -241,6 +254,7 @@ async def on_ready():
         print("ERROR trying to change bot status")
     print("------------------------")
 
+
 # ---------------------------------------------------------------------
 # bot "on_reaction_add" event, called when a message has a reaction added to it
 
@@ -250,7 +264,7 @@ async def on_reaction_add(reaction, user):
     if user != bot.user:  # if is not me
         print("------------------------")
         if isinstance(reaction.emoji, str):
-            print("Adding my reaction to the message... (Emoji: "+reaction.emoji + ")")
+            print("Adding my reaction to the message... (Emoji: " + reaction.emoji + ")")
         else:
             if isinstance(reaction.emoji, discord.Emoji):
                 print("Adding my reaction to the message... (Emoji Object: " + reaction.emoji.name + ")")
@@ -262,6 +276,7 @@ async def on_reaction_add(reaction, user):
         except discord.errors.Forbidden:
             print("Can't add my reaction")
         print("------------------------")
+
 
 # ---------------------------------------------------------------------
 # bot "on_typing" event, Called when someone begins typing a message.
@@ -280,7 +295,7 @@ if str(__name__) == "__main__":
     print(startUpExtensions)
     print("------------------------")
     for extension in startUpExtensions:
-        print("LOADING-->"+extension)
+        print("LOADING-->" + extension)
         try:
             bot.load_extension(extension)
         except Exception as e:
@@ -297,13 +312,11 @@ if str(__name__) == "__main__":
     # END OF PROGRAM
 
     for extension in startUpExtensions:
-        print("UNLOADING-->"+extension)
+        print("UNLOADING-->" + extension)
         try:
             bot.unload_extension(extension)
         except Exception as e:
             exc = '{}: {}'.format(type(e).__name__, e)
             print('UNLOADING FAIL-->Failed to unload extension {}\n{}'.format(extension, exc))
-    # cleaning some var(s)
-    del botVariables
 
     print("ACTION-->End of program")

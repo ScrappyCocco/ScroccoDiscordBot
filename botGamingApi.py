@@ -17,6 +17,7 @@ from botMethodsClass import BotMethods
 from steamapi import user
 from datetime import datetime
 
+
 # ---------------------------------------------------------------------
 
 
@@ -27,6 +28,7 @@ class BotGamingCommands:
     botVariables = BotVariables(False)  # used for 2 api keys
     client = Hypixthon(botVariables.get_hypixel_key())  # hypixel api connection
     core.APIConnection(api_key=botVariables.get_steam_key())  # steam api connection
+    command_prefix = botVariables.command_prefix
 
     # ---------------------------------------------------------------------
 
@@ -37,7 +39,8 @@ class BotGamingCommands:
         """
         print("-------------------------")
         if len(args) == 0 or len(args) > 2:  # parameters aren't correct - print the correct usage of the command
-            await self.bot.send_message(ctx.message.channel, "**Usage:** !ow \"Name-Tag\" eu(default)/us[optional]")
+            await self.bot.send_message(ctx.message.channel,
+                                        "**Usage:** " + self.command_prefix + "ow \"Name-Tag\" eu(default)/us[optional]")
         else:
             if len(args) == 1:  # server not passed, going with default server
                 ow_region = "eu"
@@ -84,8 +87,8 @@ class BotGamingCommands:
                 comp_wins = str(r['games']['competitive']['won']) + " Wins"
             comp_tot = str(r['games']['competitive']['played']) + " Played"
             embed.add_field(name="Competitive Play:", value=comp_wins + "/" + comp_tot)
-
-            await self.bot.send_message(ctx.message.channel, embed=embed)  # send the discord embed message with user stats
+            # send the discord embed message with user stats
+            await self.bot.send_message(ctx.message.channel, embed=embed)
         print("-------------------------")
 
     # ---------------------------------------------------------------------
@@ -99,7 +102,8 @@ class BotGamingCommands:
         """
         print("-------------------------")
         if len(args) == 0 or len(args) > 2:  # parameters aren't correct - print the correct usage of the command
-            await self.bot.send_message(ctx.message.channel, "**Usage:** !r6 PlayerName Platform, see help for more")
+            await self.bot.send_message(ctx.message.channel,
+                                        "**Usage:** " + self.command_prefix + "r6 PlayerName Platform, see " + self.command_prefix + "help r6 for more")
         else:
             if len(args) == 2:
                 platform = str(args[1]).lower()
@@ -145,8 +149,8 @@ class BotGamingCommands:
             embed.add_field(name="Stats:", value=str(r1))
             embed.add_field(name="Play-Time:", value=str(r2))
             embed.add_field(name="Competitive Rank:", value=str(r3))
-
-            await self.bot.send_message(ctx.message.channel, embed=embed)  # send the discord embed message with user stats
+            # send the discord embed message with user stats
+            await self.bot.send_message(ctx.message.channel, embed=embed)
         print("-------------------------")
 
     # ---------------------------------------------------------------------
@@ -160,8 +164,8 @@ class BotGamingCommands:
         print("-------------------------")
         is_integer = False
         print("Steam:Arguments:" + str(len(args)))
-        if len(args) == 0 or len(args) > 1:   # parameters aren't correct - print the correct usage of the command
-            await self.bot.send_message(ctx.message.channel, "**Usage:** !steam PlayerID")
+        if len(args) == 0 or len(args) > 1:  # parameters aren't correct - print the correct usage of the command
+            await self.bot.send_message(ctx.message.channel, "**Usage:** " + self.command_prefix + "steam PlayerID")
         else:
             username = args[0]
             try:
@@ -247,7 +251,7 @@ class BotGamingCommands:
             print("Skin Param:" + name)
             await self.bot.send_message(ctx.message.channel, "https://mcapi.ca/skin/" + name + "/300")
         else:  # parameters aren't correct - print the correct usage of the command
-            await self.bot.send_message(ctx.message.channel, "**Usage:** !mcskin McName")
+            await self.bot.send_message(ctx.message.channel, "**Usage:** " + self.command_prefix + "mcskin McName")
         print("-------------------------")
 
     @commands.command(pass_context=True)
@@ -261,7 +265,7 @@ class BotGamingCommands:
             print("param:" + name)
             await self.bot.send_message(ctx.message.channel, "https://mcapi.ca/avatar/" + name + "/100/true")
         else:  # parameters aren't correct - print the correct usage of the command
-            await self.bot.send_message(ctx.message.channel, "**Usage:** !mchead McName")
+            await self.bot.send_message(ctx.message.channel, "**Usage:** " + self.command_prefix + "mchead McName")
         print("-------------------------")
 
     @commands.command(pass_context=True)
@@ -275,8 +279,10 @@ class BotGamingCommands:
         if len(args) == 1:
             name = args[0]
             try:
-                r = requests.get("https://api.mojang.com/users/profiles/minecraft/" + name)
-                uuid = r.json()['id']  # getting the user MinecraftID
+                async with aiohttp.ClientSession() as session:
+                    async with session.get("https://api.mojang.com/users/profiles/minecraft/" + name) as resp:
+                        r = await resp.json()
+                uuid = r['id']  # getting the user MinecraftID
                 print("Minecraft ID:" + uuid)
             except json.decoder.JSONDecodeError:
                 error = True
@@ -289,13 +295,13 @@ class BotGamingCommands:
                 final_string += ("Karma:" + str(stats['player']['karma'])) + "\n"
                 try:
                     # the "timePlaying" seems to be bugged because it never change, not my fault
-                    final_string += ("Time Playing:" + str(stats['player']['timePlaying'])) + "h (Bug?) \n"
+                    final_string += ("Time Playing:" + str(stats['player']['timePlaying'])) + "h (Bugged?) \n"
                 except KeyError:
                     final_string += ("Time Playing:" + "Value not found \n")
                 final_string += "```"
                 await self.bot.send_message(ctx.message.channel, final_string)
         else:  # parameters aren't correct - print the correct usage of the command
-            await self.bot.send_message(ctx.message.channel, "**Usage:** !hy McName")
+            await self.bot.send_message(ctx.message.channel, "**Usage:** " + self.command_prefix + "hy McName")
         print("-------------------------")
 
     # ---------------------------------------------------------------------
@@ -305,6 +311,10 @@ class BotGamingCommands:
         """Print the user's rocket league stats in an image
         Usage: !rl "Steam64ID/PSN Username/Xbox GamerTag or XUID" "Steam/Ps4/Xbox"(Optional)
         """
+        if len(args) == 0:
+            await self.bot.send_message(ctx.message.channel,
+                                        "**Usage:** " + self.command_prefix + "rl SteamID, see " + self.command_prefix + "help rl for more")
+            return
         if len(args) == 1 and str(self.botVariables.get_rocket_league_platform()) == "Steam":
             is_integer = False
             username = args[0]
@@ -335,8 +345,8 @@ class BotGamingCommands:
         default_platform = self.botVariables.get_rocket_league_platform()
         platform_number = str(BotMethods.platform_to_number(default_platform))
         if len(args) == 1:  # use default platform
-            request_url = "https://api.rocketleaguestats.com/v1/player?unique_id="+str(
-                user_id)+"&platform_id="+platform_number
+            request_url = "https://api.rocketleaguestats.com/v1/player?unique_id=" + str(
+                user_id) + "&platform_id=" + platform_number
             r = requests.get(request_url, headers=request_header)  # make the request with header auth
         else:  # check the platform
             platform_number = str(BotMethods.platform_to_number(str(args[1])))
@@ -345,7 +355,8 @@ class BotGamingCommands:
                     user_id) + "&platform_id=" + platform_number
                 r = requests.get(request_url, headers=request_header)  # make the request with header auth
             else:
-                await self.bot.send_message(ctx.message.channel, "Platform not found, check " + self.botVariables.get_command_prefix() + "help rl")
+                await self.bot.send_message(ctx.message.channel,
+                                            "Platform not found, check " + self.command_prefix + "help rl")
                 return
         try:
             request_result = r.json()  # try convert the request result to json
@@ -355,7 +366,8 @@ class BotGamingCommands:
         try:
             await self.bot.send_message(ctx.message.channel, request_result['signatureUrl'])
         except KeyError:
-            await self.bot.send_message(ctx.message.channel, "Error getting the image... check " + self.botVariables.get_command_prefix() + "help rl ")
+            await self.bot.send_message(ctx.message.channel,
+                                        "Error getting the image... check " + self.command_prefix + "help rl ")
 
     # ---------------------------------------------------------------------
 
