@@ -85,11 +85,11 @@ class BotTimedTasks:
                 async with aiohttp.ClientSession() as session:  # async GET request
                     async with session.get(url) as resp:
                         r_json = await resp.json()
-                if (str(r_json["status"]["indicator"]) != "none" or len(r_json["incidents"]) != 0) and \
-                        not self.statusChanged:
-                    await self.bot.change_presence(status=discord.Status.do_not_disturb, game=discord.Game(
-                        name="Discord Error - Check status.discordapp.com"))
-                    self.statusChanged = True
+                if str(r_json["status"]["indicator"]) != "none" or len(r_json["incidents"]) != 0:
+                    if not self.statusChanged:
+                        await self.bot.change_presence(status=discord.Status.do_not_disturb, game=discord.Game(
+                            name="Discord Error - Check status.discordapp.com"))
+                        self.statusChanged = True
                 else:
                     if self.statusChanged:
                         self.statusChanged = False
