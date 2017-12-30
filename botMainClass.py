@@ -76,8 +76,14 @@ async def forwards_message(message):
         if (str(message.author.id) != privateMessagesOwner) and (
                 privateMessagesOwner != ""):  # not sending messages to myself or not if the function is not active
             if len(message.attachments) > 0:  # not sending attachments
+                url_list = ""
+                for attach in message.attachments:
+                    url_list += str(attach['url'])  # create a sting with attachments urls
+                await bot.send_message(discord.User(id=privateMessagesOwner),
+                                       "Message from " + str(message.author.name) + "(ID=" + str(
+                                           message.author.id) + "):" + message.content + "\nAttachments: " + url_list)
                 await bot.send_message(message.channel,
-                                       "***Remember that attachments ARE NOT sent to bot owner... Message has not been sent!***")
+                                       "***Message with attachments has been forwarded!***")
             else:
                 await bot.send_message(discord.User(id=privateMessagesOwner),
                                        "Message from " + str(message.author.name) + "(ID=" + str(
