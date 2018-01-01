@@ -130,6 +130,39 @@ class BotMaintenanceCommands:
     # ---------------------------------------------------------------------
 
     @commands.command(pass_context=True)
+    async def joined(self, ctx):
+        """Print the date when you joined the server
+        Usage: !joined To get your join date
+        or !joined @User To get User's join date
+        """
+        print("-------------------------")
+        if ctx is not None:
+            if ctx.message.server is None:  # private message
+                print("Can't find join-date in private chat")
+                await self.bot.send_message(ctx.message.channel, "*Can't get join-date in private channel*")
+            else:
+                date = ""
+                mention = False
+                if len(ctx.message.mentions) == 1:
+                    mention = True
+                    for CurrentMember in ctx.message.server.members:
+                        if CurrentMember.id == ctx.message.mentions[0].id:
+                            date = CurrentMember.joined_at
+                            break
+                else:
+                    date = ctx.message.author.joined_at
+                if mention:
+                    await self.bot.send_message(ctx.message.channel,
+                                                "**" + ctx.message.mentions[0].name + "** joined this server: " + str(
+                                                    date))
+                else:
+                    await self.bot.send_message(ctx.message.channel,
+                                                "**" + ctx.message.author.name + "** joined this server: " + str(date))
+        print("-------------------------")
+
+    # ---------------------------------------------------------------------
+
+    @commands.command(pass_context=True)
     async def source(self, ctx):
         """Print a link to bot source code"""
         await self.bot.send_message(ctx.message.channel,
