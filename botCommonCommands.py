@@ -152,7 +152,7 @@ class BotCommonCommands:
                     try:
                         r = await resp.json()
                     except (UnicodeDecodeError, aiohttp.client_exceptions.ClientResponseError):
-                        print("Meme reply is not a json...")
+                        print("Meme reply is not a json..." + str(r))
                         return
             result = r
             if result['success']:

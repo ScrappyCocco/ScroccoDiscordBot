@@ -3,18 +3,19 @@
 
 from discord.ext import commands
 
-import steamapi
+import steamapi.steamapi
 import time
 import discord
 import requests
 import json
 import aiohttp
+import Hypixthon.hypixthon
 
-from steamapi import core
-from hypixthon import Hypixthon
+from Hypixthon.hypixthon import Hypixthon
+from steamapi.steamapi import core
 from botVariablesClass import BotVariables
 from botMethodsClass import BotMethods
-from steamapi import user
+from steamapi.steamapi import user
 from datetime import datetime
 
 
@@ -193,7 +194,7 @@ class BotGamingCommands:
                         user_id = int(r['response']['steamid'])
                         print("SteamId64 Request:" + str(user_id))
                         steam_user = user.SteamUser(userid=user_id)
-            except steamapi.errors.UserNotFoundError:  # Not an ID, but a vanity URL.
+            except steamapi.steamapi.errors.UserNotFoundError:  # Not an ID, but a vanity URL.
                 await self.bot.send_message(ctx.message.channel, "Error - User not found...")
                 return
             # now i have the username, let's create the reply
@@ -205,7 +206,7 @@ class BotGamingCommands:
                 medals = len(steam_user.badges)
                 profile_url = steam_user.profile_url
                 level = steam_user.level
-            except (steamapi.errors.APIUnauthorized, steamapi.errors.UserNotFoundError, KeyError, AttributeError):
+            except (steamapi.steamapi.errors.APIUnauthorized, steamapi.steamapi.errors.UserNotFoundError, KeyError, AttributeError):
                 await self.bot.send_message(ctx.message.channel, "Error - Can't get user data!")
                 return
             # create the final message
