@@ -20,8 +20,8 @@
     "DISCORDchannelID": "",
     "notificationMessage": "New video published!"
   },
-  "version": "0.97",
-  "build": "60",
+  "version": "0.98",
+  "build": "30",
   "is_beta": "False",
   "description": "Bot by ScrappyCocco (Some commands are hidden from help)",
   "bot_icon": "https://discordapp.com/assets/2c21aeda16de354ba5334551a883b481.png",
