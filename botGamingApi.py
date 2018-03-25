@@ -240,6 +240,115 @@ class BotGamingCommands:
 
     # ---------------------------------------------------------------------
 
+    # Little class used to store games in array
+    class SteamGame(object):
+        app_id = ""
+        app_name = ""
+        similar = 0
+
+        def __init__(self, appid: str, name: str, similar: float):
+            self.app_id = appid
+            self.app_name = name
+            self.similar = similar
+
+    @commands.command(pass_context=True)
+    async def steamgame(self, ctx, *args):
+        """Print the informations about a steam game
+        Usage: !steamgame "Portal 2"
+        """
+        if len(args) == 1:
+            game_name = args[0].lower()
+            steam_apps_url = "http://api.steampowered.com/ISteamApps/GetAppList/v2"
+            steam_apps_info = "http://steamspy.com/api.php?request=appdetails&appid="
+            steam_apps_page = "http://store.steampowered.com/api/appdetails?appids="
+            current_players_info = "https://api.steampowered.com/ISteamUserStats/GetNumberOfCurrentPlayers/v1/?appid="
+            print("-------------------------")
+            async with aiohttp.ClientSession() as session:  # request all steam games
+                async with session.get(steam_apps_url) as resp:
+                    r = await resp.json()
+            games_found = []
+            max_prob = 0.0
+            for entry in r['applist']['apps']:  # for each steam game
+                prob = BotMethods.similar(entry['name'].lower(), game_name)  # calculate the name similarity
+                # compare lower() strings, because i don't mind if the name is uppercase or not
+                if prob > 0.7:  # consider it only if it's > 0.7 (range is 0.0-1.0)
+                    games_found.append(
+                        self.SteamGame(entry['appid'], entry['name'], prob))  # store that game in the array
+                    if prob > max_prob:  # search for max prob
+                        max_prob = prob
+            if len(games_found) > 0:  # i have found at least one possible game
+                game_app_id = ""
+                for game in games_found:  # search the game with the max name similarity
+                    if game.similar == max_prob:
+                        print("Game Choosen: " + game.app_name + " - Appid:" + str(game.app_id) + " - Sim.:" + str(
+                            max_prob))
+                        game_app_id = game.app_id  # get the game id
+                        break
+                # make 3 request to get all necessary game informations
+                async with aiohttp.ClientSession() as session:
+                    async with session.get(steam_apps_info + str(game_app_id)) as resp:
+                        request_app_info = await resp.json()
+                async with aiohttp.ClientSession() as session:
+                    async with session.get(steam_apps_page + str(game_app_id)) as resp:
+                        request_app_page = await resp.json()
+                async with aiohttp.ClientSession() as session:
+                    async with session.get(current_players_info + str(game_app_id)) as resp:
+                        request_app_players = await resp.json()
+                # create the final message
+                embed = discord.Embed(title=str(request_app_page[str(game_app_id)]['data']['name']),
+                                      colour=discord.Colour(0x000080),
+                                      url="http://store.steampowered.com/app/" + str(game_app_id) + "/",
+                                      description="Steam statistics about the game: \"" + str(
+                                          request_app_page[str(game_app_id)]['data']['name']) + "\"",
+                                      timestamp=datetime.utcfromtimestamp(time.time())
+                                      )
+                embed.set_thumbnail(url=str(request_app_page[str(game_app_id)]['data']['header_image']))
+                embed.set_author(name=ctx.message.author.name, url="", icon_url=ctx.message.author.avatar_url)
+                embed.set_footer(text=self.botVariables.get_description(), icon_url=self.botVariables.get_bot_icon())
+                # --- price field, get the price or put "Unknown" ---
+                if 'price_overview' in request_app_page[str(game_app_id)]['data']:
+                    price_string = str(request_app_page[str(game_app_id)]['data']['price_overview']['final'])
+                    price_currency = str(request_app_page[str(game_app_id)]['data']['price_overview']['currency'])
+                    price_string = price_string[:(len(price_string) - 2)] + "." + price_string[
+                                                                                  (len(
+                                                                                      price_string) - 2):] + price_currency
+                else:
+                    price_string = "Unknown"
+                embed.add_field(name="Price", value=str(price_string))
+                # --- metacritic field, get the metacritic score or put "Unknown" ---
+                if 'metacritic' in request_app_page[str(game_app_id)]['data']:
+                    metacritic_score = str(request_app_page[str(game_app_id)]['data']['metacritic']['score'])
+                else:
+                    metacritic_score = "Unknown"
+                embed.add_field(name="Metacritic Score", value=str(metacritic_score))
+                # --- release date field, get the release date or put "Coming Soon" ---
+                if request_app_page[str(game_app_id)]['data']['release_date']['coming_soon']:
+                    release_date = "Coming Soon"
+                else:
+                    release_date = str(request_app_page[str(game_app_id)]['data']['release_date']['date'])
+                embed.add_field(name="Release Date", value=str(release_date))
+                # --- developers field, get the list of the developers ---
+                developers = ""
+                for dev in request_app_page[str(game_app_id)]['data']['developers']:
+                    developers += str(dev) + "\n"
+                embed.add_field(name="Developers", value=str(developers))
+                # --- players field, get the number of current players in that game ---
+                current_players = str("{:,}".format(request_app_players['response']['player_count']))
+                embed.add_field(name="Current Players", value=str(current_players))
+                # --- owners field, get the number of current owners of that game ---
+                owners_count = str("{:,}".format(request_app_info['owners'])) + " ± " + str(
+                    "{:,}".format(request_app_info['owners_variance']))
+                embed.add_field(name="Game Owners", value=str(owners_count))
+                await self.bot.send_message(ctx.message.channel, embed=embed)
+            else:
+                print("No games found")
+                await self.bot.send_message(ctx.message.channel, "*No games found, check the name...*")
+            print("-------------------------")
+        else:
+            await self.bot.send_message(ctx.message.channel, "**Usage:** " + self.command_prefix + "steamgame GameName")
+
+    # ---------------------------------------------------------------------
+
     @commands.command(pass_context=True)
     async def mcskin(self, ctx, *args):
         """Print the Minecraft skin of a user

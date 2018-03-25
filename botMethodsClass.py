@@ -5,6 +5,7 @@ import re
 import discord
 
 from botVariablesClass import BotVariables
+from difflib import SequenceMatcher
 
 
 # ---------------------------------------------------------------------
@@ -85,6 +86,15 @@ class BotMethods:
             return 3
         return -1
 
-        # ---------------------------------------------------------------------
+    # ---------------------------------------------------------------------
+
+    @staticmethod
+    def similar(a, b):
+        """ This function calculate how much the first string is similar to the second string
+        :param a: First String
+        :param b: Second String
+        :return: Return the similarity between the two string
+        """
+        return SequenceMatcher(None, a, b).ratio()
 
 # ---------------------------------------------------------------------

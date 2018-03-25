@@ -313,6 +313,7 @@ class BotMaintenanceCommands:
                     r = requests.post(url,
                                       data={self.botVariables.get_server_write_status_parameter(): new_state,
                                             })
+                    print("Change State - HTTP Request Status Code:" + str(r.status_code))
                     if r.text == "Error" or (r.status_code != 200):
                         print("ERROR SAVING NEW STATUS ON THE SERVER...")
                     else:

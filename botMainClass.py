@@ -246,6 +246,7 @@ async def on_ready():
     try:
         if botVariables.emptyUrl not in url:
             r = requests.get(url)  # get the last in-game status from server
+            print("Change State - HTTP Request Status Code:" + str(r.status_code))
             if r.text != "Error" and r.status_code == 200:
                 print("No Error - changing state to:" + r.text)
                 await bot.change_presence(game=discord.Game(name=r.text))
