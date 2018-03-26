@@ -29,6 +29,7 @@ class BotGamingCommands:
     client = Hypixthon(botVariables.get_hypixel_key())  # hypixel api connection
     core.APIConnection(api_key=botVariables.get_steam_key())  # steam api connection
     command_prefix = botVariables.command_prefix
+    steam_game_list_json = None  # instance the steam json as empty, used in "steamgame" command
 
     # ---------------------------------------------------------------------
 
@@ -257,18 +258,25 @@ class BotGamingCommands:
         Usage: !steamgame "Portal 2"
         """
         if len(args) == 1:
-            game_name = args[0].lower()
+            game_name = args[0].strip().lower()
             steam_apps_url = "http://api.steampowered.com/ISteamApps/GetAppList/v2"
             steam_apps_info = "http://steamspy.com/api.php?request=appdetails&appid="
             steam_apps_page = "http://store.steampowered.com/api/appdetails?appids="
             current_players_info = "https://api.steampowered.com/ISteamUserStats/GetNumberOfCurrentPlayers/v1/?appid="
+            # temporary message to tell the user to wait
+            temp_message = await self.bot.send_message(ctx.message.channel, "*Game search started, give me a second*")
             print("-------------------------")
-            async with aiohttp.ClientSession() as session:  # request all steam games
-                async with session.get(steam_apps_url) as resp:
-                    r = await resp.json()
+            if self.steam_game_list_json is None:  # is the json cached?
+                print("SteamGameList: Start downloading steam apps json, no cached version found")
+                async with aiohttp.ClientSession() as session:  # request all steam games
+                    async with session.get(steam_apps_url) as resp:
+                        self.steam_game_list_json = await resp.json()
+                print("SteamGameList: Download completed!")
+            else:
+                print("SteamGameList: json file already downloaded, using cached version...")
             games_found = []
             max_prob = 0.0
-            for entry in r['applist']['apps']:  # for each steam game
+            for entry in self.steam_game_list_json['applist']['apps']:  # for each steam game
                 prob = BotMethods.similar(entry['name'].lower(), game_name)  # calculate the name similarity
                 # compare lower() strings, because i don't mind if the name is uppercase or not
                 if prob > 0.7:  # consider it only if it's > 0.7 (range is 0.0-1.0)
@@ -276,9 +284,12 @@ class BotGamingCommands:
                         self.SteamGame(entry['appid'], entry['name'], prob))  # store that game in the array
                     if prob > max_prob:  # search for max prob
                         max_prob = prob
+                        if prob >= 1.0:  # i have found the perfect string
+                            print("Perfect name found, search cycle stopped")
+                            break   # stop the for
             if len(games_found) > 0:  # i have found at least one possible game
                 game_app_id = ""
-                for game in games_found:  # search the game with the max name similarity
+                for game in games_found:  # search the game with the max name similarity in the array
                     if game.similar == max_prob:
                         print("Game Choosen: " + game.app_name + " - Appid:" + str(game.app_id) + " - Sim.:" + str(
                             max_prob))
@@ -339,9 +350,11 @@ class BotGamingCommands:
                 owners_count = str("{:,}".format(request_app_info['owners'])) + " ± " + str(
                     "{:,}".format(request_app_info['owners_variance']))
                 embed.add_field(name="Game Owners", value=str(owners_count))
+                await self.bot.delete_message(temp_message)
                 await self.bot.send_message(ctx.message.channel, embed=embed)
             else:
                 print("No games found")
+                await self.bot.delete_message(temp_message)
                 await self.bot.send_message(ctx.message.channel, "*No games found, check the name...*")
             print("-------------------------")
         else:
