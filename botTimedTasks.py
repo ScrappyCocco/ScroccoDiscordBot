@@ -20,9 +20,6 @@ class BotTimedTasks:
 
     botVariables = BotVariables(False)  # used for 2 api keys
     YT_key = botVariables.get_youtube_api_key()
-    YT_channel_ID = botVariables.get_youtube_channel_id()
-    DISCORD_channel_ID = botVariables.get_discord_channel_id_youtube()
-    YT_message = botVariables.get_youtube_alert_message()
     YT_watchLink = "https://www.youtube.com/watch?v="
 
     statusChanged = False  # to skip continuous status change
@@ -40,27 +37,28 @@ class BotTimedTasks:
         while not self.bot.is_closed:
             if not self.bot.maintenanceMode:  # check for maintenanceMode (if yes, let's skip task content for safety)
                 # create url with parameters
-                url = "https://www.googleapis.com/youtube/v3/activities?channelId=" + self.YT_channel_ID \
-                      + "&key=" + self.YT_key + "&part=snippet,contentDetails&publishedAfter=" + str(current_time)
-                async with aiohttp.ClientSession() as session:  # async GET request
-                    async with session.get(url) as resp:
-                        r_json = await resp.json()
-                if "error" in r_json:  # an error occurred with the request
-                    print("An error occurred in YT timed request")
-                    print(str(r_json))
-                else:  # no errors
-                    if int(r_json['pageInfo']['totalResults']) == 1:  # if there is a new video
-                        print("New video found, sending message")
-                        message = self.YT_message + "\n**" + r_json['items'][0]['snippet'][
-                            'title'] + "** \n" + self.YT_watchLink + r_json['items'][0]['contentDetails']['upload'][
-                                      'videoId'] + "\n"
-                        try:
-                            await self.bot.send_message(discord.Server(id=int(self.DISCORD_channel_ID)), message)
-                        except discord.errors.Forbidden:
-                            print("ERROR: Can't send the message")
-                        print("Message sent!")
-                    else:  # no new video
-                        print("Nothing new found")
+                for channel in self.botVariables.get_list_youtube_channels_check():
+                    url = "https://www.googleapis.com/youtube/v3/activities?channelId=" + channel['YTchannelID'] \
+                          + "&key=" + self.YT_key + "&part=snippet,contentDetails&publishedAfter=" + str(current_time)
+                    async with aiohttp.ClientSession() as session:  # async GET request
+                        async with session.get(url) as resp:
+                            r_json = await resp.json()
+                    if "error" in r_json:  # an error occurred with the request
+                        print("An error occurred in YT timed request")
+                        print(str(r_json))
+                    else:  # no errors
+                        if int(r_json['pageInfo']['totalResults']) == 1:  # if there is a new video
+                            print("New video found, sending message")
+                            message = channel['notificationMessage'] + "\n**" + r_json['items'][0]['snippet'][
+                                'title'] + "** \n" + self.YT_watchLink + r_json['items'][0]['contentDetails']['upload'][
+                                          'videoId'] + "\n"
+                            try:
+                                await self.bot.send_message(discord.Server(id=int(channel['DISCORDchannelID'])), message)
+                            except discord.errors.Forbidden:
+                                print("ERROR: Can't send the message in the specified channel")
+                            print("Youtube Notification Message sent!")
+                # end for each channel
+                print("End of Youtube check for " + str(len(self.botVariables.get_list_youtube_channels_check())) + " channel(s)")
             await asyncio.sleep(3600)  # task runs every hour
             print("------------------------")
             current_time = datetime.datetime.now() - datetime.timedelta(

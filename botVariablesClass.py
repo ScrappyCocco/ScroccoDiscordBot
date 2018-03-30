@@ -15,7 +15,8 @@ class BotVariables:
 
     # API KEYS LIST
     # REMEMBER THAT if an api key is empty the bot won't start or the command won't work correctly
-    # IF YOU don't want a command you have to MANUALLY remove the api key check (down here) and the command
+    # IF YOU DON'T WANT a command you have to MANUALLY remove the api key check (down here) and the command
+
     # cleverKey = "YourKey" : get yours from  https://www.cleverbot.com/api/
     # hypixelKey = "YourKey" : get yours from https://api.hypixel.net/
     # steamKey = "YourKey" : get yours from https://steamcommunity.com/dev/apikey
@@ -30,6 +31,8 @@ class BotVariables:
     #   youtube channel id : the youtube channel-id to check new videos
     #   discord channel id : the discord channel where to send youtube notifications
     #   notificationMessage : the message to send at the beginning of the youtube alert
+    #   "channels" is an array of channels, you can specify more than one channel to check every hour, if you don't want to check any channel,
+    #   leave the array empty with "channels": []
 
     # version and build : specify the bot version, you should NOT change those values if you don't edit the bot source
 
@@ -121,7 +124,7 @@ class BotVariables:
 
     def check_empty_key(self, key):
         """Function that check the key for errors.
-            :return: True if the key is ok, False if the Key is empty
+            :return: True if the key is ok, False if the Key is not valid
         """
         if key == "" or key == self.emptyApiKey:
             print("ERROR, A KEY IS EMPTY - CHECK YOUR FILE")
@@ -233,23 +236,11 @@ class BotVariables:
                 "ERROR GETTING THE YOUTUBE KEY (get yours from https://developers.google.com/youtube/v3/getting-started) - ABORTING")
             quit(1)
 
-    def get_youtube_channel_id(self):
-        """Function that return the youtube channel ID to use in the request
-            :return: The youtube channel ID to use in the request
+    def get_list_youtube_channels_check(self):
+        """Function that return the list of the youtube channels to check, with all the details about the notification
+        :return: The list of the youtube channels to check
         """
-        return self.bot_data_file["youtube"]["YTchannelID"]
-
-    def get_discord_channel_id_youtube(self):
-        """Function that return the discord channel id to send youtube notifications
-            :return: The discord channel id to send youtube notifications
-        """
-        return self.bot_data_file["youtube"]["DISCORDchannelID"]
-
-    def get_youtube_alert_message(self):
-        """Function that return the youtube alert message to send at the beginning of the message
-            :return: The youtube alert message
-        """
-        return self.bot_data_file["youtube"]["notificationMessage"]
+        return self.bot_data_file["youtube"]["channels"]
 
     def get_version(self):
         """Function that return the current version of the bot.

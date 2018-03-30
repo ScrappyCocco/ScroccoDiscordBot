@@ -16,12 +16,16 @@
   },
   "youtube": {
     "key": "YourKey",
-    "YTchannelID": "",
-    "DISCORDchannelID": "",
-    "notificationMessage": "New video published!"
+    "channels": [
+      {
+        "YTchannelID": "",
+        "DISCORDchannelID": "",
+        "notificationMessage": "New video published!"
+      }
+    ]
   },
-  "version": "0.98",
-  "build": "45",
+  "version": "0.98.5",
+  "build": "10",
   "is_beta": "False",
   "description": "Bot by ScrappyCocco (Some commands are hidden from help)",
   "bot_icon": "https://discordapp.com/assets/2c21aeda16de354ba5334551a883b481.png",

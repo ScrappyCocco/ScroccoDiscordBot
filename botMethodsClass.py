@@ -89,12 +89,24 @@ class BotMethods:
     # ---------------------------------------------------------------------
 
     @staticmethod
-    def similar(a, b):
+    def similar(a, b, game_name_numbers):
         """ This function calculate how much the first string is similar to the second string
         :param a: First String
         :param b: Second String
-        :return: Return the similarity between the two string
+        :param game_name_numbers: All the numbers in <a> string, used for an additional check
+        :return: Return the similarity between the two string (0.0-1.0)
         """
-        return SequenceMatcher(None, a, b).ratio()
+        similarity = SequenceMatcher(None, a, b).ratio()
+        if len(game_name_numbers) > 0:  # additional check about numbers in the string
+            number_found = False
+            for character in b:  # check for every character
+                if character.isdigit():  # if is a digit
+                    for number_entry in game_name_numbers:  # compare it with numbers in the begin string
+                        if str(number_entry) == str(character):
+                            number_found = True
+                            break
+            if not number_found:  # number in the given string not in this one, reduce prob
+                similarity -= 0.1
+        return similarity
 
 # ---------------------------------------------------------------------

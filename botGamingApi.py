@@ -134,6 +134,9 @@ class BotGamingCommands:
                 await self.bot.send_message(ctx.message.channel, "*Can't retrieve R6 user data...*")
                 return
             print("R6 request completed")
+            if str(r1) == str(r2) == str(r3) == "":
+                await self.bot.send_message(ctx.message.channel, "*Something gone wrong, retry later...*")
+                return
             if str(r2) == string_compare_1 or str(r2) == string_compare_2:  # An error occurred
                 await self.bot.send_message(ctx.message.channel, "Error - User not found!")
                 return
@@ -259,6 +262,7 @@ class BotGamingCommands:
         """
         if len(args) == 1:
             game_name = args[0].strip().lower()
+            game_name_numbers = [int(s) for s in game_name.split() if s.isdigit()]
             steam_apps_url = "http://api.steampowered.com/ISteamApps/GetAppList/v2"
             steam_apps_info = "http://steamspy.com/api.php?request=appdetails&appid="
             steam_apps_page = "http://store.steampowered.com/api/appdetails?appids="
@@ -277,7 +281,7 @@ class BotGamingCommands:
             games_found = []
             max_prob = 0.0
             for entry in self.steam_game_list_json['applist']['apps']:  # for each steam game
-                prob = BotMethods.similar(entry['name'].lower(), game_name)  # calculate the name similarity
+                prob = BotMethods.similar(game_name, entry['name'].lower(), game_name_numbers)  # calculate the name similarity
                 # compare lower() strings, because i don't mind if the name is uppercase or not
                 if prob > 0.7:  # consider it only if it's > 0.7 (range is 0.0-1.0)
                     games_found.append(
