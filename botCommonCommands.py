@@ -97,7 +97,7 @@ class BotCommonCommands:
 
     @commands.command(pass_context=True)
     async def meme(self, ctx, *args):
-        """Generate a meme with 1 or 2 phrases (and with the generator id or without)
+        """Generate a meme with up to 3 phrases (and with the generator id or without)
         example 1: !meme "Hello there Discord" 47235368
         example 2: !meme "Generate a random meme" "For me"
         example 3: !meme "Hello there Discord" "How are you?" 47235368
@@ -485,7 +485,7 @@ class BotCommonCommands:
     async def lmgtfy(self, ctx, *args):
         """Generate a "let me google it for you" url
         Usage: !lmgtfy "search box"
-        Example: !lmgtfy "helllo world"
+        Example: !lmgtfy "hello world"
         """
         print("-------------------------")
         if len(args) == 1:

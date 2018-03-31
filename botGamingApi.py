@@ -295,7 +295,7 @@ class BotGamingCommands:
                 game_app_id = ""
                 for game in games_found:  # search the game with the max name similarity in the array
                     if game.similar == max_prob:
-                        print("Game Choosen: " + game.app_name + " - Appid:" + str(game.app_id) + " - Sim.:" + str(
+                        print("Game Chosen: " + game.app_name + " - Appid:" + str(game.app_id) + " - Sim.:" + str(
                             max_prob))
                         game_app_id = game.app_id  # get the game id
                         break
@@ -348,7 +348,10 @@ class BotGamingCommands:
                     developers += str(dev) + "\n"
                 embed.add_field(name="Developers", value=str(developers))
                 # --- players field, get the number of current players in that game ---
-                current_players = str("{:,}".format(request_app_players['response']['player_count']))
+                if 'player_count' in request_app_players['response']:
+                    current_players = str("{:,}".format(request_app_players['response']['player_count']))
+                else:
+                    current_players = "Unknown"
                 embed.add_field(name="Current Players", value=str(current_players))
                 # --- owners field, get the number of current owners of that game ---
                 owners_count = str("{:,}".format(request_app_info['owners'])) + " ± " + str(
