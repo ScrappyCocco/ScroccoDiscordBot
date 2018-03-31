@@ -104,7 +104,7 @@ class BotCommonCommands:
         example 4: !meme "Hello there Discord" "How are you?" "I'm ok" 47235368
         """
         print("-------------------------")
-        error_count = 0
+        error_flag = False
         generator_id = 0
         phrase1 = None
         phrase2 = None
@@ -135,9 +135,9 @@ class BotCommonCommands:
                     print("Meme: GenID:" + str(generator_id))
                 except ValueError:
                     await self.bot.send_message(ctx.message.channel, "The fourth param it's not a number!")
-                    error_count = 1
+                    error_flag = True
                     print("Meme: GenID Not Correct")
-        if 0 <= len(args) <= 4 and 0 == error_count:
+        if 0 < len(args) <= 4 and not error_flag:  # check for parameters and errors
             if generator_id == 0:  # generator id not given, downloading a random id
                 async with aiohttp.ClientSession() as session:
                     async with session.get(generator_link) as resp:
@@ -148,33 +148,43 @@ class BotCommonCommands:
                         'id']
                 else:
                     print("Error getting meme generators")
-            if phrase3 is None:  # request data based if we have 3 or 2 boxes
-                print("Meme: Generating meme with 2 boxes")
+            if phrase2 is None:  # request data based for only 1 text box
+                print("Meme: Generating meme with 1 boxes")
                 request_data = {'template_id': int(generator_id),
                                 'username': self.botVariables.get_meme_generator_username(),
                                 'password': self.botVariables.get_meme_generator_password(),
                                 'text0': phrase1,
-                                'text1': phrase2,
-                                'boxes[1][text]': phrase1,
-                                'boxes[0][text]': phrase2
+                                'boxes[0][text]': phrase1
                                 }
             else:
-                print("Meme: Generating meme with 3 boxes")
-                request_data = {'template_id': int(generator_id),
-                                'username': self.botVariables.get_meme_generator_username(),
-                                'password': self.botVariables.get_meme_generator_password(),
-                                'text0': phrase1,
-                                'text1': phrase2,
-                                'boxes[2][text]': phrase3,
-                                'boxes[1][text]': phrase1,
-                                'boxes[0][text]': phrase2
-                                }
+                if phrase3 is None:  # request data based if we have 3 or 2 boxes
+                    print("Meme: Generating meme with 2 boxes")
+                    request_data = {'template_id': int(generator_id),
+                                    'username': self.botVariables.get_meme_generator_username(),
+                                    'password': self.botVariables.get_meme_generator_password(),
+                                    'text0': phrase1,
+                                    'text1': phrase2,
+                                    'boxes[0][text]': phrase1,
+                                    'boxes[1][text]': phrase2
+                                    }
+                else:
+                    print("Meme: Generating meme with 3 boxes")
+                    request_data = {'template_id': int(generator_id),
+                                    'username': self.botVariables.get_meme_generator_username(),
+                                    'password': self.botVariables.get_meme_generator_password(),
+                                    'text0': phrase1,
+                                    'text1': phrase2,
+                                    'boxes[0][text]': phrase1,
+                                    'boxes[1][text]': phrase2,
+                                    'boxes[2][text]': phrase3
+                                    }
             async with aiohttp.ClientSession() as session:
                 async with session.post("https://api.imgflip.com/caption_image", data=request_data) as resp:
                     try:
                         r = await resp.json()
                     except (UnicodeDecodeError, aiohttp.client_exceptions.ClientResponseError):
                         print("Meme reply is not a json...")
+                        await self.bot.send_message(ctx.message.channel, "*An error occurred generating the meme...*")
                         return
             result = r
             if result['success']:
@@ -182,9 +192,10 @@ class BotCommonCommands:
                                             str(result['data']['url']) + " ID Meme:" + str(generator_id))
             else:
                 print("Meme Error:" + str(result['error_message']))
+                await self.bot.send_message(ctx.message.channel, "*An error occurred generating the meme...*")
         else:
             await self.bot.send_message(ctx.message.channel,
-                                        "**Usage:** " + self.command_prefix + "meme \"text1\" \"text2 or memeId\"[Optional] \"memeId\"[Optional], for more see " + self.command_prefix + "help meme")
+                                        "**Usage:** " + self.command_prefix + "meme <parameters>, please check " + self.command_prefix + "help meme")
         print("-------------------------")
 
     # ---------------------------------------------------------------------
