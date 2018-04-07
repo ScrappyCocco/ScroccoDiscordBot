@@ -87,7 +87,7 @@ class BotCommonCommands:
         """Print a random cat
         Usage: !cat
         """
-        url = "http://random.cat/meow"
+        url = "http://aws.random.cat/meow"
         async with aiohttp.ClientSession() as session:
             async with session.get(url) as resp:
                 r = await resp.json()
