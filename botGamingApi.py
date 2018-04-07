@@ -310,6 +310,11 @@ class BotGamingCommands:
                     async with session.get(current_players_info + str(game_app_id)) as resp:
                         request_app_players = await resp.json()
                 # create the final message
+                if not request_app_page[str(game_app_id)]['success']:
+                    print("Game Info Request returned success:False")
+                    await self.bot.delete_message(temp_message)
+                    await self.bot.send_message(ctx.message.channel, "*Cannot get informations about this game, sorry...*")
+                    return
                 embed = discord.Embed(title=str(request_app_page[str(game_app_id)]['data']['name']),
                                       colour=discord.Colour(0x000080),
                                       url="http://store.steampowered.com/app/" + str(game_app_id) + "/",
