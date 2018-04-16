@@ -151,10 +151,14 @@ class BotGamingCommands:
             if request_player_stats['player']['stats']['ranked']['has_played']:
                 ranked_playtime = "{0:0.1f}".format(
                     request_player_stats['player']['stats']['ranked']['playtime'] / 3600)
-                ranked_stats_string = str(request_player_stats['player']['stats']['ranked']['wins']) + " wins, "
-                ranked_stats_string += str(request_player_stats['player']['stats']['ranked']['losses']) + " losses, "
-                ranked_stats_string += str(request_player_stats['player']['stats']['ranked']['kills']) + " kills, "
-                ranked_stats_string += str(request_player_stats['player']['stats']['ranked']['deaths']) + " deaths"
+                ranked_stats_string = str(
+                    "{:,}".format(request_player_stats['player']['stats']['ranked']['wins'])) + " wins, "
+                ranked_stats_string += str(
+                    "{:,}".format(request_player_stats['player']['stats']['ranked']['losses'])) + " losses, "
+                ranked_stats_string += str(
+                    "{:,}".format(request_player_stats['player']['stats']['ranked']['kills'])) + " kills, "
+                ranked_stats_string += str(
+                    "{:,}".format(request_player_stats['player']['stats']['ranked']['deaths'])) + " deaths"
             embed.add_field(name="Ranked Stats (during " + str(ranked_playtime) + "h):", value=str(ranked_stats_string),
                             inline=False)
             # --- casual stats ---
@@ -163,25 +167,32 @@ class BotGamingCommands:
             if request_player_stats['player']['stats']['casual']['has_played']:
                 casual_playtime = "{0:0.1f}".format(
                     request_player_stats['player']['stats']['casual']['playtime'] / 3600)
-                casual_stats_string = str(request_player_stats['player']['stats']['casual']['wins']) + " wins, "
-                casual_stats_string += str(request_player_stats['player']['stats']['casual']['losses']) + " losses, "
-                casual_stats_string += str(request_player_stats['player']['stats']['casual']['kills']) + " kills, "
-                casual_stats_string += str(request_player_stats['player']['stats']['casual']['deaths']) + " deaths"
+                casual_stats_string = str(
+                    "{:,}".format(request_player_stats['player']['stats']['casual']['wins'])) + " wins, "
+                casual_stats_string += str(
+                    "{:,}".format(request_player_stats['player']['stats']['casual']['losses'])) + " losses, "
+                casual_stats_string += str(
+                    "{:,}".format(request_player_stats['player']['stats']['casual']['kills'])) + " kills, "
+                casual_stats_string += str(
+                    "{:,}".format(request_player_stats['player']['stats']['casual']['deaths'])) + " deaths"
             embed.add_field(name="Casual Stats (during " + str(casual_playtime) + "h):", value=str(casual_stats_string),
                             inline=False)
             # --- overall stats ---
             overall_stats_string = "Lv." + str(request_player_stats['player']['stats']['progression']['level']) + " - "
-            overall_stats_string += str(request_player_stats['player']['stats']['overall']['revives']) + " revives, "
-            overall_stats_string += str(request_player_stats['player']['stats']['overall']['suicides']) + " suicides, "
             overall_stats_string += str(
-                request_player_stats['player']['stats']['overall']['steps_moved']) + " steps moved \n"
+                "{:,}".format(request_player_stats['player']['stats']['overall']['revives'])) + " revives, "
             overall_stats_string += str(
-                request_player_stats['player']['stats']['overall']['bullets_fired']) + " bullets fired, "
+                "{:,}".format(request_player_stats['player']['stats']['overall']['suicides'])) + " suicides, "
+            overall_stats_string += str("{:,}".format(
+                request_player_stats['player']['stats']['overall']['steps_moved'])) + " steps moved \n"
+            overall_stats_string += str("{:,}".format(
+                request_player_stats['player']['stats']['overall']['bullets_fired'])) + " bullets fired, "
+            overall_stats_string += str("{:,}".format(
+                request_player_stats['player']['stats']['overall']['bullets_hit'])) + " bullets hit, "
+            overall_stats_string += str("{:,}".format(
+                request_player_stats['player']['stats']['overall']['headshots'])) + " headshots, "
             overall_stats_string += str(
-                request_player_stats['player']['stats']['overall']['bullets_hit']) + " bullets hit, "
-            overall_stats_string += str(
-                request_player_stats['player']['stats']['overall']['headshots']) + " headshots, "
-            overall_stats_string += str(request_player_stats['player']['stats']['overall']['assists']) + " assists"
+                "{:,}".format(request_player_stats['player']['stats']['overall']['assists'])) + " assists"
             embed.add_field(name="Overall Player Stats", value=str(overall_stats_string), inline=False)
             # --- most played ark operator ---
             best_atk_index = BotMethods.get_most_played_operator_index(request_player_operators['operator_records'],
@@ -192,14 +203,14 @@ class BotGamingCommands:
                     request_player_operators['operator_records'][best_atk_index]['operator']['name'])
                 best_atk_operator_time = str("{0:0.1f}".format(
                     request_player_operators['operator_records'][best_atk_index]['stats']['playtime'] / 3600)) + "h"
-                best_ark_operator_string = str(
-                    request_player_operators['operator_records'][best_atk_index]['stats']['wins']) + " wins, "
-                best_ark_operator_string += str(
-                    request_player_operators['operator_records'][best_atk_index]['stats']['losses']) + " losses, "
-                best_ark_operator_string += str(
-                    request_player_operators['operator_records'][best_atk_index]['stats']['kills']) + " kills, "
-                best_ark_operator_string += str(
-                    request_player_operators['operator_records'][best_atk_index]['stats']['deaths']) + " deaths"
+                best_ark_operator_string = str("{:,}".format(
+                    request_player_operators['operator_records'][best_atk_index]['stats']['wins'])) + " wins, "
+                best_ark_operator_string += str("{:,}".format(
+                    request_player_operators['operator_records'][best_atk_index]['stats']['losses'])) + " losses, "
+                best_ark_operator_string += str("{:,}".format(
+                    request_player_operators['operator_records'][best_atk_index]['stats']['kills'])) + " kills, "
+                best_ark_operator_string += str("{:,}".format(
+                    request_player_operators['operator_records'][best_atk_index]['stats']['deaths'])) + " deaths"
             else:
                 best_ark_operator_string = "Unknown"
                 best_ark_operator_name = "Not Found"
@@ -216,14 +227,14 @@ class BotGamingCommands:
                     request_player_operators['operator_records'][best_def_index]['operator']['name'])
                 best_def_operator_time = str("{0:0.1f}".format(
                     request_player_operators['operator_records'][best_def_index]['stats']['playtime'] / 3600)) + "h"
-                best_def_operator_string = str(
-                    request_player_operators['operator_records'][best_def_index]['stats']['wins']) + " wins, "
-                best_def_operator_string += str(
-                    request_player_operators['operator_records'][best_def_index]['stats']['losses']) + " losses, "
-                best_def_operator_string += str(
-                    request_player_operators['operator_records'][best_def_index]['stats']['kills']) + " kills, "
-                best_def_operator_string += str(
-                    request_player_operators['operator_records'][best_def_index]['stats']['deaths']) + " deaths"
+                best_def_operator_string = str("{:,}".format(
+                    request_player_operators['operator_records'][best_def_index]['stats']['wins'])) + " wins, "
+                best_def_operator_string += str("{:,}".format(
+                    request_player_operators['operator_records'][best_def_index]['stats']['losses'])) + " losses, "
+                best_def_operator_string += str("{:,}".format(
+                    request_player_operators['operator_records'][best_def_index]['stats']['kills'])) + " kills, "
+                best_def_operator_string += str("{:,}".format(
+                    request_player_operators['operator_records'][best_def_index]['stats']['deaths'])) + " deaths"
             else:
                 best_def_operator_string = "Unknown"
                 best_def_operator_name = "Not Found"
