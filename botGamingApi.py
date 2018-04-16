@@ -97,7 +97,7 @@ class BotGamingCommands:
     @commands.command(pass_context=True)
     async def r6(self, ctx, *args):
         """Print Rainbow6 player's stats
-        Usage: !r6 PlayerName Platform
+        Usage: !r6 PlayerName Platform(xone/ps4/uplay)
         Example: !r6 Player1 psn
         Example: !r6 Player2 uplay
         """
@@ -107,53 +107,132 @@ class BotGamingCommands:
                                         "**Usage:** " + self.command_prefix + "r6 PlayerName Platform, see " + self.command_prefix + "help r6 for more")
         else:
             if len(args) == 2:
-                platform = str(args[1]).lower()
-                if platform != "xbl" and platform != "psn" and platform != "uplay":
+                platform_string = str(args[1]).lower()
+                if platform_string != "xone" and platform_string != "ps4" and platform_string != "uplay":
                     await self.bot.send_message(ctx.message.channel,
-                                                "Platform not correct - options: 'xbl', 'psn' or 'uplay'")
+                                                "Platform not correct - options: 'xone', 'ps4' or 'uplay'")
                     return
             else:
-                platform = "uplay"
-            name = args[0]
-            url_stats = "http://rainbowsix7nightbot.herokuapp.com/rainbowsix7.php?platform=" + platform + "&nick=" + name + "&command=stats"
-            url_time = "http://rainbowsix7nightbot.herokuapp.com/rainbowsix7.php?platform=" + platform + "&nick=" + name + "&command=time"
-            url_rank = "http://rainbowsix7nightbot.herokuapp.com/rainbowsix7.php?platform=" + platform + "&nick=" + name + "&command=rank"
-            # error strings
-            string_compare_1 = "00h 00m 00s (ranked + casual)"
-            string_compare_2 = "Couldn't retrieve 'profileId'! Maybe player doesn't exist? Check typos or manually parse the profileId found in the URL of your ubisoft profile page: https://game-rainbow6.ubi.com/"
-            try:
-                async with aiohttp.ClientSession() as session:
-                    async with session.get(url_stats) as resp:
-                        r1 = await resp.text()
-                    async with session.get(url_time) as resp:
-                        r2 = await resp.text()
-                    async with session.get(url_rank) as resp:
-                        r3 = await resp.text()
-            except aiohttp.client_exceptions.ServerDisconnectedError:
-                print("R6 request failed")
-                await self.bot.send_message(ctx.message.channel, "*Can't retrieve R6 user data...*")
+                platform_string = "uplay"  # default platform is uplay
+            # temporary message to tell the user to wait
+            temp_message = await self.bot.send_message(ctx.message.channel,
+                                                       "*Downloading your player stats, give me a second*")
+            player_name_string = args[0]
+            url_stats = "https://api.r6stats.com/api/v1/players/" + player_name_string + "?platform=" + platform_string
+            url_operators = "https://api.r6stats.com/api/v1/players/" + player_name_string + "/operators?platform=" + platform_string
+            # first request, check for errors
+            print("R6 - Starting First Request")
+            async with aiohttp.ClientSession() as session:
+                async with session.get(url_stats) as resp:
+                    request_player_stats = await resp.json()
+            if 'status' in request_player_stats:  # an error occurred looking for the player
+                print("R6 - Player does not exist")
+                await self.bot.send_message(ctx.message.channel, "*No player found with that name...*")
+                await self.bot.delete_message(temp_message)
                 return
-            print("R6 request completed")
-            if str(r1) == str(r2) == str(r3) == "":
-                await self.bot.send_message(ctx.message.channel, "*Something gone wrong, retry later...*")
-                return
-            if str(r2) == string_compare_1 or str(r2) == string_compare_2:  # An error occurred
-                await self.bot.send_message(ctx.message.channel, "Error - User not found!")
-                return
+            print("R6 - No errors downloading the players, downloading other data...")
+            async with aiohttp.ClientSession() as session:
+                async with session.get(url_operators) as resp:
+                    request_player_operators = await resp.json()
+            print("R6 - Download completed, creating the embed")
             # creating the discord Embed response
-            embed = discord.Embed(title="Rainbow6 Stats",
+            embed = discord.Embed(title="Rainbow6 Stats Link",
                                   colour=discord.Colour(0x007bb5),
-                                  url="https://r6stats.com/",
-                                  description="Stats of \"" + name + "\"",
+                                  url="https://r6stats.com/stats/" + platform_string + "/" + player_name_string,
+                                  description="Stats of \"" + player_name_string + "\", updated at:" + str(
+                                      request_player_stats['player']['updated_at']),
                                   timestamp=datetime.utcfromtimestamp(time.time())
                                   )
             embed.set_author(name=ctx.message.author.name, url="", icon_url=ctx.message.author.avatar_url)
             embed.set_footer(text=self.botVariables.get_description(), icon_url=self.botVariables.get_bot_icon())
-
-            embed.add_field(name="Stats:", value=str(r1))
-            embed.add_field(name="Play-Time:", value=str(r2))
-            embed.add_field(name="Competitive Rank:", value=str(r3))
+            # --- ranked stats ---
+            ranked_stats_string = "Empty"
+            ranked_playtime = 0
+            if request_player_stats['player']['stats']['ranked']['has_played']:
+                ranked_playtime = "{0:0.1f}".format(
+                    request_player_stats['player']['stats']['ranked']['playtime'] / 3600)
+                ranked_stats_string = str(request_player_stats['player']['stats']['ranked']['wins']) + " wins, "
+                ranked_stats_string += str(request_player_stats['player']['stats']['ranked']['losses']) + " losses, "
+                ranked_stats_string += str(request_player_stats['player']['stats']['ranked']['kills']) + " kills, "
+                ranked_stats_string += str(request_player_stats['player']['stats']['ranked']['deaths']) + " deaths"
+            embed.add_field(name="Ranked Stats (during " + str(ranked_playtime) + "h):", value=str(ranked_stats_string),
+                            inline=False)
+            # --- casual stats ---
+            casual_stats_string = "Empty"
+            casual_playtime = 0
+            if request_player_stats['player']['stats']['casual']['has_played']:
+                casual_playtime = "{0:0.1f}".format(
+                    request_player_stats['player']['stats']['casual']['playtime'] / 3600)
+                casual_stats_string = str(request_player_stats['player']['stats']['casual']['wins']) + " wins, "
+                casual_stats_string += str(request_player_stats['player']['stats']['casual']['losses']) + " losses, "
+                casual_stats_string += str(request_player_stats['player']['stats']['casual']['kills']) + " kills, "
+                casual_stats_string += str(request_player_stats['player']['stats']['casual']['deaths']) + " deaths"
+            embed.add_field(name="Casual Stats (during " + str(casual_playtime) + "h):", value=str(casual_stats_string),
+                            inline=False)
+            # --- overall stats ---
+            overall_stats_string = "Lv." + str(request_player_stats['player']['stats']['progression']['level']) + " - "
+            overall_stats_string += str(request_player_stats['player']['stats']['overall']['revives']) + " revives, "
+            overall_stats_string += str(request_player_stats['player']['stats']['overall']['suicides']) + " suicides, "
+            overall_stats_string += str(
+                request_player_stats['player']['stats']['overall']['steps_moved']) + " steps moved \n"
+            overall_stats_string += str(
+                request_player_stats['player']['stats']['overall']['bullets_fired']) + " bullets fired, "
+            overall_stats_string += str(
+                request_player_stats['player']['stats']['overall']['bullets_hit']) + " bullets hit, "
+            overall_stats_string += str(
+                request_player_stats['player']['stats']['overall']['headshots']) + " headshots, "
+            overall_stats_string += str(request_player_stats['player']['stats']['overall']['assists']) + " assists"
+            embed.add_field(name="Overall Player Stats", value=str(overall_stats_string), inline=False)
+            # --- most played ark operator ---
+            best_atk_index = BotMethods.get_most_played_operator_index(request_player_operators['operator_records'],
+                                                                       True)
+            if best_atk_index >= 0:
+                best_ark_operator_name = str(
+                    request_player_operators['operator_records'][best_atk_index]['operator']['ctu']) + " - " + str(
+                    request_player_operators['operator_records'][best_atk_index]['operator']['name'])
+                best_atk_operator_time = str("{0:0.1f}".format(
+                    request_player_operators['operator_records'][best_atk_index]['stats']['playtime'] / 3600)) + "h"
+                best_ark_operator_string = str(
+                    request_player_operators['operator_records'][best_atk_index]['stats']['wins']) + " wins, "
+                best_ark_operator_string += str(
+                    request_player_operators['operator_records'][best_atk_index]['stats']['losses']) + " losses, "
+                best_ark_operator_string += str(
+                    request_player_operators['operator_records'][best_atk_index]['stats']['kills']) + " kills, "
+                best_ark_operator_string += str(
+                    request_player_operators['operator_records'][best_atk_index]['stats']['deaths']) + " deaths"
+            else:
+                best_ark_operator_string = "Unknown"
+                best_ark_operator_name = "Not Found"
+                best_atk_operator_time = "0h"
+            embed.add_field(
+                name="Stats about most played attack operator: " + best_ark_operator_name + " (" + best_atk_operator_time + ")",
+                value=str(best_ark_operator_string), inline=False)
+            # --- most played def operator ---
+            best_def_index = BotMethods.get_most_played_operator_index(request_player_operators['operator_records'],
+                                                                       False)
+            if best_def_index >= 0:
+                best_def_operator_name = str(
+                    request_player_operators['operator_records'][best_def_index]['operator']['ctu']) + " - " + str(
+                    request_player_operators['operator_records'][best_def_index]['operator']['name'])
+                best_def_operator_time = str("{0:0.1f}".format(
+                    request_player_operators['operator_records'][best_def_index]['stats']['playtime'] / 3600)) + "h"
+                best_def_operator_string = str(
+                    request_player_operators['operator_records'][best_def_index]['stats']['wins']) + " wins, "
+                best_def_operator_string += str(
+                    request_player_operators['operator_records'][best_def_index]['stats']['losses']) + " losses, "
+                best_def_operator_string += str(
+                    request_player_operators['operator_records'][best_def_index]['stats']['kills']) + " kills, "
+                best_def_operator_string += str(
+                    request_player_operators['operator_records'][best_def_index]['stats']['deaths']) + " deaths"
+            else:
+                best_def_operator_string = "Unknown"
+                best_def_operator_name = "Not Found"
+                best_def_operator_time = "0h"
+            embed.add_field(
+                name="Stats about most played defense operator: " + best_def_operator_name + " (" + best_def_operator_time + ")",
+                value=str(best_def_operator_string), inline=False)
             # send the discord embed message with user stats
+            await self.bot.delete_message(temp_message)
             await self.bot.send_message(ctx.message.channel, embed=embed)
         print("-------------------------")
 
@@ -179,11 +258,11 @@ class BotGamingCommands:
                 user_id = username
             try:
                 if is_integer:  # convert it
-                    print("SteamId64 Request:" + str(user_id))
+                    print("SteamId64 Request With User ID (Int)")
                     steam_user = user.SteamUser(userid=user_id)
                 else:
                     # i need to get the SteamID from the Username
-                    print("SteamIdURL Request:" + str(user_id))
+                    print("SteamIdURL Request With User ID (Str)")
                     steam_api_key = self.botVariables.get_steam_key()
                     steam_api_url = "http://api.steampowered.com/ISteamUser/ResolveVanityURL/v0001/"
                     steam_api_url += "?key=" + steam_api_key + "&vanityurl=" + str(user_id)
@@ -195,7 +274,7 @@ class BotGamingCommands:
                         return
                     else:
                         user_id = int(r['response']['steamid'])
-                        print("SteamId64 Request:" + str(user_id))
+                        print("SteamId64 Request Started")
                         steam_user = user.SteamUser(userid=user_id)
             except steamapi.errors.UserNotFoundError:  # Not an ID, but a vanity URL.
                 await self.bot.send_message(ctx.message.channel, "Error - User not found...")
@@ -264,7 +343,6 @@ class BotGamingCommands:
             game_name = args[0].strip().lower()
             game_name_numbers = [int(s) for s in game_name.split() if s.isdigit()]
             steam_apps_url = "http://api.steampowered.com/ISteamApps/GetAppList/v2"
-            steam_apps_info = "http://steamspy.com/api.php?request=appdetails&appid="
             steam_apps_page = "http://store.steampowered.com/api/appdetails?appids="
             current_players_info = "https://api.steampowered.com/ISteamUserStats/GetNumberOfCurrentPlayers/v1/?appid="
             # temporary message to tell the user to wait
@@ -281,7 +359,8 @@ class BotGamingCommands:
             games_found = []
             max_prob = 0.0
             for entry in self.steam_game_list_json['applist']['apps']:  # for each steam game
-                prob = BotMethods.similar(game_name, entry['name'].lower(), game_name_numbers)  # calculate the name similarity
+                prob = BotMethods.similar(game_name, entry['name'].lower(),
+                                          game_name_numbers)  # calculate the name similarity
                 # compare lower() strings, because i don't mind if the name is uppercase or not
                 if prob > 0.7:  # consider it only if it's > 0.7 (range is 0.0-1.0)
                     games_found.append(
@@ -290,7 +369,7 @@ class BotGamingCommands:
                         max_prob = prob
                         if prob >= 1.0:  # i have found the perfect string
                             print("Perfect name found, search cycle stopped")
-                            break   # stop the for
+                            break  # stop the for
             if len(games_found) > 0:  # i have found at least one possible game
                 game_app_id = ""
                 for game in games_found:  # search the game with the max name similarity in the array
@@ -299,10 +378,7 @@ class BotGamingCommands:
                             max_prob))
                         game_app_id = game.app_id  # get the game id
                         break
-                # make 3 request to get all necessary game informations
-                async with aiohttp.ClientSession() as session:
-                    async with session.get(steam_apps_info + str(game_app_id)) as resp:
-                        request_app_info = await resp.json()
+                # make 2 request to get all necessary game informations
                 async with aiohttp.ClientSession() as session:
                     async with session.get(steam_apps_page + str(game_app_id)) as resp:
                         request_app_page = await resp.json()
@@ -313,7 +389,8 @@ class BotGamingCommands:
                 if not request_app_page[str(game_app_id)]['success']:
                     print("Game Info Request returned success:False")
                     await self.bot.delete_message(temp_message)
-                    await self.bot.send_message(ctx.message.channel, "*Cannot get informations about this game, sorry...*")
+                    await self.bot.send_message(ctx.message.channel,
+                                                "*Cannot get informations about this game, sorry...*")
                     return
                 embed = discord.Embed(title=str(request_app_page[str(game_app_id)]['data']['name']),
                                       colour=discord.Colour(0x000080),
@@ -352,16 +429,24 @@ class BotGamingCommands:
                 for dev in request_app_page[str(game_app_id)]['data']['developers']:
                     developers += str(dev) + "\n"
                 embed.add_field(name="Developers", value=str(developers))
+                # --- number of achievements ---ù
+                if 'achievements' in request_app_page[str(game_app_id)]['data']:
+                    embed.add_field(name="Achievements",
+                                    value=str(request_app_page[str(game_app_id)]['data']['achievements']['total']))
+                else:
+                    embed.add_field(name="Achievements", value="Unknown")
                 # --- players field, get the number of current players in that game ---
                 if 'player_count' in request_app_players['response']:
                     current_players = str("{:,}".format(request_app_players['response']['player_count']))
                 else:
                     current_players = "Unknown"
                 embed.add_field(name="Current Players", value=str(current_players))
-                # --- owners field, get the number of current owners of that game ---
-                owners_count = str("{:,}".format(request_app_info['owners'])) + " ± " + str(
-                    "{:,}".format(request_app_info['owners_variance']))
-                embed.add_field(name="Game Owners", value=str(owners_count))
+                # --- list of game tags ---
+                game_tags = ""
+                for tag in request_app_page[str(game_app_id)]['data']['genres']:
+                    game_tags += str(tag['description']) + ", "
+                embed.add_field(name="Genres", value=str(game_tags[:-2]))
+                # --- sending the message ---
                 await self.bot.delete_message(temp_message)
                 await self.bot.send_message(ctx.message.channel, embed=embed)
             else:
@@ -382,8 +467,22 @@ class BotGamingCommands:
         print("-------------------------")
         if len(args) == 1:
             name = args[0]
-            print("Skin Param:" + name)
-            await self.bot.send_message(ctx.message.channel, "https://mcapi.ca/skin/" + name + "/300")
+            uuid = await BotMethods.get_player_minecraft_uuid(name)
+            if uuid is None:
+                print("Error getting PlayerID")
+                await self.bot.send_message(ctx.message.channel, "*Player not found...*")
+            else:
+                ''' There's no need to download the image, keep the code in case we need to change (valid for mchead too)
+                # download the minecraft image
+                urllib.request.urlretrieve("https://crafatar.com/renders/body/" + uuid, uuid + ".png")
+                print("mchead: Sending file...")
+                # send the minecraft image as file
+                await self.bot.send_file(ctx.message.channel, uuid + ".png")
+                # now delete the downloaded file
+                os.remove(uuid + ".png")
+                print("mchead: File sent and deleted")
+                '''
+                await self.bot.send_message(ctx.message.channel, "https://crafatar.com/renders/body/" + uuid + ".png")
         else:  # parameters aren't correct - print the correct usage of the command
             await self.bot.send_message(ctx.message.channel, "**Usage:** " + self.command_prefix + "mcskin McName")
         print("-------------------------")
@@ -396,8 +495,12 @@ class BotGamingCommands:
         print("-------------------------")
         if len(args) == 1:
             name = args[0]
-            print("param:" + name)
-            await self.bot.send_message(ctx.message.channel, "https://mcapi.ca/avatar/" + name + "/100/true")
+            uuid = await BotMethods.get_player_minecraft_uuid(name)
+            if uuid is None:
+                print("Error getting PlayerID")
+                await self.bot.send_message(ctx.message.channel, "*Player not found...*")
+            else:
+                await self.bot.send_message(ctx.message.channel, "https://crafatar.com/renders/head/" + uuid + ".png")
         else:  # parameters aren't correct - print the correct usage of the command
             await self.bot.send_message(ctx.message.channel, "**Usage:** " + self.command_prefix + "mchead McName")
         print("-------------------------")
@@ -408,21 +511,13 @@ class BotGamingCommands:
         Usage: !hy "MinecraftUsername"
         """
         print("-------------------------")
-        error = False
-        uuid = 0
         if len(args) == 1:
             name = args[0]
-            try:
-                async with aiohttp.ClientSession() as session:
-                    async with session.get("https://api.mojang.com/users/profiles/minecraft/" + name) as resp:
-                        r = await resp.json()
-                uuid = r['id']  # getting the user MinecraftID
-                print("Minecraft ID:" + uuid)
-            except json.decoder.JSONDecodeError:
-                error = True
+            uuid = await BotMethods.get_player_minecraft_uuid(name)
+            if uuid is None:
                 print("Error getting PlayerID")
                 await self.bot.send_message(ctx.message.channel, "*Player not found...*")
-            if not error:
+            else:
                 stats = self.client.getPlayer(uuid=uuid)
                 final_string = "```"  # creating final string
                 final_string += ("Name:" + stats['player']['displayname']) + "\n"
@@ -458,7 +553,7 @@ class BotGamingCommands:
             except ValueError:  # Not an ID, but a vanity URL.
                 user_id = username
             if not is_integer:  # convert the name to a steam 64 ID
-                print("SteamIdURL Request:" + str(user_id))
+                print("SteamIdURL Request Started")
                 steam_api_key = self.botVariables.get_steam_key()
                 steam_api_url = "http://api.steampowered.com/ISteamUser/ResolveVanityURL/v0001/"
                 steam_api_url += "?key=" + steam_api_key + "&vanityurl=" + str(user_id)
@@ -471,7 +566,7 @@ class BotGamingCommands:
                     return
                 else:
                     user_id = int(r['response']['steamid'])
-                    print("SteamId64 Request:" + str(user_id))
+                    print("SteamId64 Request Started")
         else:  # steam is not the default platform, get the username
             user_id = args[0]
         # now i have the steam id or the username, let's make the api-request

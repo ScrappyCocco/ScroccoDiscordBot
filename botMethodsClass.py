@@ -2,6 +2,8 @@
 # IMPORTS
 
 import re
+import json
+import aiohttp
 import discord
 
 from botVariablesClass import BotVariables
@@ -108,5 +110,47 @@ class BotMethods:
             if not number_found:  # number in the given string not in this one, reduce prob
                 similarity -= 0.1
         return similarity
+
+    # ---------------------------------------------------------------------
+
+    @staticmethod
+    async def get_player_minecraft_uuid(player_name: str):
+        """ Download the minecraft uuid from a player name
+        :param player_name: The name of the player to search
+        :return: the player uuid or None if the player does not exist
+        """
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.get("https://api.mojang.com/users/profiles/minecraft/" + player_name) as resp:
+                    r = await resp.json()
+            uuid = r['id']  # getting the user MinecraftID
+            print("Minecraft ID Downloaded")
+            return uuid
+        except (json.decoder.JSONDecodeError, aiohttp.client_exceptions.ContentTypeError):
+            print("Error getting PlayerID")
+            return None
+
+    # ---------------------------------------------------------------------
+
+    @staticmethod
+    def get_most_played_operator_index(operator_stats, is_atk: bool):
+        """ Return the index of the most played operator in atk or in defense (Rainbow 6)
+        :param operator_stats: the json with the operator stats
+        :param is_atk: true if we are searching for ark operator, false otherwise
+        :return: the json corresponding index of the most played operator
+        """
+        best_index = -1  # if it does not exist
+        max_played = 0
+        for i in range(0, len(operator_stats)):  # for each operator in the file
+            if is_atk and str(operator_stats[i]['operator']['role']) == "atk":  # if i'm looking for atk and this is atk
+                if operator_stats[i]['stats']['played'] > max_played:  # if has the max played time
+                    max_played = operator_stats[i]['stats']['played']
+                    best_index = i
+            else:
+                if not is_atk and str(operator_stats[i]['operator']['role']) == "def":  # if i'm looking for def and this is def
+                    if operator_stats[i]['stats']['played'] > max_played:  # if has the max played time
+                        max_played = operator_stats[i]['stats']['played']
+                        best_index = i
+        return best_index  # return the best index
 
 # ---------------------------------------------------------------------

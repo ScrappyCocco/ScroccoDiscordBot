@@ -308,6 +308,8 @@ if str(__name__) == "__main__":
         except Exception as e:
             exc = '{}: {}'.format(type(e).__name__, e)
             print('LOADING FAIL-->Failed to load extension {}\n{}'.format(extension, exc))
+            quit(1)
+        print("LOADING COMPLETED-->" + extension)
         print("------------------------")
     attributes_initialization(botVariables.get_default_status())
     print("ACTION-->Bot Login... Please Wait...")
