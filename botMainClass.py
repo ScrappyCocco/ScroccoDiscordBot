@@ -141,62 +141,50 @@ async def cleverbot_request(channel, cleverbot_question):
 
 @bot.event
 async def on_message(message):
-    try:
-        if message.author.bot:  # nothing to do, the message is from me
-            return
-        # ---------------------------------------------------------------------
-        if await first_chat_alert(message.channel, message.author):
-            return
-        # ---------------------------------------------------------------------
-        # get bot mention
-        if message.server is None:
-            mention = bot.user.mention
-        else:
-            mention = message.server.me.mention
-        if len(message.mentions) >= 1:  # message starts with a mention, check if it's mine
-            if message.content.startswith(mention):  # yes the message starts with a mention, it's me?
-                new_message = message.content.replace(str(mention), "",
-                                                      1)  # remove the mention from the message (only 1)
-                # new_message = new_message[1:]  # remove the additional space (not necessary)
-                for found_mention in message.mentions:  # convert all mentions to names to make the message clear
-                    new_message = new_message.replace(str(found_mention.mention), str(found_mention.name))
-                # ---------------------------------------------------------------------
-                if bot.maintenanceMode and not BotMethods.is_owner(message.author):  # if it's in maintenance Mode
-                    return
-                new_message = new_message.lstrip()  # remove additional spaces from cleverbot question (before and after)
-                print("Cleverbot Question received, asking cleverbot...")
-                await cleverbot_request(message.channel, new_message)
-                print("-------------------------")
-            else:  # the message don't start with a mention, maybe it's a command?
-                try:
-                    if bot.maintenanceMode and not BotMethods.is_owner(
-                            message.author):  # if it's in maintenance Mode then quit
-                        return
-                    if message.content.startswith(
-                            bot_command_prefix_string):  # if starts with command-prefix then process as command
-                        await bot.process_commands(message)  # tell the bot to try to execute the command
-                    else:  # forward the message (if active)
-                        await forwards_message(message)
-                except discord.ext.commands.errors.CommandNotFound:  # command doesn't exist
-                    print("Command not found...")
-        else:
-            if message.content.find("\\") == -1:  # error check for special chars
-                try:
-                    if bot.maintenanceMode and not BotMethods.is_owner(
-                            message.author):  # if it's in maintenance Mode then quit
-                        return
-                    if message.content.startswith(
-                            bot_command_prefix_string):  # if starts with command-prefix then process as command
-                        await bot.process_commands(message)  # tell the bot to try to execute the command
-                    else:  # forward the message (if active)
-                        await forwards_message(message)
-                except discord.ext.commands.errors.CommandNotFound:  # command doesn't exist
-                    print("Command not found...")
-
-    except discord.ext.commands.errors.BadArgument:
-        print("Error 2 executing the command...")
+    if message.author.bot:  # nothing to do, the message is from me
         return
-
+    # ---------------------------------------------------------------------
+    if await first_chat_alert(message.channel, message.author):
+        return
+    # ---------------------------------------------------------------------
+    # get bot mention
+    if message.server is None:
+        mention = bot.user.mention
+    else:
+        mention = message.server.me.mention
+    if len(message.mentions) >= 1:  # message starts with a mention, check if it's mine
+        if message.content.startswith(mention):  # yes the message starts with a mention, it's me?
+            new_message = message.content.replace(str(mention), "",
+                                                  1)  # remove the mention from the message (only 1)
+            # new_message = new_message[1:]  # remove the additional space (not necessary)
+            for found_mention in message.mentions:  # convert all mentions to names to make the message clear
+                new_message = new_message.replace(str(found_mention.mention), str(found_mention.name))
+            # ---------------------------------------------------------------------
+            if bot.maintenanceMode and not BotMethods.is_owner(message.author):  # if it's in maintenance Mode
+                return
+            new_message = new_message.lstrip()  # remove additional spaces from cleverbot question (before and after)
+            print("Cleverbot Question received, asking cleverbot...")
+            await cleverbot_request(message.channel, new_message)
+            print("-------------------------")
+        else:  # the message don't start with a mention, maybe it's a command?
+            if bot.maintenanceMode and not BotMethods.is_owner(
+                    message.author):  # if it's in maintenance Mode then quit
+                return
+            if message.content.startswith(
+                    bot_command_prefix_string):  # if starts with command-prefix then process as command
+                await bot.process_commands(message)  # tell the bot to try to execute the command
+            else:  # forward the message (if active)
+                await forwards_message(message)
+    else:
+        if message.content.find("\\") == -1:  # error check for special chars
+            if bot.maintenanceMode and not BotMethods.is_owner(
+                    message.author):  # if it's in maintenance Mode then quit
+                return
+            if message.content.startswith(
+                    bot_command_prefix_string):  # if starts with command-prefix then process as command
+                await bot.process_commands(message)  # tell the bot to try to execute the command
+            else:  # forward the message (if active)
+                await forwards_message(message)
 
 # ---------------------------------------------------------------------
 

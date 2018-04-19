@@ -24,8 +24,8 @@
       }
     ]
   },
-  "version": "0.98.10",
-  "build": "10",
+  "version": "0.98.15",
+  "build": "5",
   "is_beta": "False",
   "description": "Bot by ScrappyCocco (Some commands are hidden from help)",
   "bot_icon": "https://discordapp.com/assets/2c21aeda16de354ba5334551a883b481.png",
@@ -56,6 +56,9 @@
     },
     {
       "name": "botModerationCommands"
+    },
+    {
+      "name": "botErrorManager"
     }
   ],
   "server_state_saving": {

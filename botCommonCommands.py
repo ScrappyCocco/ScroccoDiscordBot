@@ -88,10 +88,13 @@ class BotCommonCommands:
         Usage: !cat
         """
         url = "http://aws.random.cat/meow"
-        async with aiohttp.ClientSession() as session:
-            async with session.get(url) as resp:
-                r = await resp.json()
-        await self.bot.send_message(ctx.message.channel, r['file'])
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.get(url) as resp:
+                    r = await resp.json()
+            await self.bot.send_message(ctx.message.channel, r['file'])
+        except aiohttp.client_exceptions.ContentTypeError:
+            print("Cannot send cat image...")
 
     # ---------------------------------------------------------------------
 
