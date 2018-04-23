@@ -6,10 +6,13 @@ from discord.ext import commands
 import steamapi
 import time
 import discord
+import os
+import urllib
 import requests
 import json
 import aiohttp
 
+from urllib import request
 from steamapi import core
 from hypixthon import Hypixthon
 from botVariablesClass import BotVariables
@@ -251,7 +254,7 @@ class BotGamingCommands:
 
     @commands.command(pass_context=True)
     async def steam(self, ctx, *args):
-        """Print the user Steam Profile
+        """Print the user Steam Profile (MAY NOT WORK AFTER NEW STEAM PRIVACY SETTINGS)
         Usage: !steam "UserID"
         Example: !steam ScrappyEnterprise
         """
@@ -483,17 +486,19 @@ class BotGamingCommands:
                 print("Error getting PlayerID")
                 await self.bot.send_message(ctx.message.channel, "*Player not found...*")
             else:
-                ''' There's no need to download the image, keep the code in case we need to change (valid for mchead too)
                 # download the minecraft image
+                print("mcskin: Downloading file...")
                 urllib.request.urlretrieve("https://crafatar.com/renders/body/" + uuid, uuid + ".png")
-                print("mchead: Sending file...")
+                print("mcskin: Sending file...")
                 # send the minecraft image as file
-                await self.bot.send_file(ctx.message.channel, uuid + ".png")
+                try:
+                    await self.bot.send_file(ctx.message.channel, uuid + ".png")
+                except discord.HTTPException:
+                    await self.bot.send_message(ctx.message.channel,
+                                                "*Something went wrong sending your Minecraft skin image...*")
                 # now delete the downloaded file
                 os.remove(uuid + ".png")
-                print("mchead: File sent and deleted")
-                '''
-                await self.bot.send_message(ctx.message.channel, "https://crafatar.com/renders/body/" + uuid + ".png")
+                print("mcskin: File sent and deleted")
         else:  # parameters aren't correct - print the correct usage of the command
             await self.bot.send_message(ctx.message.channel, "**Usage:** " + self.command_prefix + "mcskin McName")
         print("-------------------------")
@@ -511,7 +516,19 @@ class BotGamingCommands:
                 print("Error getting PlayerID")
                 await self.bot.send_message(ctx.message.channel, "*Player not found...*")
             else:
-                await self.bot.send_message(ctx.message.channel, "https://crafatar.com/renders/head/" + uuid + ".png")
+                # download the minecraft image
+                print("mchead: Downloading file...")
+                urllib.request.urlretrieve("https://crafatar.com/renders/head/" + uuid, uuid + ".png")
+                print("mchead: Sending file...")
+                # send the minecraft image as file
+                try:
+                    await self.bot.send_file(ctx.message.channel, uuid + ".png")
+                except discord.HTTPException:
+                    await self.bot.send_message(ctx.message.channel,
+                                                "*Something went wrong sending your Minecraft skin image...*")
+                # now delete the downloaded file
+                os.remove(uuid + ".png")
+                print("mchead: File sent and deleted")
         else:  # parameters aren't correct - print the correct usage of the command
             await self.bot.send_message(ctx.message.channel, "**Usage:** " + self.command_prefix + "mchead McName")
         print("-------------------------")
