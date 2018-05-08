@@ -4,6 +4,7 @@
 from discord.ext import commands
 
 import html
+import re
 import json
 import random
 import discord
@@ -310,7 +311,8 @@ class BotCommonCommands:
             message_received = str(args[0])
             language = str(args[1])
             try:
-                await self.bot.send_message(ctx.message.channel, "**Translated text:**" + self.gs.translate(message_received, language))
+                await self.bot.send_message(ctx.message.channel,
+                                            "**Translated text:**" + self.gs.translate(message_received, language))
             except error.HTTPError:
                 await self.bot.send_message(ctx.message.channel, "HTTP Error 503: Service Unavailable")
         else:
@@ -638,6 +640,109 @@ class BotCommonCommands:
         else:
             await self.bot.send_message(ctx.message.channel,
                                         "**Usage:** " + self.command_prefix + "ur word, for more see " + self.command_prefix + "help ur")
+        print("-------------------------")
+
+    # ---------------------------------------------------------------------
+
+    # Little class used to store films in array
+    class FilmInfo(object):
+        film_id = ""
+        film_name = ""
+        similar = 0
+
+        def __init__(self, filmid: str, filmname: str, similar: float):
+            self.film_id = filmid
+            self.film_name = filmname
+            self.similar = similar
+
+    @commands.command(pass_context=True)
+    async def movievotes(self, ctx, *args):
+        """Search the movie votes in metacritic database
+        Usage: !movievotes <film Title>
+        Example: !movievotes "Avengers: Infinity War"
+        """
+        print("-------------------------")
+        if len(args) == 1:
+            print("Starting search")
+            api_key = self.botVariables.get_mashape_metacritic_key()
+            search_term = (re.sub(r'([^\s\w]|_)+', '', args[0])).lower()
+            request_search_link = "https://api-marcalencc-metacritic-v1.p.mashape.com/search/" + str(
+                urllib.parse.quote(search_term)) + "/movie?limit=20&offset=1"
+            # search all the films with the term given
+            async with aiohttp.ClientSession() as session:
+                # the website use get
+                async with session.get(request_search_link, headers={'X-Mashape-Key': str(api_key),
+                                                                     'Accept': 'application/json'}) as resp:
+                    request_result = await resp.json()
+            if len(request_result[0]['SearchItems']) > 0:  # there is at least one film
+                films_found = []
+                max_prob = 0.0
+                # decide the best film using string similarity
+                for entry in request_result[0]['SearchItems']:
+                    entry_string = (re.sub(r'([^\s\w]|_)+', '', entry['Title'])).lower()
+                    film_similarity = BotMethods.similar(search_term, entry_string, None)
+                    if film_similarity > 0.7:  # consider it only if it's > 0.7 (range is 0.0-1.0)
+                        films_found.append(
+                            self.FilmInfo(entry['Id'], entry['Title'], film_similarity))  # store that film in the array
+                        if film_similarity > max_prob:  # search for max prob
+                            max_prob = film_similarity
+                            if film_similarity >= 1.0:  # i have found the perfect string
+                                print("Perfect name found, search cycle stopped")
+                                break  # stop the for
+                if len(films_found) > 0:  # i have found at least one possible film
+                    film_web_id = ""
+                    for film in films_found:  # search the film with the max name similarity in the array
+                        if film.similar == max_prob:
+                            print("Film Chosen: " + film.film_name + " - Film web id:" + str(
+                                film.film_id) + " - Sim.:" + str(
+                                max_prob))
+                            film_web_id = film.film_id  # get the film web id
+                            break
+                    # make request to get all necessary film informations
+                    request_search_link = "https://api-marcalencc-metacritic-v1.p.mashape.com" + str(film_web_id)
+                    async with aiohttp.ClientSession() as session:
+                        async with session.get(request_search_link, headers={'X-Mashape-Key': str(api_key),
+                                                                             'Accept': 'application/json'}) as resp:  # the website use get
+                            request_result = await resp.json()
+                    # prepare the embed message
+                    embed = discord.Embed(title=str(request_result[0]['Title']),
+                                          colour=discord.Colour(0xffcc00),
+                                          url="http://www.metacritic.com/" + str(film_web_id),
+                                          description="Metacritic votes about " + str(
+                                              request_result[0]['Title']) + " by " + str(
+                                              request_result[0]['Director']) + ", released on " + str(
+                                              request_result[0]['ReleaseDate']),
+                                          timestamp=datetime.utcfromtimestamp(time.time())
+                                          )
+                    embed.set_thumbnail(url=str(request_result[0]['ImageUrl']))
+                    embed.set_author(name=ctx.message.author.name, url="", icon_url=ctx.message.author.avatar_url)
+                    embed.set_footer(text=self.botVariables.get_description(),
+                                     icon_url=self.botVariables.get_bot_icon())
+                    if len(request_result[0]['Rating']) > 0:
+                        # --- read users votes ---
+                        user_votes = "Rating: " + str(request_result[0]['Rating']['UserRating']) + " (" + str(
+                            request_result[0]['Rating']['UserReviewCount']) + " votes)"
+                        # --- read critic votes ---
+                        critic_votes = "Rating: " + str(request_result[0]['Rating']['CriticRating']) + " (" + str(
+                            request_result[0]['Rating']['CriticReviewCount']) + " votes)"
+                        # --- create fields ---
+                        embed.add_field(name="Critic Rating", value=critic_votes)
+                        embed.add_field(name="User Rating", value=user_votes)
+                    else:
+                        embed.add_field(name="No votes found...",
+                                        value="Looks like there are no votes for this film...")
+                    # --- sending the message ---
+                    print("Sending film embed message")
+                    await self.bot.send_message(ctx.message.channel, embed=embed)
+                else:
+                    print("No films found")
+                    await self.bot.send_message(ctx.message.channel, "*No films found, check the name...*")
+            else:
+                print("No films found")
+                await self.bot.send_message(ctx.message.channel, "*No films found, check the name...*")
+        else:
+            await self.bot.send_message(ctx.message.channel,
+                                        "**Usage:** " + self.command_prefix + "movievotes <film Title>, for more see " + self.command_prefix + "help movievotes")
         print("-------------------------")
 
     # ---------------------------------------------------------------------

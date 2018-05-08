@@ -99,7 +99,7 @@ class BotMethods:
         :return: Return the similarity between the two string (0.0-1.0)
         """
         similarity = SequenceMatcher(None, a, b).ratio()
-        if len(game_name_numbers) > 0:  # additional check about numbers in the string
+        if game_name_numbers is not None and len(game_name_numbers) > 0:  # additional check about numbers in the string
             number_found = False
             for character in b:  # check for every character
                 if character.isdigit():  # if is a digit

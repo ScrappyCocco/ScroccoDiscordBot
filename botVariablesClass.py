@@ -17,12 +17,14 @@ class BotVariables:
     # REMEMBER THAT if an api key is empty the bot won't start or the command won't work correctly
     # IF YOU DON'T WANT a command you have to MANUALLY remove the api key check (down here) and the command
 
-    # cleverKey = "YourKey" : get yours from  https://www.cleverbot.com/api/
-    # hypixelKey = "YourKey" : get yours from https://api.hypixel.net/
-    # steamKey = "YourKey" : get yours from https://steamcommunity.com/dev/apikey
-    # gifKey = "YourKey" : get yours from http://api.giphy.com/
+    # cleverKey = "YourKey" : used for cleverbot, get yours from  https://www.cleverbot.com/api/
+    # hypixelKey = "YourKey" : used for hypixel api, get yours from https://api.hypixel.net/
+    # steamKey = "YourKey" : used for steam api, get yours from https://steamcommunity.com/dev/apikey
+    # gifKey = "YourKey" : used for gifs api, get yours from http://api.giphy.com/
     # google_shortener = "YourKey" : google shortener api key,
     #   get yours from https://developers.google.com/url-shortener/v1/getting_started#APIKey
+    # X-Mashape-Key = "YourKey" : key for using the metacritic api with "movievotes" command,
+    #   get yours from https://market.mashape.com/marcalencc/metacritic
     # weather key : get yours from http://api.wunderground.com/
     #   weather default_country must be in the "ISO 3166-1 alpha-2" format
     # rocket league stats api key : get yours from https://developers.rocketleaguestats.com
@@ -111,6 +113,7 @@ class BotVariables:
         self.get_hypixel_key()
         self.get_gif_key()
         self.get_google_shortener_key()
+        self.get_mashape_metacritic_key()
         self.get_steam_key()
         self.get_meme_generator_username()
         self.get_meme_generator_password()
@@ -187,6 +190,17 @@ class BotVariables:
             return key
         else:
             print("ERROR GETTING THE GOOGLE SHORTENER KEY (check bot documentation) - ABORTING")
+            quit(1)
+
+    def get_mashape_metacritic_key(self):
+        """Function that return the api key for the google shortener api.
+            :return: The google shortener API-KEY.
+        """
+        key = self.bot_data_file["apiKeys"]["X-Mashape-Key"]
+        if self.check_empty_key(key):
+            return key
+        else:
+            print("ERROR GETTING THE MASHAPE API KEY FOR METACRITIC (check bot documentation) - ABORTING")
             quit(1)
 
     def get_weather_key(self):
