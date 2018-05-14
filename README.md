@@ -25,6 +25,8 @@ so you must fill all the variables in "bot_data_examples.json" and **rename it**
 
 (If you remove the check from _botVariables_ but not the command you'll have runtime errors when someone use that command)
 
+Finally, remember to download the git submodules, i use them in the code.
+
 ## Starting the bot
 
 After you installed and configured everything you can try to run the main class (botMainClass.py) with the command:
@@ -36,7 +38,7 @@ This will start the bot or show the errors you have to fix.
 ## Built Using
 
 * [Danny - Discord.py](https://github.com/Rapptz/discord.py) - Discord Python API
-* [SlashNephy - Hypixthon](https://github.com/SlashNephy/Hypixthon) - Hypixel API
+* [Snuggle - hypixel.py](https://github.com/Snuggle/hypixel.py) - Hypixel API
 * [smiley - steamapi](https://github.com/smiley/steamapi) - Steam API
 * [More on [requirements.txt](requirements.txt)]
 

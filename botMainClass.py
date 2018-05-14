@@ -1,6 +1,7 @@
 # ---------------------------------------------------------------------
 # IMPORTS
 
+import hypixel  # must be here to be loaded first
 from discord.ext import commands
 
 import discord  # pip install discord.py
