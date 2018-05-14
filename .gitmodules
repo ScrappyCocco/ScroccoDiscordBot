@@ -1,3 +1,6 @@
 [submodule "steamapi"]
 	path = steamapi
 	url = https://github.com/smiley/steamapi.git
+[submodule "hypixthon"]
+	path = hypixthon
+	url = https://github.com/SlashNephy/Hypixthon.git
