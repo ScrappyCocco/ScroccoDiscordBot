@@ -15,7 +15,6 @@ import aiohttp
 from urllib import request
 from steamapi import core
 from hypixthon import Hypixthon
-from botVariablesClass import BotVariables
 from botMethodsClass import BotMethods
 from steamapi import user
 from datetime import datetime
@@ -28,10 +27,10 @@ class BotGamingCommands:
     """ Class with Bot 'Gaming' commands (statistics for gamers) """
     # ---------------------------------------------------------------------
 
-    botVariables = BotVariables(False)  # used for 2 api keys
-    client = Hypixthon(botVariables.get_hypixel_key())  # hypixel api connection
-    core.APIConnection(api_key=botVariables.get_steam_key())  # steam api connection
-    command_prefix = botVariables.command_prefix
+    # list of class essential variables, the None variables are assigned in the constructor because i need the bot reference
+    botVariables = None  # used for 2 api keys
+    client = None  # hypixel api connection
+    command_prefix = None
     steam_game_list_json = None  # instance the steam json as empty, used in "steamgame" command
 
     # ---------------------------------------------------------------------
@@ -631,6 +630,11 @@ class BotGamingCommands:
     def __init__(self, bot):
         print("CALLING CLASS-->" + self.__class__.__name__ + " class called")
         self.bot = bot
+        self.botVariables = self.bot.bot_variables_reference
+        # assigning variables value now i can use botVariables
+        self.client = Hypixthon(self.botVariables.get_hypixel_key())  # hypixel api connection
+        core.APIConnection(api_key=self.botVariables.get_steam_key())  # steam api connection
+        self.command_prefix = self.botVariables.command_prefix
 
     def __del__(self):
         print("DESTROYING CLASS-->" + self.__class__.__name__ + " class called")

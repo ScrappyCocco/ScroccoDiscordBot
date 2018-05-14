@@ -1,8 +1,7 @@
 # ---------------------------------------------------------------------
 # IMPORTS
 
-from botVariablesClass import BotVariables
-from botMethodsClass import BotMethods
+from discord.ext import commands
 
 import discord  # pip install discord.py
 import requests
@@ -10,7 +9,8 @@ import websockets
 import aiohttp
 import urllib.parse
 
-from discord.ext import commands
+from botVariablesClass import BotVariables
+from botMethodsClass import BotMethods
 
 # ---------------------------------------------------------------------
 # INITIALIZATION
@@ -33,15 +33,23 @@ startUpExtensions = botVariables.get_startup_extensions()
 # ---------------------------------------------------------------------
 # NECESSARY FUNCTIONS
 
+# function that create bot attributes i need before loading the bot extensions
+def pre_extension_attributes_initialization():
+    print("---Creating pre_extension bot attributes---")
+    bot.bot_variables_reference = botVariables
+    print("---Finished creating pre_extension attributes---")
+    print("------------------------")
 
-# function that create bot attributes
-def attributes_initialization(default_status: str):
-    print("---Creating bot attributes---")
-    setattr(bot, 'maintenanceMode', False)
-    setattr(bot, 'lastInGameStatus', str(default_status))
+
+# function that create the others bot attributes
+def after_extension_attributes_initialization(default_status: str):
+    print("---Creating after_extension bot attributes---")
+    setattr(bot, 'maintenanceMode', False)  # used to determine if the bot is in maintenance status
+    setattr(bot, 'lastInGameStatus', str(default_status))  # used to save the in-game status
+    # cleverbot parameters, used for cleverbot discussion
     setattr(bot, 'cleverbot_cs_parameter', "")
     setattr(bot, 'cleverbot_reply_number', 0)
-    print("---Finished creating attributes---")
+    print("---Finished creating after_extension attributes---")
     print("------------------------")
 
 
@@ -186,6 +194,7 @@ async def on_message(message):
             else:  # forward the message (if active)
                 await forwards_message(message)
 
+
 # ---------------------------------------------------------------------
 
 
@@ -286,6 +295,15 @@ async def on_typing(channel, user, when):
 # ---------------------------------------------------------------------
 # MAIN EXECUTION (STARTUP AND SHUTDOWN)
 if str(__name__) == "__main__":
+    print("------------------------")
+    print("---STARTING BOT EXECUTION, VERSION:" + str(botVariables.get_version()) + " BUILD:" + str(
+        botVariables.get_build()) + "---")
+    if botVariables.get_bot_distribution():
+        print("---EXECUTING BOT USING THE BETA TOKEN---")
+    else:
+        print("---EXECUTING BOT USING THE NON-BETA TOKEN---")
+    print("------------------------")
+    pre_extension_attributes_initialization()
     print("ACTION-->Loading bot, importing extensions...")
     print(startUpExtensions)
     print("------------------------")
@@ -299,7 +317,7 @@ if str(__name__) == "__main__":
             quit(1)
         print("LOADING COMPLETED-->" + extension)
         print("------------------------")
-    attributes_initialization(botVariables.get_default_status())
+    after_extension_attributes_initialization(botVariables.get_default_status())
     print("ACTION-->Bot Login... Please Wait...")
     if botVariables.get_bot_distribution():  # is the bot in beta?
         bot.run(botVariables.get_discord_bot_token(True))  # token beta Bot

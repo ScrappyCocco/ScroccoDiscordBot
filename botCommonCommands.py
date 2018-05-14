@@ -8,7 +8,6 @@ import re
 import json
 import random
 import discord
-import requests
 import goslate
 import time
 import urllib.parse
@@ -18,7 +17,6 @@ from discord.errors import HTTPException
 from urllib import error
 from datetime import datetime
 from random import randint
-from botVariablesClass import BotVariables
 from botMethodsClass import BotMethods
 
 
@@ -26,14 +24,20 @@ from botMethodsClass import BotMethods
 
 
 class BotCommonCommands:
-    """ Class with Bot 'Common' commands (simple commands, for example cat or gif) """
+    """ Class with Bot 'Common' commands (simple commands, for example cat, meme or gif) """
     # ---------------------------------------------------------------------
 
-    botVariables = BotVariables(False)  # used for username and for emoji array
-    gs = goslate.Goslate()  # translator
-    command_prefix = botVariables.command_prefix
+    # list of class essential variables, the None variables are assigned in the constructor because i need the bot reference
+    botVariables = None  # used to get api keys and other bot informations
+    gs = goslate.Goslate()  # translator (used in translate command)
+    command_prefix = None  # bot command prefix
 
     async def get_short_url(self, url):
+        """
+        This function use the google api to generate a shorter version of the url given
+        :param url: the url to make shorten
+        :return: a short version of the url
+        """
         api_key = self.botVariables.get_google_shortener_key()
         post_url = 'https://www.googleapis.com/urlshortener/v1/url?key={}'.format(api_key)
         payload = {'longUrl': url}
@@ -57,14 +61,14 @@ class BotCommonCommands:
         currentgifkey = self.botVariables.get_gif_key()
         print("GifRequest:Arguments:" + str(len(args)))
         tag = ""
-        if len(args) == 0:
+        if len(args) == 0:  # request a random gif
             print("Gif Request with No arguments")
             url = "http://api.giphy.com/v1/gifs/random?api_key=" + currentgifkey
             async with aiohttp.ClientSession() as session:
                 async with session.get(url) as resp:
                     r = await resp.json()
             await self.bot.send_message(ctx.message.channel, r['data']['image_url'])
-        else:
+        else:  # request a gif with tags
             for x in range(0, len(args)):
                 tag = tag + args[x]
                 if x != (len(args) - 1):
@@ -74,7 +78,7 @@ class BotCommonCommands:
             async with aiohttp.ClientSession() as session:
                 async with session.get(url) as resp:
                     r = await resp.json()
-            print("GifRequest:Found Length:" + str(len(r['data'])))
+            print("GifRequest:Gif Found")
             if (len(r['data'])) == 0:
                 await self.bot.send_message(ctx.message.channel, "No GIF found with those tags :frowning: ")
             else:
@@ -210,18 +214,12 @@ class BotCommonCommands:
         Usage: !party
         """
         print("-------------------------")
-        normal_parrot = "https://cdn.discordapp.com/attachments/276674976210485248/304557572416077824/parrot.gif"
-        conga_parrot = "https://cdn.discordapp.com/attachments/276667503034499072/309781525971337226/congaparrot.gif"
-        shuffle_parrot = "https://cdn.discordapp.com/attachments/276667503034499072/309781549639794688/shuffleparrot.gif"
-        link = ""
-        number = randint(0, 2)
+        parrots = ["https://cdn.discordapp.com/attachments/276674976210485248/304557572416077824/parrot.gif",
+                   "https://cdn.discordapp.com/attachments/276667503034499072/309781525971337226/congaparrot.gif",
+                   "https://cdn.discordapp.com/attachments/276667503034499072/309781549639794688/shuffleparrot.gif"]
+        number = randint(0, len(parrots))
+        link = parrots[number]
         print("Number:" + str(number))
-        if number == 0:
-            link = normal_parrot
-        if number == 1:
-            link = conga_parrot
-        if number == 2:
-            link = shuffle_parrot
         try:
             if ctx.message.content == "!party" and ctx.message.server is not None:
                 print("Deleting the message...")
@@ -232,6 +230,7 @@ class BotCommonCommands:
         embed.set_author(name=ctx.message.author.name)
         embed.set_thumbnail(url=link)
         await self.bot.send_message(ctx.message.channel, embed=embed)
+        print("Parrot sent!")
         print("-------------------------")
 
     # ---------------------------------------------------------------------
@@ -296,9 +295,11 @@ class BotCommonCommands:
         """Print a random quote
         Usage: !quote
         """
-        r = requests.get("http://quotesondesign.com/wp-json/posts?filter[orderby]=rand&filter[posts_per_page]=1")
-        await self.bot.send_message(ctx.message.channel, "**" + BotMethods.cleanhtml("From " + r.json()[0]['title'])
-                                    + ":**" + html.unescape(BotMethods.cleanhtml(r.json()[0]['content'])))
+        async with aiohttp.ClientSession() as session:
+            async with session.get("http://quotesondesign.com/wp-json/posts?filter[orderby]=rand&filter[posts_per_page]=1") as resp:
+                r = await resp.json()
+        await self.bot.send_message(ctx.message.channel, "**" + BotMethods.cleanhtml("From " + r[0]['title'])
+                                    + ":**" + html.unescape(BotMethods.cleanhtml(r[0]['content'])))
 
     # ---------------------------------------------------------------------
 
@@ -750,6 +751,9 @@ class BotCommonCommands:
     def __init__(self, bot):
         print("CALLING CLASS-->" + self.__class__.__name__ + " class called")
         self.bot = bot
+        self.botVariables = self.bot.bot_variables_reference
+        # assigning variables value now i can use botVariables
+        self.command_prefix = self.botVariables.command_prefix
 
     def __del__(self):
         print("DESTROYING CLASS-->" + self.__class__.__name__ + " class called")

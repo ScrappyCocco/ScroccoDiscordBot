@@ -35,7 +35,7 @@ class BotErrorManager:
         elif isinstance(error, commands.BadArgument):
             print("Error manager: Sending message for BadArgument")
             return await self.bot.send_message(ctx.message.channel, ":middle_finger: *Looks like there is a problem with command arguments, please check command usage...*")
-        else:  # No Error Manager
+        else:  # No Error Manager, print error to bot log
             print("Error manager - ERROR: No error control detected, error:"+str(error)+" - Command invoked:" + str(ctx.invoked_with))
     # ---------------------------------------------------------------------
 

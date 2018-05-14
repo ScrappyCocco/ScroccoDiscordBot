@@ -1,8 +1,6 @@
 # ---------------------------------------------------------------------
 # IMPORTS
 
-from botVariablesClass import BotVariables
-
 import aiohttp
 import discord
 import asyncio
@@ -18,8 +16,9 @@ class BotTimedTasks:
     this because that class need to close the tasks before stopping the bot to avoid warnings/errors '''
     # ---------------------------------------------------------------------
 
-    botVariables = BotVariables(False)  # used for 2 api keys
-    YT_key = botVariables.get_youtube_api_key()
+    # list of class essential variables, the None variables are assigned in the constructor because i need the bot reference
+    botVariables = None  # used for 2 api keys
+    YT_key = None
     YT_watchLink = "https://www.youtube.com/watch?v="
 
     statusChanged = False  # to skip continuous status change
@@ -101,6 +100,9 @@ class BotTimedTasks:
     def __init__(self, bot):
         print("CALLING MINI-CLASS-->" + self.__class__.__name__ + " class called")
         self.bot = bot
+        self.botVariables = self.bot.bot_variables_reference
+        # assigning variables value now i can use botVariables
+        self.YT_key = self.botVariables.get_youtube_api_key()
 
     def __del__(self):
         print("DESTROYING MINI-CLASS-->" + self.__class__.__name__ + " class called")

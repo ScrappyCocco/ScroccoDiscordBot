@@ -37,7 +37,7 @@ class BotMethods:
             :param author: The author to check.
             :return: return true is the author is authorized, If it is not then return false
         """
-        ref = BotVariables(False)
+        ref = BotVariables()
         if str(author) in ref.get_owners_list():
             del ref
             return True

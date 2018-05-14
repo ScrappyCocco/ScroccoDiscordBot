@@ -15,7 +15,7 @@ class BotVariables:
 
     # API KEYS LIST
     # REMEMBER THAT if an api key is empty the bot won't start or the command won't work correctly
-    # IF YOU DON'T WANT a command you have to MANUALLY remove the api key check (down here) and the command
+    # IF YOU DON'T WANT a command you have to MANUALLY remove the api key check (down here) and the whole command
 
     # cleverKey = "YourKey" : used for cleverbot, get yours from  https://www.cleverbot.com/api/
     # hypixelKey = "YourKey" : used for hypixel api, get yours from https://api.hypixel.net/
@@ -92,7 +92,7 @@ class BotVariables:
 
     # -------------------------------------------------
 
-    def __init__(self, should_check: bool):
+    def __init__(self, should_check=False):
         print("CALLING MINI-CLASS-->" + self.__class__.__name__ + " class called")
         try:
             with open(self.file_name) as data_file:
@@ -100,8 +100,9 @@ class BotVariables:
         except FileNotFoundError:
             print("FATAL ERROR-->" + self.file_name + " FILE NOT FOUND, ABORTING...")
             quit(1)
-        if should_check:
+        if should_check:  # used because i do a full check only the first time the bot load
             self.full_startup_check()
+        # After the full_startup_check, i know there are no problems
         self.command_prefix = self.get_command_prefix()
 
     def __del__(self):
@@ -129,7 +130,7 @@ class BotVariables:
         """Function that check the key for errors.
             :return: True if the key is ok, False if the Key is not valid
         """
-        if key == "" or key == self.emptyApiKey:
+        if key is None or key == "" or key == self.emptyApiKey:
             print("ERROR, A KEY IS EMPTY - CHECK YOUR FILE")
             return False
         return True
@@ -338,7 +339,7 @@ class BotVariables:
             return False
         if key == "True":  # bot in beta version
             return True
-        print("BOT DISTRIBUTION ERROR - CHECK \"is_beta\" IN JSON AND PUT True or False")
+        print("BOT DISTRIBUTION ERROR - CHECK \"is_beta\" IN JSON AND WRITE True or False")
         return True
 
     def get_meme_generator_username(self):
