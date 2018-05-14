@@ -4,3 +4,6 @@
 [submodule "hypixthon"]
 	path = hypixthon
 	url = https://github.com/SlashNephy/Hypixthon.git
+[submodule "hypixel_py"]
+	path = hypixel_py
+	url = https://github.com/Snuggle/hypixel.py.git
