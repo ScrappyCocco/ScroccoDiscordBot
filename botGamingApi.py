@@ -3,7 +3,7 @@
 
 from discord.ext import commands
 
-import steamapi
+import steamapi.steamapi
 import time
 import discord
 import os
@@ -14,9 +14,10 @@ import aiohttp
 
 from urllib import request
 from steamapi import core
-from hypixthon import Hypixthon
+from hypixel_py import hypixel
+from steamapi.steamapi import core
 from botMethodsClass import BotMethods
-from steamapi import user
+from steamapi.steamapi import user
 from datetime import datetime
 
 
@@ -289,7 +290,7 @@ class BotGamingCommands:
                         user_id = int(r['response']['steamid'])
                         print("SteamId64 Request Started")
                         steam_user = user.SteamUser(userid=user_id)
-            except steamapi.errors.UserNotFoundError:  # Not an ID, but a vanity URL.
+            except steamapi.steamapi.errors.UserNotFoundError:  # Not an ID, but a vanity URL.
                 await self.bot.send_message(ctx.message.channel, "Error - User not found...")
                 return
             # now i have the username, let's create the reply
@@ -301,7 +302,7 @@ class BotGamingCommands:
                 medals = len(steam_user.badges)
                 profile_url = steam_user.profile_url
                 level = steam_user.level
-            except (steamapi.errors.APIUnauthorized, steamapi.errors.UserNotFoundError, KeyError, AttributeError):
+            except (steamapi.steamapi.errors.APIUnauthorized, steamapi.steamapi.errors.UserNotFoundError, KeyError, AttributeError):
                 await self.bot.send_message(ctx.message.channel, "Error - Can't get user data!")
                 return
             # create the final message
@@ -538,20 +539,31 @@ class BotGamingCommands:
         Usage: !hy "MinecraftUsername"
         """
         print("-------------------------")
+        error = False
+        player = None
+        uuid = 0
         if len(args) == 1:
             name = args[0]
-            uuid = await BotMethods.get_player_minecraft_uuid(name)
-            if uuid is None:
+            try:
+                async with aiohttp.ClientSession() as session:
+                    async with session.get("https://api.mojang.com/users/profiles/minecraft/" + name) as resp:
+                        r = await resp.json()
+                uuid = r['id']  # getting the user MinecraftID
+                print("Minecraft ID:" + uuid)
+                player = hypixel.Player(uuid)
+            except json.decoder.JSONDecodeError:
+                error = True
                 print("Error getting PlayerID")
                 await self.bot.send_message(ctx.message.channel, "*Player not found...*")
-            else:
-                stats = self.client.getPlayer(uuid=uuid)
+            if not error and player is not None:
                 final_string = "```"  # creating final string
-                final_string += ("Name:" + stats['player']['displayname']) + "\n"
-                final_string += ("Karma:" + str(stats['player']['karma'])) + "\n"
+                final_string += ("Name:" + str(player.getName())) + "\n"
+                final_string += ("Rank:" + str(player.getRank()['rank']))
+                final_string += ("Level:" + str(player.getLevel())) + "\n"
+                final_string += ("Karma:" + str(player.JSON['karma'])) + "\n"
                 try:
                     # the "timePlaying" seems to be bugged because it never change, not my fault
-                    final_string += ("Time Playing:" + str(stats['player']['timePlaying'])) + "h (Bugged?) \n"
+                    final_string += ("Time Playing:" + str(player.getPlayerInfo()) + " - " + str(player.getSession())) + "\n"
                 except KeyError:
                     final_string += ("Time Playing:" + "Value not found \n")
                 final_string += "```"
@@ -632,7 +644,7 @@ class BotGamingCommands:
         self.bot = bot
         self.botVariables = self.bot.bot_variables_reference
         # assigning variables value now i can use botVariables
-        self.client = Hypixthon(self.botVariables.get_hypixel_key())  # hypixel api connection
+        hypixel.setKeys(botVariables.get_hypixel_key())  # This sets the API keys that are going to be used.
         core.APIConnection(api_key=self.botVariables.get_steam_key())  # steam api connection
         self.command_prefix = self.botVariables.command_prefix
 
