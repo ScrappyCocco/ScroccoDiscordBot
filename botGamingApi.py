@@ -13,7 +13,6 @@ import json
 import aiohttp
 
 from urllib import request
-from steamapi import core
 from hypixel_py import hypixel
 from steamapi.steamapi import core
 from botMethodsClass import BotMethods
@@ -541,7 +540,6 @@ class BotGamingCommands:
         print("-------------------------")
         error = False
         player = None
-        uuid = 0
         if len(args) == 1:
             name = args[0]
             try:
@@ -644,7 +642,7 @@ class BotGamingCommands:
         self.bot = bot
         self.botVariables = self.bot.bot_variables_reference
         # assigning variables value now i can use botVariables
-        hypixel.setKeys(botVariables.get_hypixel_key())  # This sets the API keys that are going to be used.
+        hypixel.setKeys(self.botVariables.get_hypixel_key())  # This sets the API keys that are going to be used.
         core.APIConnection(api_key=self.botVariables.get_steam_key())  # steam api connection
         self.command_prefix = self.botVariables.command_prefix
 
