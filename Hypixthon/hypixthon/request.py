@@ -1,7 +1,7 @@
 # coding=utf-8
 import requests
 
-from Hypixthon.hypixthon.exceptions import APIError
+from hypixthon.exceptions import APIError
 
 class Request:
 	baseUrlForHypixelAPI = "https://api.hypixel.net"

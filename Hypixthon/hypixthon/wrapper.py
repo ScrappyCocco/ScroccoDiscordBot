@@ -1,8 +1,8 @@
 # coding=utf-8
 import warnings
 
-from Hypixthon.hypixthon.request import Request
-from Hypixthon.hypixthon.exceptions import ArgumentException
+from hypixthon.request import Request
+from hypixthon.exceptions import ArgumentException
 
 def parseArguments(**kwargs):
 	if "uuid" in kwargs:
