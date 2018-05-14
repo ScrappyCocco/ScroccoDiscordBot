@@ -542,17 +542,13 @@ class BotGamingCommands:
         player = None
         if len(args) == 1:
             name = args[0]
-            try:
-                async with aiohttp.ClientSession() as session:
-                    async with session.get("https://api.mojang.com/users/profiles/minecraft/" + name) as resp:
-                        r = await resp.json()
-                uuid = r['id']  # getting the user MinecraftID
-                print("Minecraft ID:" + uuid)
-                player = hypixel.Player(uuid)
-            except json.decoder.JSONDecodeError:
+            uuid = await BotMethods.get_player_minecraft_uuid(name)
+            if uuid is None:
                 error = True
                 print("Error getting PlayerID")
                 await self.bot.send_message(ctx.message.channel, "*Player not found...*")
+            else:
+                player = hypixel.Player(uuid)
             if not error and player is not None:
                 # creating final embed
                 first_login_epoch_timestamp = (int(str(player.getPlayerInfo()['firstLogin'])))/1000

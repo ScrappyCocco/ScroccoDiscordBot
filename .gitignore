@@ -1,5 +1,3 @@
 .idea/
 __pycache__/
-hypixthon/__pycache__/
-steamapi/__pycache__/
 bot_data.json

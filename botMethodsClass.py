@@ -124,10 +124,10 @@ class BotMethods:
                 async with session.get("https://api.mojang.com/users/profiles/minecraft/" + player_name) as resp:
                     r = await resp.json()
             uuid = r['id']  # getting the user MinecraftID
-            print("Minecraft ID Downloaded")
+            print("get_player_minecraft_uuid: Minecraft ID Downloaded")
             return uuid
         except (json.decoder.JSONDecodeError, aiohttp.client_exceptions.ContentTypeError):
-            print("Error getting PlayerID")
+            print("get_player_minecraft_uuid: Error getting PlayerID")
             return None
 
     # ---------------------------------------------------------------------
