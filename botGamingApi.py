@@ -11,9 +11,9 @@ import urllib
 import requests
 import json
 import aiohttp
+import hypixel
 
 from urllib import request
-from hypixel_py import hypixel
 from steamapi.steamapi import core
 from botMethodsClass import BotMethods
 from steamapi.steamapi import user
@@ -554,18 +554,25 @@ class BotGamingCommands:
                 print("Error getting PlayerID")
                 await self.bot.send_message(ctx.message.channel, "*Player not found...*")
             if not error and player is not None:
-                final_string = "```"  # creating final string
-                final_string += ("Name:" + str(player.getName())) + "\n"
-                final_string += ("Rank:" + str(player.getRank()['rank']))
-                final_string += ("Level:" + str(player.getLevel())) + "\n"
-                final_string += ("Karma:" + str(player.JSON['karma'])) + "\n"
-                try:
-                    # the "timePlaying" seems to be bugged because it never change, not my fault
-                    final_string += ("Time Playing:" + str(player.getPlayerInfo()) + " - " + str(player.getSession())) + "\n"
-                except KeyError:
-                    final_string += ("Time Playing:" + "Value not found \n")
-                final_string += "```"
-                await self.bot.send_message(ctx.message.channel, final_string)
+                # creating final embed
+                first_login_epoch_timestamp = (int(str(player.getPlayerInfo()['firstLogin'])))/1000
+                last_login_epoch_timestamp = (int(str(player.getPlayerInfo()['lastLogin']))) / 1000
+                embed = discord.Embed(title="Hypixel stats - " + str(player.getName()),
+                                      colour=discord.Colour(0xAD7514),
+                                      url="https://hypixel.net/player/" + str(player.getName()) + "/",
+                                      description="A bit of Hypixel stats, click the link above for more",
+                                      timestamp=datetime.utcfromtimestamp(time.time())
+                                      )
+                embed.set_thumbnail(url="https://cdn.discordapp.com/attachments/396666575081439243/445599418456997898/image.png")
+                embed.set_author(name=ctx.message.author.name, url="", icon_url=ctx.message.author.avatar_url)
+                embed.set_footer(text=self.botVariables.get_description(), icon_url=self.botVariables.get_bot_icon())
+                embed.add_field(name="Name", value=str(player.getName()))
+                embed.add_field(name="Rank", value=str(player.getRank()['rank']))
+                embed.add_field(name="Level", value=str(player.getLevel()))
+                embed.add_field(name="Karma", value=str(player.JSON['karma']))
+                embed.add_field(name="First Login", value=str(time.strftime('%d\%m\%Y %H:%M:%S',  time.gmtime(first_login_epoch_timestamp))))
+                embed.add_field(name="Last Login", value=str(time.strftime('%d\%m\%Y %H:%M:%S', time.gmtime(last_login_epoch_timestamp))))
+                await self.bot.send_message(ctx.message.channel, embed=embed)
         else:  # parameters aren't correct - print the correct usage of the command
             await self.bot.send_message(ctx.message.channel, "**Usage:** " + self.command_prefix + "hy McName")
         print("-------------------------")
@@ -642,7 +649,7 @@ class BotGamingCommands:
         self.bot = bot
         self.botVariables = self.bot.bot_variables_reference
         # assigning variables value now i can use botVariables
-        hypixel.setKeys(self.botVariables.get_hypixel_key())  # This sets the API keys that are going to be used.
+        hypixel.setKeys([self.botVariables.get_hypixel_key()])  # This sets the API keys that are going to be used.
         core.APIConnection(api_key=self.botVariables.get_steam_key())  # steam api connection
         self.command_prefix = self.botVariables.command_prefix
 

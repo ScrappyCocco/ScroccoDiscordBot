@@ -5,6 +5,7 @@ chardet==3.0.4
 discord.py==0.16.12
 futures==3.1.1
 goslate==1.5.1
+hypixel==0.7.6
 idna==2.6
 multidict==4.3.1
 packaging==17.1
