@@ -275,6 +275,7 @@ class BotGamingCommands:
         """
         print("-------------------------")
         error = False
+        player = None
         uuid = 0
         if len(args) == 1:
             name = args[0]
@@ -284,18 +285,20 @@ class BotGamingCommands:
                         r = await resp.json()
                 uuid = r['id']  # getting the user MinecraftID
                 print("Minecraft ID:" + uuid)
+                player = hypixel.Player(uuid)
             except json.decoder.JSONDecodeError:
                 error = True
                 print("Error getting PlayerID")
                 await self.bot.send_message(ctx.message.channel, "*Player not found...*")
-            if not error:
-                stats = self.client.getPlayer(uuid=uuid)
+            if not error and player is not None:
                 final_string = "```"  # creating final string
-                final_string += ("Name:" + stats['player']['displayname']) + "\n"
-                final_string += ("Karma:" + str(stats['player']['karma'])) + "\n"
+                final_string += ("Name:" + str(player.getName())) + "\n"
+                final_string += ("Rank:" + str(player.getRank()['rank']))
+                final_string += ("Level:" + str(player.getLevel())) + "\n"
+                final_string += ("Karma:" + str(player.JSON['karma'])) + "\n"
                 try:
                     # the "timePlaying" seems to be bugged because it never change, not my fault
-                    final_string += ("Time Playing:" + str(stats['player']['timePlaying'])) + "h (Bugged?) \n"
+                    final_string += ("Time Playing:" + str(player.getPlayerInfo()) + " - " + str(player.getSession())) + "\n"
                 except KeyError:
                     final_string += ("Time Playing:" + "Value not found \n")
                 final_string += "```"
