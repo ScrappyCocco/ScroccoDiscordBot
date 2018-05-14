@@ -25,6 +25,8 @@ so you must fill all the variables in "bot_data_examples.json" and **rename it**
 
 (If you remove the check from _botVariables_ but not the command you'll have runtime errors when someone use that command)
 
+Finally, remember to download the git submodules, i use them in the code.
+
 ## Starting the bot
 
 After you installed and configured everything you can try to run the main class (botMainClass.py) with the command:
