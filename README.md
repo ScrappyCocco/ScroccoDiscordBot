@@ -36,7 +36,7 @@ This will start the bot or show the errors you have to fix.
 ## Built Using
 
 * [Danny - Discord.py](https://github.com/Rapptz/discord.py) - Discord Python API
-* [SlashNephy - Hypixthon](https://github.com/SlashNephy/Hypixthon) - Hypixel API
+* [Snuggle - hypixel.py](https://github.com/Snuggle/hypixel.py) - Hypixel API
 * [smiley - steamapi](https://github.com/smiley/steamapi) - Steam API
 * [More on [requirements.txt](requirements.txt)]
 
