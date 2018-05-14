@@ -7,7 +7,7 @@ futures==3.1.1
 goslate==1.5.1
 idna==2.6
 multidict==3.3.2
-packaging==16.8
+packaging==17.1
 pyparsing==2.2.0
 requests==2.18.4
 six==1.11.0

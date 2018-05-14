@@ -9,9 +9,8 @@ import discord
 import requests
 import json
 import aiohttp
-import Hypixthon.hypixthon
 
-from Hypixthon.hypixthon import Hypixthon
+from hypixel_py import hypixel
 from steamapi.steamapi import core
 from botVariablesClass import BotVariables
 from botMethodsClass import BotMethods
@@ -27,7 +26,7 @@ class BotGamingCommands:
     # ---------------------------------------------------------------------
 
     botVariables = BotVariables(False)  # used for 2 api keys
-    client = Hypixthon(botVariables.get_hypixel_key())  # hypixel api connection
+    hypixel.setKeys(botVariables.get_hypixel_key())  # This sets the API keys that are going to be used.
     core.APIConnection(api_key=botVariables.get_steam_key())  # steam api connection
     command_prefix = botVariables.command_prefix
 
