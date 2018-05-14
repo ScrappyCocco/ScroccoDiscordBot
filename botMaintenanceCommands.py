@@ -10,7 +10,6 @@ import time
 from discord import channel
 from datetime import datetime
 from botTimedTasks import BotTimedTasks
-from botVariablesClass import BotVariables
 from botMethodsClass import BotMethods
 
 
@@ -21,8 +20,9 @@ class BotMaintenanceCommands:
     """ Class with Bot 'Maintenance' commands (for example turning off the bot or changing bot status) """
     # ---------------------------------------------------------------------
 
-    botVariables = BotVariables(False)  # used for version and In-Game state-write url
-    command_prefix = botVariables.command_prefix
+    # list of class essential variables, the None variables are assigned in the constructor because i need the bot reference
+    botVariables = None  # used for version and In-Game state-write url
+    command_prefix = None
 
     TaskManager = None  # reference to "botTimedTasks" to create/stop tasks
     Timed_Tasks = []
@@ -313,6 +313,7 @@ class BotMaintenanceCommands:
                     r = requests.post(url,
                                       data={self.botVariables.get_server_write_status_parameter(): new_state,
                                             })
+                    print("Change State - HTTP Request Status Code:" + str(r.status_code))
                     if r.text == "Error" or (r.status_code != 200):
                         print("ERROR SAVING NEW STATUS ON THE SERVER...")
                     else:
@@ -397,6 +398,9 @@ class BotMaintenanceCommands:
     def __init__(self, bot):
         print("CALLING CLASS-->" + self.__class__.__name__ + " class called")
         self.bot = bot
+        self.botVariables = self.bot.bot_variables_reference
+        # assigning variables value now i can use botVariables
+        self.command_prefix = self.botVariables.command_prefix
         # create youtube and discord-status task
         self.TaskManager = BotTimedTasks(self.bot)
         self.Timed_Tasks.append(self.bot.loop.create_task(self.TaskManager.youtube_check()))

@@ -15,13 +15,16 @@ class BotVariables:
 
     # API KEYS LIST
     # REMEMBER THAT if an api key is empty the bot won't start or the command won't work correctly
-    # IF YOU don't want a command you have to MANUALLY remove the api key check (down here) and the command
-    # cleverKey = "YourKey" : get yours from  https://www.cleverbot.com/api/
-    # hypixelKey = "YourKey" : get yours from https://api.hypixel.net/
-    # steamKey = "YourKey" : get yours from https://steamcommunity.com/dev/apikey
-    # gifKey = "YourKey" : get yours from http://api.giphy.com/
+    # IF YOU DON'T WANT a command you have to MANUALLY remove the api key check (down here) and the whole command
+
+    # cleverKey = "YourKey" : used for cleverbot, get yours from  https://www.cleverbot.com/api/
+    # hypixelKey = "YourKey" : used for hypixel api, get yours from https://api.hypixel.net/
+    # steamKey = "YourKey" : used for steam api, get yours from https://steamcommunity.com/dev/apikey
+    # gifKey = "YourKey" : used for gifs api, get yours from http://api.giphy.com/
     # google_shortener = "YourKey" : google shortener api key,
     #   get yours from https://developers.google.com/url-shortener/v1/getting_started#APIKey
+    # X-Mashape-Key = "YourKey" : key for using the metacritic api with "movievotes" command,
+    #   get yours from https://market.mashape.com/marcalencc/metacritic
     # weather key : get yours from http://api.wunderground.com/
     #   weather default_country must be in the "ISO 3166-1 alpha-2" format
     # rocket league stats api key : get yours from https://developers.rocketleaguestats.com
@@ -30,6 +33,8 @@ class BotVariables:
     #   youtube channel id : the youtube channel-id to check new videos
     #   discord channel id : the discord channel where to send youtube notifications
     #   notificationMessage : the message to send at the beginning of the youtube alert
+    #   "channels" is an array of channels, you can specify more than one channel to check every hour, if you don't want to check any channel,
+    #   leave the array empty with "channels": []
 
     # version and build : specify the bot version, you should NOT change those values if you don't edit the bot source
 
@@ -87,7 +92,7 @@ class BotVariables:
 
     # -------------------------------------------------
 
-    def __init__(self, should_check: bool):
+    def __init__(self, should_check=False):
         print("CALLING MINI-CLASS-->" + self.__class__.__name__ + " class called")
         try:
             with open(self.file_name) as data_file:
@@ -95,8 +100,9 @@ class BotVariables:
         except FileNotFoundError:
             print("FATAL ERROR-->" + self.file_name + " FILE NOT FOUND, ABORTING...")
             quit(1)
-        if should_check:
+        if should_check:  # used because i do a full check only the first time the bot load
             self.full_startup_check()
+        # After the full_startup_check, i know there are no problems
         self.command_prefix = self.get_command_prefix()
 
     def __del__(self):
@@ -108,6 +114,7 @@ class BotVariables:
         self.get_hypixel_key()
         self.get_gif_key()
         self.get_google_shortener_key()
+        self.get_mashape_metacritic_key()
         self.get_steam_key()
         self.get_meme_generator_username()
         self.get_meme_generator_password()
@@ -121,9 +128,9 @@ class BotVariables:
 
     def check_empty_key(self, key):
         """Function that check the key for errors.
-            :return: True if the key is ok, False if the Key is empty
+            :return: True if the key is ok, False if the Key is not valid
         """
-        if key == "" or key == self.emptyApiKey:
+        if key is None or key == "" or key == self.emptyApiKey:
             print("ERROR, A KEY IS EMPTY - CHECK YOUR FILE")
             return False
         return True
@@ -186,6 +193,17 @@ class BotVariables:
             print("ERROR GETTING THE GOOGLE SHORTENER KEY (check bot documentation) - ABORTING")
             quit(1)
 
+    def get_mashape_metacritic_key(self):
+        """Function that return the api key for the google shortener api.
+            :return: The google shortener API-KEY.
+        """
+        key = self.bot_data_file["apiKeys"]["X-Mashape-Key"]
+        if self.check_empty_key(key):
+            return key
+        else:
+            print("ERROR GETTING THE MASHAPE API KEY FOR METACRITIC (check bot documentation) - ABORTING")
+            quit(1)
+
     def get_weather_key(self):
         """Function that return the api key for the weather api.
             :return: The Weather API-KEY
@@ -233,23 +251,11 @@ class BotVariables:
                 "ERROR GETTING THE YOUTUBE KEY (get yours from https://developers.google.com/youtube/v3/getting-started) - ABORTING")
             quit(1)
 
-    def get_youtube_channel_id(self):
-        """Function that return the youtube channel ID to use in the request
-            :return: The youtube channel ID to use in the request
+    def get_list_youtube_channels_check(self):
+        """Function that return the list of the youtube channels to check, with all the details about the notification
+        :return: The list of the youtube channels to check
         """
-        return self.bot_data_file["youtube"]["YTchannelID"]
-
-    def get_discord_channel_id_youtube(self):
-        """Function that return the discord channel id to send youtube notifications
-            :return: The discord channel id to send youtube notifications
-        """
-        return self.bot_data_file["youtube"]["DISCORDchannelID"]
-
-    def get_youtube_alert_message(self):
-        """Function that return the youtube alert message to send at the beginning of the message
-            :return: The youtube alert message
-        """
-        return self.bot_data_file["youtube"]["notificationMessage"]
+        return self.bot_data_file["youtube"]["channels"]
 
     def get_version(self):
         """Function that return the current version of the bot.
@@ -333,7 +339,7 @@ class BotVariables:
             return False
         if key == "True":  # bot in beta version
             return True
-        print("BOT DISTRIBUTION ERROR - CHECK \"is_beta\" IN JSON AND PUT True or False")
+        print("BOT DISTRIBUTION ERROR - CHECK \"is_beta\" IN JSON AND WRITE True or False")
         return True
 
     def get_meme_generator_username(self):

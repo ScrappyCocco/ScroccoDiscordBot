@@ -4,7 +4,8 @@
     "hypixel": "YourKey",
     "steam": "YourKey",
     "gif": "YourKey",
-    "google_shortener": "YourKey"
+    "google_shortener": "YourKey",
+    "X-Mashape-Key": "YourKey"
   },
   "weather": {
     "key": "YourKey",
@@ -16,12 +17,16 @@
   },
   "youtube": {
     "key": "YourKey",
-    "YTchannelID": "",
-    "DISCORDchannelID": "",
-    "notificationMessage": "New video published!"
+    "channels": [
+      {
+        "YTchannelID": "",
+        "DISCORDchannelID": "",
+        "notificationMessage": "New video published!"
+      }
+    ]
   },
-  "version": "0.98",
-  "build": "30",
+  "version": "0.98.20",
+  "build": "50",
   "is_beta": "False",
   "description": "Bot by ScrappyCocco (Some commands are hidden from help)",
   "bot_icon": "https://discordapp.com/assets/2c21aeda16de354ba5334551a883b481.png",
@@ -32,7 +37,7 @@
   "owners_data": {
     "owners_list": [
       {
-        "name": "ScrappyCocco#4468"
+        "name": "ScrappyCocco#1234"
       },
       {
         "name": "..."
@@ -52,6 +57,9 @@
     },
     {
       "name": "botModerationCommands"
+    },
+    {
+      "name": "botErrorManager"
     }
   ],
   "server_state_saving": {

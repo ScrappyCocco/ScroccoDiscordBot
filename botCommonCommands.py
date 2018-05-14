@@ -4,10 +4,10 @@
 from discord.ext import commands
 
 import html
+import re
 import json
 import random
 import discord
-import requests
 import goslate
 import time
 import urllib.parse
@@ -17,7 +17,6 @@ from discord.errors import HTTPException
 from urllib import error
 from datetime import datetime
 from random import randint
-from botVariablesClass import BotVariables
 from botMethodsClass import BotMethods
 
 
@@ -25,14 +24,20 @@ from botMethodsClass import BotMethods
 
 
 class BotCommonCommands:
-    """ Class with Bot 'Common' commands (simple commands, for example cat or gif) """
+    """ Class with Bot 'Common' commands (simple commands, for example cat, meme or gif) """
     # ---------------------------------------------------------------------
 
-    botVariables = BotVariables(False)  # used for username and for emoji array
-    gs = goslate.Goslate()  # translator
-    command_prefix = botVariables.command_prefix
+    # list of class essential variables, the None variables are assigned in the constructor because i need the bot reference
+    botVariables = None  # used to get api keys and other bot informations
+    gs = goslate.Goslate()  # translator (used in translate command)
+    command_prefix = None  # bot command prefix
 
     async def get_short_url(self, url):
+        """
+        This function use the google api to generate a shorter version of the url given
+        :param url: the url to make shorten
+        :return: a short version of the url
+        """
         api_key = self.botVariables.get_google_shortener_key()
         post_url = 'https://www.googleapis.com/urlshortener/v1/url?key={}'.format(api_key)
         payload = {'longUrl': url}
@@ -56,14 +61,14 @@ class BotCommonCommands:
         currentgifkey = self.botVariables.get_gif_key()
         print("GifRequest:Arguments:" + str(len(args)))
         tag = ""
-        if len(args) == 0:
+        if len(args) == 0:  # request a random gif
             print("Gif Request with No arguments")
             url = "http://api.giphy.com/v1/gifs/random?api_key=" + currentgifkey
             async with aiohttp.ClientSession() as session:
                 async with session.get(url) as resp:
                     r = await resp.json()
             await self.bot.send_message(ctx.message.channel, r['data']['image_url'])
-        else:
+        else:  # request a gif with tags
             for x in range(0, len(args)):
                 tag = tag + args[x]
                 if x != (len(args) - 1):
@@ -73,7 +78,7 @@ class BotCommonCommands:
             async with aiohttp.ClientSession() as session:
                 async with session.get(url) as resp:
                     r = await resp.json()
-            print("GifRequest:Found Length:" + str(len(r['data'])))
+            print("GifRequest:Gif Found")
             if (len(r['data'])) == 0:
                 await self.bot.send_message(ctx.message.channel, "No GIF found with those tags :frowning: ")
             else:
@@ -87,48 +92,61 @@ class BotCommonCommands:
         """Print a random cat
         Usage: !cat
         """
-        url = "http://random.cat/meow"
-        async with aiohttp.ClientSession() as session:
-            async with session.get(url) as resp:
-                r = await resp.json()
-        await self.bot.send_message(ctx.message.channel, r['file'])
+        url = "http://aws.random.cat/meow"
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.get(url) as resp:
+                    r = await resp.json()
+            await self.bot.send_message(ctx.message.channel, r['file'])
+        except aiohttp.client_exceptions.ContentTypeError:
+            print("Cannot send cat image...")
 
     # ---------------------------------------------------------------------
 
     @commands.command(pass_context=True)
     async def meme(self, ctx, *args):
-        """Generate a meme with 1 or 2 phrases (and with the generator id or without)
+        """Generate a meme with up to 3 phrases (and with the generator id or without)
         example 1: !meme "Hello there Discord" 47235368
-        example 2: !meme "Hello there Discord" "How are you?" 47235368
+        example 2: !meme "Generate a random meme" "For me"
+        example 3: !meme "Hello there Discord" "How are you?" 47235368
+        example 4: !meme "Hello there Discord" "How are you?" "I'm ok" 47235368
         """
         print("-------------------------")
-        error_count = 0
+        error_flag = False
         generator_id = 0
-        phrase1 = ""
-        phrase2 = ""
+        phrase1 = None
+        phrase2 = None
+        phrase3 = None
         generator_link = "https://api.imgflip.com/get_memes"
-        if len(args) == 1:
+        if len(args) == 1:  # there is only one parameter for the meme
             phrase1 = args[0]
-            print("Param-1:" + phrase1)
-        if len(args) > 1:
+        if len(args) > 1:  # more than one parameter for the meme
             phrase1 = args[0]
-            print("Param-2:" + phrase1)
-            try:
+            try:  # is the second parameter a number?
                 generator_id = int(args[1])
-                print("GenID:" + str(generator_id))
-            except ValueError:
+                print("Meme: GenID:" + str(generator_id))
+            except ValueError:  # no, use it as string
                 phrase2 = args[1]
-                print("Param2 - not a number")
+                print("Meme: Param2 - not the generator ID")
         if len(args) == 3:
             try:
-                generator_id = int(args[2])
-                print("GenID:" + str(generator_id))
+                generator_id = int(args[2])  # is the third parameter the generator id?
+                print("Meme: GenID:" + str(generator_id))
             except ValueError:
-                await self.bot.send_message(ctx.message.channel, "The third param it's not a number!")
-                error_count = 1
-                print("GenID Not Correct")
-        if 3 >= len(args) > 0 == error_count:
-            if len(args) < 3 and generator_id == 0:
+                print("Meme: Param3 - not the generator ID")
+                phrase3 = args[2]  # if no use it as third string
+        else:
+            if len(args) == 4:
+                phrase3 = args[2]  # the third parameter is used as string
+                try:
+                    generator_id = int(args[3])  # check is the generator id is valid
+                    print("Meme: GenID:" + str(generator_id))
+                except ValueError:
+                    await self.bot.send_message(ctx.message.channel, "The fourth param it's not a number!")
+                    error_flag = True
+                    print("Meme: GenID Not Correct")
+        if 0 < len(args) <= 4 and not error_flag:  # check for parameters and errors
+            if generator_id == 0:  # generator id not given, downloading a random id
                 async with aiohttp.ClientSession() as session:
                     async with session.get(generator_link) as resp:
                         r = await resp.json()
@@ -138,21 +156,43 @@ class BotCommonCommands:
                         'id']
                 else:
                     print("Error getting meme generators")
-            request_data = {'template_id': int(generator_id),
-                            'username': self.botVariables.get_meme_generator_username(),
-                            'password': self.botVariables.get_meme_generator_password(),
-                            'text0': phrase1,
-                            'text1': phrase2,
-                            'boxes[1][text]': phrase1,
-                            'boxes[0][text]': phrase2
-                            }
+            if phrase2 is None:  # request data based for only 1 text box
+                print("Meme: Generating meme with 1 boxes")
+                request_data = {'template_id': int(generator_id),
+                                'username': self.botVariables.get_meme_generator_username(),
+                                'password': self.botVariables.get_meme_generator_password(),
+                                'text0': phrase1,
+                                'boxes[0][text]': phrase1
+                                }
+            else:
+                if phrase3 is None:  # request data based if we have 3 or 2 boxes
+                    print("Meme: Generating meme with 2 boxes")
+                    request_data = {'template_id': int(generator_id),
+                                    'username': self.botVariables.get_meme_generator_username(),
+                                    'password': self.botVariables.get_meme_generator_password(),
+                                    'text0': phrase1,
+                                    'text1': phrase2,
+                                    'boxes[0][text]': phrase1,
+                                    'boxes[1][text]': phrase2
+                                    }
+                else:
+                    print("Meme: Generating meme with 3 boxes")
+                    request_data = {'template_id': int(generator_id),
+                                    'username': self.botVariables.get_meme_generator_username(),
+                                    'password': self.botVariables.get_meme_generator_password(),
+                                    'text0': phrase1,
+                                    'text1': phrase2,
+                                    'boxes[0][text]': phrase1,
+                                    'boxes[1][text]': phrase2,
+                                    'boxes[2][text]': phrase3
+                                    }
             async with aiohttp.ClientSession() as session:
                 async with session.post("https://api.imgflip.com/caption_image", data=request_data) as resp:
-                    r = await resp.text()
                     try:
                         r = await resp.json()
                     except (UnicodeDecodeError, aiohttp.client_exceptions.ClientResponseError):
-                        print("Meme reply is not a json..." + str(r))
+                        print("Meme reply is not a json...")
+                        await self.bot.send_message(ctx.message.channel, "*An error occurred generating the meme...*")
                         return
             result = r
             if result['success']:
@@ -160,9 +200,10 @@ class BotCommonCommands:
                                             str(result['data']['url']) + " ID Meme:" + str(generator_id))
             else:
                 print("Meme Error:" + str(result['error_message']))
+                await self.bot.send_message(ctx.message.channel, "*An error occurred generating the meme...*")
         else:
             await self.bot.send_message(ctx.message.channel,
-                                        "**Usage:** " + self.command_prefix + "meme \"text1\" \"text2 or memeId\"[Optional] \"memeId\"[Optional], for more see " + self.command_prefix + "help meme")
+                                        "**Usage:** " + self.command_prefix + "meme <parameters>, please check " + self.command_prefix + "help meme")
         print("-------------------------")
 
     # ---------------------------------------------------------------------
@@ -173,18 +214,12 @@ class BotCommonCommands:
         Usage: !party
         """
         print("-------------------------")
-        normal_parrot = "https://cdn.discordapp.com/attachments/276674976210485248/304557572416077824/parrot.gif"
-        conga_parrot = "https://cdn.discordapp.com/attachments/276667503034499072/309781525971337226/congaparrot.gif"
-        shuffle_parrot = "https://cdn.discordapp.com/attachments/276667503034499072/309781549639794688/shuffleparrot.gif"
-        link = ""
-        number = randint(0, 2)
+        parrots = ["https://cdn.discordapp.com/attachments/276674976210485248/304557572416077824/parrot.gif",
+                   "https://cdn.discordapp.com/attachments/276667503034499072/309781525971337226/congaparrot.gif",
+                   "https://cdn.discordapp.com/attachments/276667503034499072/309781549639794688/shuffleparrot.gif"]
+        number = randint(0, len(parrots))
+        link = parrots[number]
         print("Number:" + str(number))
-        if number == 0:
-            link = normal_parrot
-        if number == 1:
-            link = conga_parrot
-        if number == 2:
-            link = shuffle_parrot
         try:
             if ctx.message.content == "!party" and ctx.message.server is not None:
                 print("Deleting the message...")
@@ -195,6 +230,7 @@ class BotCommonCommands:
         embed.set_author(name=ctx.message.author.name)
         embed.set_thumbnail(url=link)
         await self.bot.send_message(ctx.message.channel, embed=embed)
+        print("Parrot sent!")
         print("-------------------------")
 
     # ---------------------------------------------------------------------
@@ -259,9 +295,11 @@ class BotCommonCommands:
         """Print a random quote
         Usage: !quote
         """
-        r = requests.get("http://quotesondesign.com/wp-json/posts?filter[orderby]=rand&filter[posts_per_page]=1")
-        await self.bot.send_message(ctx.message.channel, "**" + BotMethods.cleanhtml("From " + r.json()[0]['title'])
-                                    + ":**" + html.unescape(BotMethods.cleanhtml(r.json()[0]['content'])))
+        async with aiohttp.ClientSession() as session:
+            async with session.get("http://quotesondesign.com/wp-json/posts?filter[orderby]=rand&filter[posts_per_page]=1") as resp:
+                r = await resp.json()
+        await self.bot.send_message(ctx.message.channel, "**" + BotMethods.cleanhtml("From " + r[0]['title'])
+                                    + ":**" + html.unescape(BotMethods.cleanhtml(r[0]['content'])))
 
     # ---------------------------------------------------------------------
 
@@ -274,7 +312,8 @@ class BotCommonCommands:
             message_received = str(args[0])
             language = str(args[1])
             try:
-                await self.bot.send_message(ctx.message.channel, self.gs.translate(message_received, language))
+                await self.bot.send_message(ctx.message.channel,
+                                            "**Translated text:**" + self.gs.translate(message_received, language))
             except error.HTTPError:
                 await self.bot.send_message(ctx.message.channel, "HTTP Error 503: Service Unavailable")
         else:
@@ -463,7 +502,7 @@ class BotCommonCommands:
     async def lmgtfy(self, ctx, *args):
         """Generate a "let me google it for you" url
         Usage: !lmgtfy "search box"
-        Example: !lmgtfy "helllo world"
+        Example: !lmgtfy "hello world"
         """
         print("-------------------------")
         if len(args) == 1:
@@ -606,9 +645,115 @@ class BotCommonCommands:
 
     # ---------------------------------------------------------------------
 
+    # Little class used to store films in array
+    class FilmInfo(object):
+        film_id = ""
+        film_name = ""
+        similar = 0
+
+        def __init__(self, filmid: str, filmname: str, similar: float):
+            self.film_id = filmid
+            self.film_name = filmname
+            self.similar = similar
+
+    @commands.command(pass_context=True)
+    async def movievotes(self, ctx, *args):
+        """Search the movie votes in metacritic database
+        Usage: !movievotes <film Title>
+        Example: !movievotes "Avengers: Infinity War"
+        """
+        print("-------------------------")
+        if len(args) == 1:
+            print("Starting search")
+            api_key = self.botVariables.get_mashape_metacritic_key()
+            search_term = (re.sub(r'([^\s\w]|_)+', '', args[0])).lower()
+            request_search_link = "https://api-marcalencc-metacritic-v1.p.mashape.com/search/" + str(
+                urllib.parse.quote(search_term)) + "/movie?limit=20&offset=1"
+            # search all the films with the term given
+            async with aiohttp.ClientSession() as session:
+                # the website use get
+                async with session.get(request_search_link, headers={'X-Mashape-Key': str(api_key),
+                                                                     'Accept': 'application/json'}) as resp:
+                    request_result = await resp.json()
+            if len(request_result[0]['SearchItems']) > 0:  # there is at least one film
+                films_found = []
+                max_prob = 0.0
+                # decide the best film using string similarity
+                for entry in request_result[0]['SearchItems']:
+                    entry_string = (re.sub(r'([^\s\w]|_)+', '', entry['Title'])).lower()
+                    film_similarity = BotMethods.similar(search_term, entry_string, None)
+                    if film_similarity > 0.7:  # consider it only if it's > 0.7 (range is 0.0-1.0)
+                        films_found.append(
+                            self.FilmInfo(entry['Id'], entry['Title'], film_similarity))  # store that film in the array
+                        if film_similarity > max_prob:  # search for max prob
+                            max_prob = film_similarity
+                            if film_similarity >= 1.0:  # i have found the perfect string
+                                print("Perfect name found, search cycle stopped")
+                                break  # stop the for
+                if len(films_found) > 0:  # i have found at least one possible film
+                    film_web_id = ""
+                    for film in films_found:  # search the film with the max name similarity in the array
+                        if film.similar == max_prob:
+                            print("Film Chosen: " + film.film_name + " - Film web id:" + str(
+                                film.film_id) + " - Sim.:" + str(
+                                max_prob))
+                            film_web_id = film.film_id  # get the film web id
+                            break
+                    # make request to get all necessary film informations
+                    request_search_link = "https://api-marcalencc-metacritic-v1.p.mashape.com" + str(film_web_id)
+                    async with aiohttp.ClientSession() as session:
+                        async with session.get(request_search_link, headers={'X-Mashape-Key': str(api_key),
+                                                                             'Accept': 'application/json'}) as resp:  # the website use get
+                            request_result = await resp.json()
+                    # prepare the embed message
+                    embed = discord.Embed(title=str(request_result[0]['Title']),
+                                          colour=discord.Colour(0xffcc00),
+                                          url="http://www.metacritic.com/" + str(film_web_id),
+                                          description="Metacritic votes about " + str(
+                                              request_result[0]['Title']) + " by " + str(
+                                              request_result[0]['Director']) + ", released on " + str(
+                                              request_result[0]['ReleaseDate']),
+                                          timestamp=datetime.utcfromtimestamp(time.time())
+                                          )
+                    embed.set_thumbnail(url=str(request_result[0]['ImageUrl']))
+                    embed.set_author(name=ctx.message.author.name, url="", icon_url=ctx.message.author.avatar_url)
+                    embed.set_footer(text=self.botVariables.get_description(),
+                                     icon_url=self.botVariables.get_bot_icon())
+                    if len(request_result[0]['Rating']) > 0:
+                        # --- read users votes ---
+                        user_votes = "Rating: " + str(request_result[0]['Rating']['UserRating']) + " (" + str(
+                            request_result[0]['Rating']['UserReviewCount']) + " votes)"
+                        # --- read critic votes ---
+                        critic_votes = "Rating: " + str(request_result[0]['Rating']['CriticRating']) + " (" + str(
+                            request_result[0]['Rating']['CriticReviewCount']) + " votes)"
+                        # --- create fields ---
+                        embed.add_field(name="Critic Rating", value=critic_votes)
+                        embed.add_field(name="User Rating", value=user_votes)
+                    else:
+                        embed.add_field(name="No votes found...",
+                                        value="Looks like there are no votes for this film...")
+                    # --- sending the message ---
+                    print("Sending film embed message")
+                    await self.bot.send_message(ctx.message.channel, embed=embed)
+                else:
+                    print("No films found")
+                    await self.bot.send_message(ctx.message.channel, "*No films found, check the name...*")
+            else:
+                print("No films found")
+                await self.bot.send_message(ctx.message.channel, "*No films found, check the name...*")
+        else:
+            await self.bot.send_message(ctx.message.channel,
+                                        "**Usage:** " + self.command_prefix + "movievotes <film Title>, for more see " + self.command_prefix + "help movievotes")
+        print("-------------------------")
+
+    # ---------------------------------------------------------------------
+
     def __init__(self, bot):
         print("CALLING CLASS-->" + self.__class__.__name__ + " class called")
         self.bot = bot
+        self.botVariables = self.bot.bot_variables_reference
+        # assigning variables value now i can use botVariables
+        self.command_prefix = self.botVariables.command_prefix
 
     def __del__(self):
         print("DESTROYING CLASS-->" + self.__class__.__name__ + " class called")
