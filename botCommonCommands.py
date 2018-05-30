@@ -708,14 +708,17 @@ class BotCommonCommands:
                     # prepare the embed message
                     embed = discord.Embed(title=str(request_result[0]['Title']),
                                           colour=discord.Colour(0xffcc00),
-                                          url="http://www.metacritic.com/" + str(film_web_id),
+                                          url="http://www.metacritic.com" + str(film_web_id),
                                           description="Metacritic votes about " + str(
                                               request_result[0]['Title']) + " by " + str(
                                               request_result[0]['Director']) + ", released on " + str(
                                               request_result[0]['ReleaseDate']),
                                           timestamp=datetime.utcfromtimestamp(time.time())
                                           )
-                    embed.set_thumbnail(url=str(request_result[0]['ImageUrl']))
+                    if 'ImageUrl' in request_result[0]:
+                        embed.set_thumbnail(url=str(request_result[0]['ImageUrl']))
+                    else:
+                        print("No ImageUrl found, no thumbnail setted")
                     embed.set_author(name=ctx.message.author.name, url="", icon_url=ctx.message.author.avatar_url)
                     embed.set_footer(text=self.botVariables.get_description(),
                                      icon_url=self.botVariables.get_bot_icon())
