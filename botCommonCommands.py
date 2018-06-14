@@ -718,7 +718,7 @@ class BotCommonCommands:
                     if 'ImageUrl' in request_result[0]:
                         embed.set_thumbnail(url=str(request_result[0]['ImageUrl']))
                     else:
-                        print("No ImageUrl found, no thumbnail setted")
+                        print("No ImageUrl found, no thumbnail set")
                     embed.set_author(name=ctx.message.author.name, url="", icon_url=ctx.message.author.avatar_url)
                     embed.set_footer(text=self.botVariables.get_description(),
                                      icon_url=self.botVariables.get_bot_icon())

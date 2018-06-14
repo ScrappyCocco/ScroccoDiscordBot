@@ -124,18 +124,23 @@ class BotGamingCommands:
             url_operators = "https://api.r6stats.com/api/v1/players/" + player_name_string + "/operators?platform=" + platform_string
             # first request, check for errors
             print("R6 - Starting First Request")
-            async with aiohttp.ClientSession() as session:
-                async with session.get(url_stats) as resp:
-                    request_player_stats = await resp.json()
-            if 'status' in request_player_stats:  # an error occurred looking for the player
-                print("R6 - Player does not exist")
-                await self.bot.send_message(ctx.message.channel, "*No player found with that name...*")
-                await self.bot.delete_message(temp_message)
+            try:
+                async with aiohttp.ClientSession() as session:
+                    async with session.get(url_stats) as resp:
+                        request_player_stats = await resp.json()
+                if 'status' in request_player_stats:  # an error occurred looking for the player
+                    print("R6 - Player does not exist")
+                    await self.bot.send_message(ctx.message.channel, "*No player found with that name...*")
+                    await self.bot.delete_message(temp_message)
+                    return
+                print("R6 - No errors downloading the players, downloading other data...")
+                async with aiohttp.ClientSession() as session:
+                    async with session.get(url_operators) as resp:
+                        request_player_operators = await resp.json()
+            except json.JSONDecodeError:
+                print("R6 - json.JSONDecodeError")
+                await self.bot.send_message(ctx.message.channel, "An error occurred requesting your data, please retry later... (api.r6stats.com error)")
                 return
-            print("R6 - No errors downloading the players, downloading other data...")
-            async with aiohttp.ClientSession() as session:
-                async with session.get(url_operators) as resp:
-                    request_player_operators = await resp.json()
             print("R6 - Download completed, creating the embed")
             # creating the discord Embed response
             embed = discord.Embed(title="Rainbow6 Stats Link",
@@ -301,7 +306,8 @@ class BotGamingCommands:
                 medals = len(steam_user.badges)
                 profile_url = steam_user.profile_url
                 level = steam_user.level
-            except (steamapi.steamapi.errors.APIUnauthorized, steamapi.steamapi.errors.UserNotFoundError, KeyError, AttributeError):
+            except (steamapi.steamapi.errors.APIUnauthorized, steamapi.steamapi.errors.UserNotFoundError, KeyError,
+                    AttributeError):
                 await self.bot.send_message(ctx.message.channel, "Error - Can't get user data!")
                 return
             # create the final message
@@ -418,10 +424,15 @@ class BotGamingCommands:
                 # --- price field, get the price or put "Unknown" ---
                 if 'price_overview' in request_app_page[str(game_app_id)]['data']:
                     price_string = str(request_app_page[str(game_app_id)]['data']['price_overview']['final'])
+                    print("FINAL RECEIVED:" + price_string)
                     price_currency = str(request_app_page[str(game_app_id)]['data']['price_overview']['currency'])
                     price_string = price_string[:(len(price_string) - 2)] + "." + price_string[
                                                                                   (len(
                                                                                       price_string) - 2):] + price_currency
+                    if 'discount_percent' in request_app_page[str(game_app_id)]['data']['price_overview'] \
+                            and request_app_page[str(game_app_id)]['data']['price_overview']['discount_percent'] > 0:
+                        price_string += " (" + str(
+                            request_app_page[str(game_app_id)]['data']['price_overview']['discount_percent']) + "% off)"
                 else:
                     price_string = "Unknown"
                 embed.add_field(name="Price", value=str(price_string))
@@ -551,7 +562,7 @@ class BotGamingCommands:
                 player = hypixel.Player(uuid)
             if not error and player is not None:
                 # creating final embed
-                first_login_epoch_timestamp = (int(str(player.getPlayerInfo()['firstLogin'])))/1000
+                first_login_epoch_timestamp = (int(str(player.getPlayerInfo()['firstLogin']))) / 1000
                 last_login_epoch_timestamp = (int(str(player.getPlayerInfo()['lastLogin']))) / 1000
                 embed = discord.Embed(title="Hypixel stats - " + str(player.getName()),
                                       colour=discord.Colour(0xAD7514),
@@ -559,15 +570,18 @@ class BotGamingCommands:
                                       description="A bit of Hypixel stats, click the link above for more",
                                       timestamp=datetime.utcfromtimestamp(time.time())
                                       )
-                embed.set_thumbnail(url="https://cdn.discordapp.com/attachments/396666575081439243/445599418456997898/image.png")
+                embed.set_thumbnail(
+                    url="https://cdn.discordapp.com/attachments/396666575081439243/445599418456997898/image.png")
                 embed.set_author(name=ctx.message.author.name, url="", icon_url=ctx.message.author.avatar_url)
                 embed.set_footer(text=self.botVariables.get_description(), icon_url=self.botVariables.get_bot_icon())
                 embed.add_field(name="Name", value=str(player.getName()))
                 embed.add_field(name="Rank", value=str(player.getRank()['rank']))
                 embed.add_field(name="Level", value=str(player.getLevel()))
                 embed.add_field(name="Karma", value=str(player.JSON['karma']))
-                embed.add_field(name="First Login", value=str(time.strftime('%d\%m\%Y %H:%M:%S',  time.gmtime(first_login_epoch_timestamp))))
-                embed.add_field(name="Last Login", value=str(time.strftime('%d\%m\%Y %H:%M:%S', time.gmtime(last_login_epoch_timestamp))))
+                embed.add_field(name="First Login",
+                                value=str(time.strftime('%d\%m\%Y %H:%M:%S', time.gmtime(first_login_epoch_timestamp))))
+                embed.add_field(name="Last Login",
+                                value=str(time.strftime('%d\%m\%Y %H:%M:%S', time.gmtime(last_login_epoch_timestamp))))
                 await self.bot.send_message(ctx.message.channel, embed=embed)
         else:  # parameters aren't correct - print the correct usage of the command
             await self.bot.send_message(ctx.message.channel, "**Usage:** " + self.command_prefix + "hy McName")
