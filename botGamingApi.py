@@ -137,8 +137,8 @@ class BotGamingCommands:
                 async with aiohttp.ClientSession() as session:
                     async with session.get(url_operators) as resp:
                         request_player_operators = await resp.json()
-            except json.JSONDecodeError:
-                print("R6 - json.JSONDecodeError")
+            except (json.JSONDecodeError, aiohttp.client_exceptions.ClientResponseError):
+                print("R6 - Error downloading the data")
                 await self.bot.send_message(ctx.message.channel, "An error occurred requesting your data, please retry later... (api.r6stats.com error)")
                 return
             print("R6 - Download completed, creating the embed")
