@@ -135,24 +135,29 @@ class BotModerationCommands:
                                         "*Can't edit roles in private, execute the command in a server*")
             return
         if BotMethods.is_server_admin(ctx.message.author):
-            if len(args) != 2:
+            if len(args) != 2 or (str(args[0]).lower() != "remove" and str(args[0]).lower() != "add"):
                 await self.bot.send_message(ctx.message.channel, "Parameters not correct...")
                 return
             print("-------------------------")
             server_members = ctx.message.server.members
-            action = str(args[0])
+            action = str(args[0]).lower()
             selected_role = discord.utils.get(ctx.message.server.roles, name=str(args[1]))
             if selected_role is None:
                 await self.bot.send_message(ctx.message.channel, "Errors - can't find given roles...")
                 return
             print("Found " + str(len(server_members)) + " members to analyze")
+            counter = 0
             for CurrentMember in server_members:
-                if (action == "remove" or action == "-") and (selected_role in CurrentMember.roles):  # remove the role
+                if (action == "remove") and (selected_role in CurrentMember.roles):  # remove the role
                     await self.bot.remove_roles(CurrentMember, selected_role)
                     print("Role removed for user:" + CurrentMember.name)
-                if (action == "add" or action == "+") and (selected_role not in CurrentMember.roles):  # add the role
+                    counter += 1
+                if (action == "add") and (selected_role not in CurrentMember.roles):  # add the role
                     await self.bot.add_roles(CurrentMember, selected_role)
                     print("Role added for user:" + CurrentMember.name)
+                    counter += 1
+            await self.bot.send_message(ctx.message.channel,
+                                        "Successfully executed '" + action + " role' for " + str(counter) + " users!")
             print("-------------------------")
         else:
             await self.bot.send_message(ctx.message.channel,
@@ -189,6 +194,7 @@ class BotModerationCommands:
                     await self.bot.add_roles(user_found, role_to_update)
                 if action == "remove" or action == "-":
                     await self.bot.remove_roles(user_found, role_to_update)
+                await self.bot.send_message(ctx.message.channel, "Role Updated for user:" + user_found.name)
                 print("Role Updated for user:" + user_found.name)
             print("-------------------------")
         else:
@@ -224,14 +230,19 @@ class BotModerationCommands:
                 await self.bot.send_message(ctx.message.channel, "Errors - can't find given roles...")
                 return
             print("Found " + str(len(server_members)) + " members to analyze")
+            counter = 0
             for CurrentMember in server_members:
                 if len(CurrentMember.roles) == 0 and empty_role:
                     await self.bot.add_roles(CurrentMember, new_role)
+                    counter += 1
                 else:
                     if old_role in CurrentMember.roles:
                         await self.bot.remove_roles(CurrentMember, old_role)
                         await self.bot.add_roles(CurrentMember, new_role)
                         print("Role Updated for user:" + CurrentMember.name)
+                        counter += 1
+            await self.bot.send_message(ctx.message.channel,
+                                        "Successfully updated role for " + str(counter) + " users!")
             print("-------------------------")
         else:
             await self.bot.send_message(ctx.message.channel,
