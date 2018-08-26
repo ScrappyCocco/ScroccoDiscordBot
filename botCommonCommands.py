@@ -305,7 +305,8 @@ class BotCommonCommands:
         Usage: !quote
         """
         async with aiohttp.ClientSession() as session:
-            async with session.get("http://quotesondesign.com/wp-json/posts?filter[orderby]=rand&filter[posts_per_page]=1") as resp:
+            async with session.get(
+                    "http://quotesondesign.com/wp-json/posts?filter[orderby]=rand&filter[posts_per_page]=1") as resp:
                 r = await resp.json()
         await self.bot.send_message(ctx.message.channel, "**" + BotMethods.cleanhtml("From " + r[0]['title'])
                                     + ":**" + html.unescape(BotMethods.cleanhtml(r[0]['content'])))
@@ -595,6 +596,19 @@ class BotCommonCommands:
 
     # ---------------------------------------------------------------------
 
+    # Little class used to store definitions in an array
+    class UrbanDefinition(object):
+        author = ""
+        example = ""
+        definition = ""
+        votes = 0
+
+        def __init__(self, author: str, example: str, definition: str, votes: float):
+            self.author = author
+            self.example = example
+            self.definition = definition
+            self.votes = votes
+
     @commands.command(pass_context=True)
     async def ur(self, ctx, *args):
         """Search a word in the urban dictionary
@@ -604,52 +618,59 @@ class BotCommonCommands:
         print("-------------------------")
         if len(args) == 1:
             request_link = "http://api.urbandictionary.com/v0/define?term=" + str(args[0])
-            # request_result = requests.get(request_link).json()
             async with aiohttp.ClientSession() as session:
                 async with session.get(request_link) as resp:  # the website use get
                     request_result = await resp.json()
-            if request_result["result_type"] == "no_results":  # no results found
+            if len(request_result["list"]) == 0:  # no results found
                 print("No results for that word in urban dictionary")
                 await self.bot.send_message(ctx.message.channel,
                                             "*No results found for \"" + str(args[0]) + "\" in urban dictionary*")
             else:
-                current_max_vote = float(0.0)
-                saved_definition = None
-                if request_result["result_type"] == "exact":  # found an exact result
-                    for definition in request_result["list"]:  # choose the best result with positive-percentage
-                        percentage = (definition["thumbs_up"] / (
-                                definition["thumbs_up"] + definition["thumbs_down"])) * 100
-                        if percentage > current_max_vote:
-                            saved_definition = definition
-                            current_max_vote = percentage
-                    # create the embed to send
-                    embed = discord.Embed(title="Urban Dictionary - Link", url=saved_definition["permalink"],
-                                          color=0x1d2439,
-                                          description="Best dictionary result for \"" + str(args[0]) + "\"")
-                    embed.set_author(name="Search required by " + ctx.message.author.name,
-                                     icon_url=ctx.message.author.avatar_url)
-                    embed.set_thumbnail(
-                        url='https://cdn.discordapp.com/attachments/276674976210485248/350641481872179200/featured-image4.jpg')
-                    definition_text = saved_definition["definition"]
+                # Store all definitions in an array
+                definitions_found = []
+                for definition in request_result["list"]:  # choose the best result with positive-percentage
+                    percentage = (definition["thumbs_up"] / (
+                            definition["thumbs_up"] + definition["thumbs_down"])) * 100
+                    percentage = percentage * (definition["thumbs_up"] + definition["thumbs_down"])
+                    definitions_found.append(
+                        self.UrbanDefinition(definition['author'], definition['example'], definition['definition'],
+                                             percentage)
+                    )
+                # Sort the definition using votes
+                definitions_found.sort(key=lambda UrbanDefinition: UrbanDefinition.votes, reverse=True)
+                # create the embed to send
+                embed = discord.Embed(title="Urban Dictionary - Link",
+                                      url="https://www.urbandictionary.com/define.php?term=" + str(args[0]),
+                                      color=0x1d2439,
+                                      description="Best 3 urban dictionary results for \"" + str(args[0]) + "\"")
+                embed.set_author(name="Search required by " + ctx.message.author.name,
+                                 icon_url=ctx.message.author.avatar_url)
+                embed.set_thumbnail(
+                    url='https://cdn.discordapp.com/attachments/276674976210485248/350641481872179200/featured-image4.jpg')
+                for x in range(0, 3):
+                    # Check array size
+                    if not len(definitions_found) > (x + 1):
+                        break
+                    # Check text and prepare embed
+                    definition_text = definitions_found[x].definition
                     if len(definition_text) > 1024:  # cut the string, is too long
                         definition_text = definition_text[:1000] + "[TEXT TOO LONG]..."
-                    embed.add_field(name="Definition:", value=definition_text, inline=False)
-                    example_text = saved_definition["example"]
+                    embed.add_field(name=("Definition (From " + str(definitions_found[x].author) + "):"),
+                                    value=definition_text, inline=False)
+                    example_text = definitions_found[x].example
                     if len(example_text) > 1024:  # cut the string, is too long
                         example_text = example_text[:1000] + "[TEXT TOO LONG]..."
                     embed.add_field(name="Example(s):", value=example_text, inline=False)
-                    embed.add_field(name="Author:", value=saved_definition["author"], inline=True)
-                    embed.add_field(name="Positive Votes:", value=str(int(current_max_vote)) + "%", inline=True)
-                    embed.set_footer(text="Using http://www.urbandictionary.com/")
-                    try:
-                        await self.bot.send_message(ctx.message.channel, embed=embed)
-                        print("Ur embed sent successfully")
-                    except discord.errors.HTTPException:
-                        print("HTTPException during the sending of ur embed")
-                        await self.bot.send_message(ctx.message.channel, "*An error occurred sending the result...*")
-                else:
-                    print("Urban Dictionary request fail")
-                    await self.bot.send_message(ctx.message.channel, "*Urban-Dictionary search failed*")
+                    embed.add_field(name="---------------------------------------------",
+                                    value="---------------------------------------------", inline=False)
+                # End for, add footer and send the embed
+                embed.set_footer(text="Using http://www.urbandictionary.com/")
+                try:
+                    await self.bot.send_message(ctx.message.channel, embed=embed)
+                    print("Ur embed sent successfully")
+                except discord.errors.HTTPException:
+                    print("HTTPException during the sending of ur embed")
+                    await self.bot.send_message(ctx.message.channel, "*An error occurred sending the result...*")
         else:
             await self.bot.send_message(ctx.message.channel,
                                         "**Usage:** " + self.command_prefix + "ur word, for more see " + self.command_prefix + "help ur")
