@@ -21,15 +21,18 @@ class BotModerationCommands:
         """Function that ban a user from the server
         Usage: !banuser @User
         """
+        # Check that the command is not executed in private message
         if ctx.message.server is None:
             await self.bot.send_message(ctx.message.channel,
                                         "*Can't execute this in private, execute the command in a server*")
             return
+        # Check that is a server admin that want to ban users (could check specifically for ban permission)
         if BotMethods.is_server_admin(ctx.message.author):
             if len(ctx.message.mentions) != 1:
                 await self.bot.send_message(ctx.message.channel, "Error with mentions...")
                 return
             print("-------------------------")
+            # Try to ban the mentioned user
             try:
                 await self.bot.ban(ctx.message.mentions[0], delete_message_days=100)
                 await self.bot.send_message(ctx.message.channel, str(ctx.message.mentions[0].name) + " has been banned")
@@ -43,25 +46,27 @@ class BotModerationCommands:
     # ---------------------------------------------------------------------
 
     @commands.command(pass_context=True)
-    async def unbanuser(self, ctx):
+    async def unbanuser(self, ctx, *args):
         """Function that un-ban a user from the server
-        Usage: !unbanuser @User
+        Usage: !unbanuser UserID
         """
+        # Check that the command is not executed in private message
         if ctx.message.server is None:
             await self.bot.send_message(ctx.message.channel,
                                         "*Can't execute this in private, execute the command in a server*")
             return
+        # Check that is a server admin that want to ban users (could check specifically for unbanuser permission)
         if BotMethods.is_server_admin(ctx.message.author):
-            if len(ctx.message.mentions) != 1:
-                await self.bot.send_message(ctx.message.channel, "Error with mentions...")
+            if len(args) != 1 or not str(args[0]).isdigit():
+                await self.bot.send_message(ctx.message.channel, "Error with UserID...")
                 return
             print("-------------------------")
+            # Try to un-ban the mentioned user
             try:
-                await self.bot.unban(ctx.message.server, ctx.message.mentions[0])
-                await self.bot.send_message(ctx.message.channel,
-                                            str(ctx.message.mentions[0].name) + " has been un-banned")
+                await self.bot.unban(ctx.message.server, discord.Object(id=args[0]))
+                await self.bot.send_message(ctx.message.channel, "A user has been un-banned!")
             except discord.errors.Forbidden:
-                await self.bot.send_message(ctx.message.channel, "Sorry, I don't have the `ban` permission")
+                await self.bot.send_message(ctx.message.channel, "Sorry, I don't have the `unban` permission")
             print("-------------------------")
         else:
             await self.bot.send_message(ctx.message.channel,
@@ -74,18 +79,21 @@ class BotModerationCommands:
         """Function that soft-ban (=ban and unban deleting the messages) a user from the server
         Usage: !softban @User
         """
+        # Check that the command is not executed in private message
         if ctx.message.server is None:
             await self.bot.send_message(ctx.message.channel,
                                         "*Can't execute this in private, execute the command in a server*")
             return
+        # Check that is a server admin that want to ban users (could check specifically for banuser permission)
         if BotMethods.is_server_admin(ctx.message.author):
             if len(ctx.message.mentions) != 1:
                 await self.bot.send_message(ctx.message.channel, "Error with mentions...")
                 return
             print("-------------------------")
+            # Ban and unban the current user
             try:
                 await self.bot.ban(ctx.message.mentions[0], delete_message_days=100)
-                await self.bot.unban(ctx.message.server, ctx.message.mentions[0])
+                await self.bot.unban(ctx.message.server, discord.Object(id=ctx.message.mentions[0].id))
                 await self.bot.send_message(ctx.message.channel,
                                             str(ctx.message.mentions[0].name) + " has been soft-banned ")
             except discord.errors.Forbidden:
@@ -102,21 +110,68 @@ class BotModerationCommands:
         """Function that kick a user from the server
         Usage: !kickuser @User
         """
+        # Check that the command is not executed in private message
         if ctx.message.server is None:
             await self.bot.send_message(ctx.message.channel,
                                         "*Can't execute this in private, execute the command in a server*")
             return
+        # Check that is a server admin that want to ban users (could check specifically for kickuser permission)
         if BotMethods.is_server_admin(ctx.message.author):
             if len(ctx.message.mentions) != 1:
                 await self.bot.send_message(ctx.message.channel, "Error with mentions...")
                 return
             print("-------------------------")
+            # Kick the mentioned user
             try:
                 await self.bot.kick(ctx.message.mentions[0])
                 await self.bot.send_message(ctx.message.channel, str(ctx.message.mentions[0].name) + " has been kicked")
             except discord.errors.Forbidden:
                 await self.bot.send_message(ctx.message.channel, "Sorry, I don't have the `kick` permission")
             print("-------------------------")
+        else:
+            await self.bot.send_message(ctx.message.channel,
+                                        "You don't have access to this command  :stuck_out_tongue: ")
+
+    # ---------------------------------------------------------------------
+
+    @commands.command(pass_context=True)
+    async def kickbyrole(self, ctx, *args):
+        """Function that kick all the users with a role from the server (USE WITH CAUTION!)
+        Usage: !kickuser "NoobRole"
+        """
+        # Check that the command is not executed in private message
+        if ctx.message.server is None:
+            await self.bot.send_message(ctx.message.channel,
+                                        "*Can't execute this in private, execute the command in a server*")
+            return
+        # Check that is a server admin that want to ban users (could check specifically for kickuser permission)
+        if BotMethods.is_server_admin(ctx.message.author):
+            if len(args) != 1:
+                await self.bot.send_message(ctx.message.channel, "Parameters not correct...")
+                return
+            # Get all the members and the role
+            server_members = ctx.message.server.members
+            selected_role = discord.utils.get(ctx.message.server.roles, name=str(args[0]))
+            # Check that the role exist
+            if selected_role is None:
+                await self.bot.send_message(ctx.message.channel,
+                                            "Errors - can't find given role(no role called \"" + str(
+                                                args[0]) + "\" found)...")
+                return
+            print("Found " + str(len(server_members)) + " members to analyze")
+            counter = 0
+            # Try to kick all the users with that role
+            try:
+                for CurrentMember in server_members:
+                    # Kick the user if he has that role
+                    if selected_role in CurrentMember.roles:
+                        print("Found user to kick:" + CurrentMember.name)
+                        await self.bot.kick(CurrentMember)
+                        counter += 1
+                await self.bot.send_message(ctx.message.channel,
+                                            "Successfully kicked " + str(counter) + " users with the given role!")
+            except discord.errors.Forbidden:
+                await self.bot.send_message(ctx.message.channel, "Sorry, I don't have the `kick` permission")
         else:
             await self.bot.send_message(ctx.message.channel,
                                         "You don't have access to this command  :stuck_out_tongue: ")
@@ -181,15 +236,18 @@ class BotModerationCommands:
                 return
             print("-------------------------")
             action = str(args[0])
+            # Get the user
             if len(ctx.message.mentions) == 1:
                 print("I've gon one mention")
                 user_found = discord.utils.get(ctx.message.server.members, name=str(ctx.message.mentions[0].name))
             else:
                 user_found = discord.utils.get(ctx.message.server.members, name=str(args[1]))
+            # Get the role with the name
             role_to_update = discord.utils.get(ctx.message.server.roles, name=str(args[2]))
             if role_to_update is None or user_found is None:  # error searching the user
                 await self.bot.send_message(ctx.message.channel, "Errors - can't find given roles...")
             else:
+                # Add or remove the role
                 if action == "add" or action == "+":
                     await self.bot.add_roles(user_found, role_to_update)
                 if action == "remove" or action == "-":
@@ -231,6 +289,7 @@ class BotModerationCommands:
                 return
             print("Found " + str(len(server_members)) + " members to analyze")
             counter = 0
+            # For every user check and add the role
             for CurrentMember in server_members:
                 if len(CurrentMember.roles) == 0 and empty_role:
                     await self.bot.add_roles(CurrentMember, new_role)

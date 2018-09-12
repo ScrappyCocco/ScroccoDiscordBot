@@ -44,7 +44,23 @@ class BotVariables:
 
     # bot_icon : the url of the bot default icon (used only in some embed codes)
 
+    # bot_status: all the informations and settings about the bot in-game status
     # defaultStatus : the default bot IN-GAME status (if the bot can't download the last on startup, will use this state)
+    #   can be a simple status like "Hello" or a list of statuses that will used every 10 minutes, "{Hello 1---Hello 2---I'm a bot}"
+    # random_status_change_interval: the seconds to wait before randomizing the status again (if the bot has a list of statuses)
+    #   This SHOULD NOT be at least 60 (one minute) discord doesn't like if you change state too frequently
+    # save_to_file: settings about saving the state to a text file
+    #   save_state_to_file: if the state should be read/written to a text file
+    #   file_name: the name of the file to read and to write
+    # server_state_saving: settings about saving the state in a server
+    #   save_state_to_server: if the state should be read/saved from the server
+    # read and write url where i store the current in-game status to read it in case of reboot or update
+    # readStateUrl = "http://URL/readState.php"
+    # writeStateUrl = "http://URL/writeState.php"
+    # writeStateParamName = "GameString" the param name for the POST request at writeStateUrl
+    #   when i update the in-game status i make a post-request to "writeStateUrl" passing the new status in a
+    #   param called as the value of "writeStateParamName" to save the status on server (do it as you want, up to you),
+    #   from there i can read it (on bot startup) making a simple request to "readStateUrl"
 
     # commands_prefix = "!" : the prefix of the commands (in this case !command)
 
@@ -57,16 +73,6 @@ class BotVariables:
 
     # startup_extensions = [...]
     # discord extensions to load on startup DO NOT touch that list if you don't edited the bot source code
-
-    # read and write url where i store the current in-game status to read it in case of reboot or update
-    # YOU CAN LEAVE THEM EMPTY, BOT WILL USE "defaultStatus" THAT YOU CAN CHANGE WITH !game, but on reboot it will use again "defaultStatus"
-    # (remember that casual reboots happens in some hosting services)
-    # readStateUrl = "http://URL/readState.php"
-    # writeStateUrl = "http://URL/writeState.php"
-    # writeStateParamName = "GameString" the param name for the POST request at writeStateUrl
-    #   when i update the in-game status i make a post-request to "writeStateUrl" passing the new status in a
-    #   param called "writeStateParamName" to save the status on server (do it as you want, up to you),
-    #   from there i can read it (on bot startup) making a simple request to "readStateUrl"
 
     # memeGeneratorUsername = "yourUsername"
     # memeGeneratorPassword = "yourPassword"
@@ -83,7 +89,6 @@ class BotVariables:
     # ------------------------------------------------------
 
     bot_data_file = None
-    file_name = "bot_data.json"
     privateChatUsers = []  # used to advise users that messages are sent to bot owner
     emptyApiKey = "YourKey"  # used to check if a key is empty
     emptyUrl = "http://URL/"
@@ -94,11 +99,12 @@ class BotVariables:
 
     def __init__(self, should_check=False):
         print("CALLING MINI-CLASS-->" + self.__class__.__name__ + " class called")
+        file_name = "bot_data.json"
         try:
-            with open(self.file_name) as data_file:
+            with open(file_name) as data_file:
                 self.bot_data_file = json.load(data_file)
         except FileNotFoundError:
-            print("FATAL ERROR-->" + self.file_name + " FILE NOT FOUND, ABORTING...")
+            print("FATAL ERROR-->" + file_name + " FILE NOT FOUND, ABORTING...")
             quit(1)
         if should_check:  # used because i do a full check only the first time the bot load
             self.full_startup_check()
@@ -116,6 +122,9 @@ class BotVariables:
         self.get_google_shortener_key()
         self.get_mashape_metacritic_key()
         self.get_steam_key()
+        if self.get_bot_save_state_to_file() and self.get_bot_save_state_to_server():
+            print("ERROR, BOT CANNOT READ FROM A FILE AND FROM THE WEB, DOUBLE TRUE VALUE FOUND - CHECK YOUR JSON FILE")
+            quit(1)
         self.get_meme_generator_username()
         self.get_meme_generator_password()
         self.get_owner_private_messages()
@@ -282,11 +291,38 @@ class BotVariables:
         """
         return self.bot_data_file["bot_icon"]
 
+    def get_bot_save_state_to_file(self):
+        """Function that return a boolean that indicate if the status must be saved on a text file
+        Remember: the bot must have write permission on disk to create the file, otherwise you must create it
+        :return: a boolean that indicate if the status must be saved on a text file
+        """
+        return self.bot_data_file["bot_status"]["save_to_file"]["save_state_to_file"]
+
+    def get_bot_save_state_to_server(self):
+        """Function that return a boolean that indicate if the status must be saved on a server sending a post request to a page
+        (Is up to you to create that page)
+        :return: a boolean that indicate if the status must be saved on a server
+        """
+        return self.bot_data_file["bot_status"]["server_state_saving"]["save_state_to_server"]
+
+    def get_bot_save_state_file_name(self):
+        """Function that return the name of the file to create or open to save or read the status
+        :return: The name of the file to create or open
+        """
+        return self.bot_data_file["bot_status"]["save_to_file"]["file_name"]
+
+    def get_bot_random_state_change_time(self):
+        """Function that return the time to wait before randomize the bot in-game status again
+        (Only if there's a list of possible statuses)
+        :return: The time to wait before randomize the bot in-game status again (in seconds)
+        """
+        return self.bot_data_file["bot_status"]["random_status_change_interval"]
+
     def get_default_status(self):
         """Function that return the current default status of the bot.
             :return: The current default status of the bot
         """
-        return self.bot_data_file["defaultStatus"]
+        return self.bot_data_file["bot_status"]["defaultStatus"]
 
     def get_command_prefix(self):
         """Function that return the current command prefix of the bot.
@@ -316,31 +352,30 @@ class BotVariables:
         """Function that return the url where to write the status.
             :return: The url to send the new status (saving the status on the web)
         """
-        return self.bot_data_file["server_state_saving"]["writeStateUrl"]
+        return self.bot_data_file["bot_status"]["server_state_saving"]["writeStateUrl"]
 
     def get_server_read_status_url(self):
         """Function that return the url where to read the status.
             :return: The url to read the last status (reading the status from the web)
         """
-        return self.bot_data_file["server_state_saving"]["readStateUrl"]
+        return self.bot_data_file["bot_status"]["server_state_saving"]["readStateUrl"]
 
     def get_server_write_status_parameter(self):
         """Function that return the POST param for the status
             :return: The POST param name for the status
         """
-        return self.bot_data_file["server_state_saving"]["writeStateParamName"]
+        return self.bot_data_file["bot_status"]["server_state_saving"]["writeStateParamName"]
 
     def get_bot_distribution(self):
         """Function that return if the bot is in final or in beta version
             :return: True if it's in beta, false if it's in final version
         """
         key = self.bot_data_file["is_beta"]
-        if key == "False":  # bot in final version
-            return False
-        if key == "True":  # bot in beta version
-            return True
-        print("BOT DISTRIBUTION ERROR - CHECK \"is_beta\" IN JSON AND WRITE True or False")
-        return True
+        if isinstance(key, bool):
+            return key
+        else:
+            print("BOT DISTRIBUTION ERROR - CHECK \"is_beta\" IN JSON AND WRITE true or false")
+            quit(1)
 
     def get_meme_generator_username(self):
         """Function that return the username for the meme generator

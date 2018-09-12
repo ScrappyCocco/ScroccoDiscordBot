@@ -46,12 +46,60 @@ def pre_extension_attributes_initialization():
 def after_extension_attributes_initialization(default_status: str):
     print("---Creating after_extension bot attributes---")
     setattr(bot, 'maintenanceMode', False)  # used to determine if the bot is in maintenance status
+    # Informations about the in-game status
+    setattr(bot, 'hasAListOfStates', False)  # used to determine if the bot has more than a status
+    setattr(bot, 'listOfStates', [])  # used to store the list of the possible statuses
     setattr(bot, 'lastInGameStatus', str(default_status))  # used to save the in-game status
+    setattr(bot, 'isInStreamingStatus', False)  # used to check if the bot is in streaming status
     # cleverbot parameters, used for cleverbot discussion
     setattr(bot, 'cleverbot_cs_parameter', "")
     setattr(bot, 'cleverbot_reply_number', 0)
     print("---Finished creating after_extension attributes---")
     print("------------------------")
+
+
+# Function that download the status of the bot (or use the default bot status if not possible)
+async def download_and_set_first_status():
+    url = botVariables.get_server_read_status_url()
+    try:
+        if botVariables.emptyUrl not in url and botVariables.get_bot_save_state_to_server():
+            r = requests.get(url)  # get the last in-game status from server
+            print("Change State - HTTP Request Status Code:" + str(r.status_code))
+            if r.text != "Error" and r.status_code == 200:
+                print("No Error in the download - changing state...")
+                state_string = r.text
+            else:
+                print("Request error - changing status to default")
+                state_string = botVariables.get_default_status()
+        else:
+            if botVariables.get_bot_save_state_to_file():
+                try:
+                    file = open(botVariables.get_bot_save_state_file_name(), "r")
+                    state_string = file.readline()
+                    print("Status file successfully opened and read")
+                except FileNotFoundError:
+                    print("Cannot read file " + botVariables.get_bot_save_state_file_name() + " - FileNotFoundError")
+                    state_string = botVariables.get_default_status()
+            else:
+                print("No save state on file or server found - changing status to default - check bot data json file")
+                state_string = botVariables.get_default_status()
+        if state_string.startswith("{") and state_string.endswith("}"):
+            print("List of states found, saving and randomizing status...")
+            # Save that is a list
+            bot.hasAListOfStates = True
+            # Save the list removing the {} and splitting the text
+            bot.listOfStates = BotMethods.create_list_from_states_string(state_string)
+            # Randomize and use the state
+            state_to_use = BotMethods.get_random_bot_state(bot.listOfStates)
+            await bot.change_presence(game=discord.Game(name=state_to_use))
+            bot.lastInGameStatus = state_to_use
+        else:
+            bot.hasAListOfStates = False
+            bot.lastInGameStatus = state_string
+            await bot.change_presence(game=discord.Game(name=state_string))
+        print("Status changed to " + str(bot.lastInGameStatus))
+    except websockets.exceptions.ConnectionClosed:
+        print("ERROR trying to change bot status")
 
 
 # function that send a message when users use private chat with bot the first time
@@ -239,24 +287,11 @@ async def clearclever(ctx):
 @bot.event
 async def on_ready():
     print("------------------------")
-    print('Logged as:' + bot.user.name + " ID:" + bot.user.id)
-    url = botVariables.get_server_read_status_url()
-    try:
-        if botVariables.emptyUrl not in url:
-            r = requests.get(url)  # get the last in-game status from server
-            print("Change State - HTTP Request Status Code:" + str(r.status_code))
-            if r.text != "Error" and r.status_code == 200:
-                print("No Error - changing state to:" + r.text)
-                await bot.change_presence(game=discord.Game(name=r.text))
-                bot.lastInGameStatus = r.text
-            else:
-                print("Request error - changing status to default")
-                await bot.change_presence(game=discord.Game(name=botVariables.get_default_status()))
-        else:
-            print("URL request error - changing status to default - check bot data json file")
-            await bot.change_presence(game=discord.Game(name=botVariables.get_default_status()))
-    except websockets.exceptions.ConnectionClosed:
-        print("ERROR trying to change bot status")
+    print('[BOT on_ready()]:Logged as:' + bot.user.name + " ID:" + bot.user.id)
+    # ----------
+    await download_and_set_first_status()
+    # ----------
+    print("[BOT on_ready()]:Bot on_ready() ended, bot running")
     print("------------------------")
 
 

@@ -25,7 +25,7 @@ class BotErrorManager:
 
         # Anything in ignored will return and prevent anything happening.
         if isinstance(error, ignored):
-            print("Error manager: Error ignored")
+            print("Error manager: Error ignored (Type:" + str(type(error)) + ")")
             return
         # An error occurred invoking the command
         elif isinstance(error, commands.CommandInvokeError):
@@ -36,7 +36,7 @@ class BotErrorManager:
             print("Error manager: Sending message for BadArgument")
             return await self.bot.send_message(ctx.message.channel, ":middle_finger: *Looks like there is a problem with command arguments, please check command usage...*")
         else:  # No Error Manager, print error to bot log
-            print("Error manager - ERROR: No error control detected, error:"+str(error)+" - Command invoked:" + str(ctx.invoked_with))
+            print("Error manager - ERROR: No error control detected, error:"+str(error)+" - Command invoked:" + str(ctx.invoked_with) + " - (Error Type:" + str(type(error)) + ")")
     # ---------------------------------------------------------------------
 
     def __init__(self, bot):

@@ -5,6 +5,7 @@ import re
 import json
 import aiohttp
 import discord
+import random
 
 from botVariablesClass import BotVariables
 from difflib import SequenceMatcher
@@ -152,5 +153,29 @@ class BotMethods:
                         max_played = operator_stats[i]['stats']['played']
                         best_index = i
         return best_index  # return the best index
+
+    # ---------------------------------------------------------------------
+
+    @staticmethod
+    def create_list_from_states_string(string_of_states: str):
+        """ Return the list created from the string of possible statuses
+        String format: "{Hello 1---Hello 2---I'm a bot}"
+        :param string_of_states: string of possible statuses (format as described above)
+        :return: ist of strings (used as possible statuses)
+        """
+        if string_of_states.startswith("{") and string_of_states.endswith("}"):
+            return string_of_states[1:-1].split('---')
+        else:
+            return None
+
+    # ---------------------------------------------------------------------
+
+    @staticmethod
+    def get_random_bot_state(list_of_states: list):
+        """ Return a random state in the list of possible states
+        :param list_of_states: list of possible bot in-game states
+        :return: a random state from the list
+        """
+        return random.choice(list_of_states)
 
 # ---------------------------------------------------------------------
