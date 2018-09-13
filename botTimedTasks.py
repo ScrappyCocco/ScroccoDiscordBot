@@ -50,8 +50,8 @@ class BotTimedTasks:
                         if int(r_json['pageInfo']['totalResults']) == 1:  # if there is a new video
                             print("[BOT youtube_check]:New video found, sending message")
                             message = channel['notificationMessage'] + "\n**" + r_json['items'][0]['snippet'][
-                                'title'] + "** \n" + "https://www.youtube.com/watch?v=" + r_json['items'][0]['contentDetails']['upload'][
-                                          'videoId'] + "\n"
+                                'title'] + "** \n" + "https://www.youtube.com/watch?v=" + \
+                                      r_json['items'][0]['contentDetails']['upload']['videoId'] + "\n"
                             try:
                                 await self.bot.send_message(discord.Server(id=int(channel['DISCORDchannelID'])),
                                                             message)
@@ -104,7 +104,8 @@ class BotTimedTasks:
     async def randomize_bot_status(self):
         await self.bot.wait_until_ready()  # wait until the bot is ready
         while not self.bot.is_closed:
-            if not self.bot.maintenanceMode and not self.bot.isInStreamingStatus and self.bot.hasAListOfStates:  # check for maintenanceMode (if yes, let's skip task content for safety)
+            # check for maintenanceMode (if yes, let's skip task content for safety)
+            if not self.bot.maintenanceMode and not self.bot.isInStreamingStatus and self.bot.hasAListOfStates:
                 await self.bot.change_presence(
                     game=discord.Game(name=BotMethods.get_random_bot_state(self.bot.listOfStates)))
                 print("[BOT randomize_bot_status]:Status correctly changed...")

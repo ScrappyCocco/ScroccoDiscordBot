@@ -259,11 +259,9 @@ class BotCommonCommands:
             if pos != -1:
                 print("Error:" + received_string[pos + 1])
                 return
-            # print(str(stringa))
             final_string = ""
             number_emoji = self.botVariables.numbersEmoji
             for c in received_string:
-                # print(c)
                 if c.isalnum():
                     try:
                         val = int(c)
@@ -271,7 +269,6 @@ class BotCommonCommands:
                             final_string += number_emoji[val] + " "
                         else:
                             print("fatal Error!!!-" + str(val))
-
                     except ValueError:
                         c = c.lower()
                         if c == "è" or c == "é" or c == "à" or c == "ù" or c == "ì":
@@ -646,6 +643,7 @@ class BotCommonCommands:
                                  icon_url=ctx.message.author.avatar_url)
                 embed.set_thumbnail(
                     url='https://cdn.discordapp.com/attachments/276674976210485248/350641481872179200/featured-image4.jpg')
+                # Calculate number of results to display and start creating the embed fields
                 if len(args) == 2 and args[1].isdigit():
                     number_of_results = int(args[1])
                 else:
@@ -699,7 +697,6 @@ class BotCommonCommands:
         if len(args) == 1:
             print("Starting search")
             api_key = self.botVariables.get_mashape_metacritic_key()
-            print(api_key)
             search_term = (re.sub(r'([^\s\w]|_)+', '', args[0])).lower()
             request_search_link = "https://api-marcalencc-metacritic-v1.p.mashape.com/search/" + str(
                 urllib.parse.quote(search_term)) + "/movie?limit=20&offset=1"

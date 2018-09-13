@@ -62,7 +62,7 @@ def after_extension_attributes_initialization(default_status: str):
 async def download_and_set_first_status():
     url = botVariables.get_server_read_status_url()
     try:
-        if botVariables.emptyUrl not in url and botVariables.get_bot_save_state_to_server():
+        if botVariables.get_bot_save_state_to_server() and botVariables.emptyUrl not in url:
             r = requests.get(url)  # get the last in-game status from server
             print("Change State - HTTP Request Status Code:" + str(r.status_code))
             if r.text != "Error" and r.status_code == 200:

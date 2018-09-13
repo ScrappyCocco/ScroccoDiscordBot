@@ -148,7 +148,8 @@ class BotMethods:
                     max_played = operator_stats[i]['stats']['played']
                     best_index = i
             else:
-                if not is_atk and str(operator_stats[i]['operator']['role']) == "def":  # if i'm looking for def and this is def
+                if not is_atk and str(
+                        operator_stats[i]['operator']['role']) == "def":  # if i'm looking for def and this is def
                     if operator_stats[i]['stats']['played'] > max_played:  # if has the max played time
                         max_played = operator_stats[i]['stats']['played']
                         best_index = i

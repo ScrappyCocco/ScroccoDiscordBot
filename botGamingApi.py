@@ -29,7 +29,6 @@ class BotGamingCommands:
 
     # list of class essential variables, the None variables are assigned in the constructor because i need the bot reference
     botVariables = None  # used for 2 api keys
-    client = None  # hypixel api connection
     command_prefix = None
     steam_game_list_json = None  # instance the steam json as empty, used in "steamgame" command
 
@@ -424,7 +423,6 @@ class BotGamingCommands:
                 # --- price field, get the price or put "Unknown" ---
                 if 'price_overview' in request_app_page[str(game_app_id)]['data']:
                     price_string = str(request_app_page[str(game_app_id)]['data']['price_overview']['final'])
-                    print("FINAL RECEIVED:" + price_string)
                     price_currency = str(request_app_page[str(game_app_id)]['data']['price_overview']['currency'])
                     price_string = price_string[:(len(price_string) - 2)] + "." + price_string[
                                                                                   (len(

@@ -307,13 +307,15 @@ class BotMaintenanceCommands:
         """Print the current Discord Status
         Usage: !discordstatus
         """
+        await self.bot.send_message(ctx.message.channel, "This command is not ready, sorry")
+        return
         print("-------------------------")
         url = "https://srhpyqt94yxb.statuspage.io/api/v2/summary.json"
         async with aiohttp.ClientSession() as session:  # async GET request
             async with session.get(url) as resp:
                 r_json = await resp.json()
         if str(r_json["status"]["indicator"]) != "none" or len(r_json["incidents"]) != 0:
-            print("Discord Status seems Not Normal - There is a problem")
+            print("Discord Status seems Not Normal - There is a problem with Discord Servers")
             embed = discord.Embed(title="Discord Server Status", url=str(r_json["incidents"][0]["shortlink"]),
                                   color=0x7289DA)
             embed.set_author(name="Analysis required by " + ctx.message.author.name,
@@ -322,7 +324,8 @@ class BotMaintenanceCommands:
                 url='https://cdn.discordapp.com/attachments/276674976210485248/304963039545786368/1492797249_shield-error.png')
             embed.add_field(name="Incidents:", value="Everything is ok! No problems found", inline=False)
             for i in range(min(3, len(r_json["incidents"][0])), 0, -1):
-                print()
+                print("Not ready")
+                # TODO - NEED A DISCORD STATUS JSON TO END THIS COMMAND
         else:
             print("Discord Status seems Normal")
             embed = discord.Embed(title="Discord Server Status", url="https://status.discordapp.com/",
