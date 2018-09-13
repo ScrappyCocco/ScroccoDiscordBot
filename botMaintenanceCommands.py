@@ -6,6 +6,7 @@ from discord.ext import commands
 import discord
 import requests
 import time
+import aiohttp
 
 from discord import channel
 from datetime import datetime
@@ -81,13 +82,15 @@ class BotMaintenanceCommands:
     async def changestate(self, ctx, *args):
         """Change bot state
         Usage: !changestate 0/1/2/3
+        Usage: !changestate 4 "Streaming Title" "Twitch Stream URL"
         """
         if BotMethods.is_owner(ctx.message.author):
             print("-------------------------")
             print("Changing bot state")
             new_status = discord.Status
-            if len(args) == 1:  # switch between all states
+            if len(args) == 1 or len(args) == 3:  # switch between all states
                 status_received = int(args[0])
+                self.bot.isInStreamingStatus = False
                 if status_received == 0:
                     new_status = discord.Status.online
                     print("State 0 - Online")
@@ -100,6 +103,12 @@ class BotMaintenanceCommands:
                 if status_received == 3:
                     new_status = discord.Status.invisible
                     print("State 3 - Invisible")
+                if status_received == 4:
+                    self.bot.isInStreamingStatus = True
+                    await self.bot.change_presence(
+                        game=discord.Game(name=str(args[1]), url=str(args[2]), type=1))
+                    print("Streaming status applied")
+                    return
                 if status_received < 0 or status_received > 3:
                     print("State Not Correct, going online")
                     new_status = discord.Status.online
@@ -151,13 +160,15 @@ class BotMaintenanceCommands:
                             break
                 else:
                     date = ctx.message.author.joined_at
+                date_string = date.strftime('%H:%M:%S %d-%m-%Y')
                 if mention:
                     await self.bot.send_message(ctx.message.channel,
                                                 "**" + ctx.message.mentions[0].name + "** joined this server: " + str(
-                                                    date))
+                                                    date_string))
                 else:
                     await self.bot.send_message(ctx.message.channel,
-                                                "**" + ctx.message.author.name + "** joined this server: " + str(date))
+                                                "**" + ctx.message.author.name + "** joined this server: " + str(
+                                                    date_string))
         print("-------------------------")
 
     # ---------------------------------------------------------------------
@@ -282,7 +293,7 @@ class BotMaintenanceCommands:
         embed.add_field(name="Server Region:", value=str(server_selected.region))
         embed.add_field(name="Server Owner:", value=str(server_selected.owner.name))
         embed.add_field(name="Server Members:", value=str(server_selected.member_count))
-        embed.add_field(name="Server Creation:", value=str(server_selected.created_at))
+        embed.add_field(name="Server Creation:", value=str(server_selected.created_at.strftime('%H:%M:%S %d-%m-%Y')))
         embed.add_field(name="Server Text Channels:", value=str(text_channels_count))
         embed.add_field(name="Server Voice Channels:", value=str(voice_channels_count))
 
@@ -291,10 +302,56 @@ class BotMaintenanceCommands:
 
     # ---------------------------------------------------------------------
 
+    @commands.command(pass_context=True)
+    async def discordstatus(self, ctx):
+        """Print the current Discord Status
+        Usage: !discordstatus
+        """
+        await self.bot.send_message(ctx.message.channel, "This command is not ready, sorry")
+        return
+        print("-------------------------")
+        url = "https://srhpyqt94yxb.statuspage.io/api/v2/summary.json"
+        async with aiohttp.ClientSession() as session:  # async GET request
+            async with session.get(url) as resp:
+                r_json = await resp.json()
+        if str(r_json["status"]["indicator"]) != "none" or len(r_json["incidents"]) != 0:
+            print("Discord Status seems Not Normal - There is a problem with Discord Servers")
+            embed = discord.Embed(title="Discord Server Status", url=str(r_json["incidents"][0]["shortlink"]),
+                                  color=0x7289DA)
+            embed.set_author(name="Analysis required by " + ctx.message.author.name,
+                             icon_url=ctx.message.author.avatar_url)
+            embed.set_thumbnail(
+                url='https://cdn.discordapp.com/attachments/276674976210485248/304963039545786368/1492797249_shield-error.png')
+            embed.add_field(name="Incidents:", value="Everything is ok! No problems found", inline=False)
+            for i in range(min(3, len(r_json["incidents"][0])), 0, -1):
+                print("Not ready")
+                # TODO - NEED A DISCORD STATUS JSON TO END THIS COMMAND
+        else:
+            print("Discord Status seems Normal")
+            embed = discord.Embed(title="Discord Server Status", url="https://status.discordapp.com/",
+                                  color=0x7289DA)
+            embed.set_author(name="Analysis required by " + ctx.message.author.name,
+                             icon_url=ctx.message.author.avatar_url)
+            embed.set_thumbnail(
+                url='https://cdn.discordapp.com/attachments/276674976210485248/304961315326394369/1492796826_Tick_Mark_Dark.png')
+            embed.add_field(name="Result:", value="Everything is ok! No problems found", inline=False)
+        # embed footer
+        datetime_object = datetime.strptime(str(r_json["page"]["updated_at"][0:19]), '%Y-%m-%dT%H:%M:%S')
+        embed.set_footer(
+            text="Discord Status updated at: " + str(datetime_object.strftime('%H:%M:%S %d-%m-%Y')) + " timezone: " +
+                 r_json["page"]["time_zone"], icon_url=self.botVariables.get_bot_icon())
+        # send the embed
+        await self.bot.send_message(ctx.message.channel,
+                                    embed=embed)  # send the discord embed message with the servers status info
+        print("-------------------------")
+
+    # ---------------------------------------------------------------------
+
     @commands.command(pass_context=True, hidden=True)
     async def game(self, ctx, *args):
         """Edit bot In-Game string
-        Usage: !game "new status"
+        Usage: !game "new single status"
+        Usage: !game "{Hello 1---JS Suck!---I'm a bot}"
         """
         print("-------------------------")
         if BotMethods.is_owner(ctx.message.author):
@@ -305,11 +362,23 @@ class BotMaintenanceCommands:
                     await self.bot.send_message(ctx.message.channel, "I need only a parameter!")
                     return
                 new_state = str(args[0])
-                self.bot.lastInGameStatus = new_state  # update last state
-                print("Changing my status in:" + new_state)
+                # Is a list of states
+                if new_state.startswith("{") and new_state.endswith("}"):
+                    # Save that is a list
+                    self.bot.hasAListOfStates = True
+                    # Save the list removing the {} and splitting the text
+                    self.bot.listOfStates = BotMethods.create_list_from_states_string(new_state)
+                    # Randomize and use the state
+                    new_state_to_use = BotMethods.get_random_bot_state(self.bot.listOfStates)
+                    self.bot.lastInGameStatus = new_state_to_use
+                else:  # Is not a list of states, change the state normally
+                    self.bot.hasAListOfStates = False
+                    self.bot.lastInGameStatus = new_state  # update last state
+                    new_state_to_use = new_state
+                print("Changing my status in:" + new_state_to_use)
                 url = self.botVariables.get_server_write_status_url()
                 # request to save the state on the web
-                if self.botVariables.emptyUrl not in url:
+                if self.botVariables.emptyUrl not in url and self.botVariables.get_bot_save_state_to_server():
                     r = requests.post(url,
                                       data={self.botVariables.get_server_write_status_parameter(): new_state,
                                             })
@@ -319,10 +388,20 @@ class BotMaintenanceCommands:
                     else:
                         print("Status correctly saved on server...")
                 else:
-                    print("URL ERROR - ERROR SAVING NEW STATUS ON THE SERVER... Check bot data json")
+                    if self.botVariables.get_bot_save_state_to_file():
+                        file = open(self.botVariables.get_bot_save_state_file_name(), "w")
+                        file.write(new_state)
+                        file.close()
+                        print("Status file successfully opened and overwritten")
+                    else:
+                        print("No save state on file or server found - ERROR SAVING NEW STATUS... Check bot data json")
                 # change the bot in-game status
-                await self.bot.change_presence(game=discord.Game(name=new_state))
-                await self.bot.send_message(ctx.message.channel, "Status correctly changed!")
+                if self.bot.isInStreamingStatus:
+                    await self.bot.send_message(ctx.message.channel,
+                                                "The bot is currently in streaming status, state saved but not changed")
+                else:
+                    await self.bot.change_presence(game=discord.Game(name=new_state_to_use))
+                    await self.bot.send_message(ctx.message.channel, "Status correctly changed!")
         else:
             await self.bot.send_message(ctx.message.channel,
                                         "You don't have access to this command  :stuck_out_tongue: ")
@@ -405,6 +484,7 @@ class BotMaintenanceCommands:
         self.TaskManager = BotTimedTasks(self.bot)
         self.Timed_Tasks.append(self.bot.loop.create_task(self.TaskManager.youtube_check()))
         self.Timed_Tasks.append(self.bot.loop.create_task(self.TaskManager.discord_status_check()))
+        self.Timed_Tasks.append(self.bot.loop.create_task(self.TaskManager.randomize_bot_status()))
 
     def __del__(self):
         print("DESTROYING CLASS-->" + self.__class__.__name__ + " class called")

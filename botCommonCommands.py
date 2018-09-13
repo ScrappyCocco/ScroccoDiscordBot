@@ -16,7 +16,6 @@ import aiohttp
 from discord.errors import HTTPException
 from urllib import error
 from datetime import datetime
-from random import randint
 from botMethodsClass import BotMethods
 
 
@@ -226,9 +225,7 @@ class BotCommonCommands:
         parrots = ["https://cdn.discordapp.com/attachments/276674976210485248/304557572416077824/parrot.gif",
                    "https://cdn.discordapp.com/attachments/276667503034499072/309781525971337226/congaparrot.gif",
                    "https://cdn.discordapp.com/attachments/276667503034499072/309781549639794688/shuffleparrot.gif"]
-        number = randint(0, len(parrots))
-        link = parrots[number]
-        print("Number:" + str(number))
+        link = random.choice(parrots)
         try:
             if ctx.message.content == "!party" and ctx.message.server is not None:
                 print("Deleting the message...")
@@ -262,11 +259,9 @@ class BotCommonCommands:
             if pos != -1:
                 print("Error:" + received_string[pos + 1])
                 return
-            # print(str(stringa))
             final_string = ""
             number_emoji = self.botVariables.numbersEmoji
             for c in received_string:
-                # print(c)
                 if c.isalnum():
                     try:
                         val = int(c)
@@ -274,7 +269,6 @@ class BotCommonCommands:
                             final_string += number_emoji[val] + " "
                         else:
                             print("fatal Error!!!-" + str(val))
-
                     except ValueError:
                         c = c.lower()
                         if c == "è" or c == "é" or c == "à" or c == "ù" or c == "ì":
@@ -613,10 +607,12 @@ class BotCommonCommands:
     async def ur(self, ctx, *args):
         """Search a word in the urban dictionary
         Usage: !ur <WORD>
+        Usage: !ur <WORD> <NumberOfResults(default = 1)>
         Example: !ur dunno
+        Example: !ur dunno 5
         """
         print("-------------------------")
-        if len(args) == 1:
+        if len(args) == 1 or len(args) == 2:
             request_link = "http://api.urbandictionary.com/v0/define?term=" + str(args[0])
             async with aiohttp.ClientSession() as session:
                 async with session.get(request_link) as resp:  # the website use get
@@ -647,10 +643,12 @@ class BotCommonCommands:
                                  icon_url=ctx.message.author.avatar_url)
                 embed.set_thumbnail(
                     url='https://cdn.discordapp.com/attachments/276674976210485248/350641481872179200/featured-image4.jpg')
-                for x in range(0, 3):
-                    # Check array size
-                    if not len(definitions_found) > (x + 1):
-                        break
+                # Calculate number of results to display and start creating the embed fields
+                if len(args) == 2 and args[1].isdigit():
+                    number_of_results = int(args[1])
+                else:
+                    number_of_results = 1
+                for x in range(0, min(len(definitions_found), number_of_results)):
                     # Check text and prepare embed
                     definition_text = definitions_found[x].definition
                     if len(definition_text) > 1024:  # cut the string, is too long

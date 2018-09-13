@@ -6,6 +6,8 @@ import discord
 import asyncio
 import datetime
 
+from botMethodsClass import BotMethods
+
 
 # ---------------------------------------------------------------------
 
@@ -13,13 +15,12 @@ import datetime
 class BotTimedTasks:
     """ Class with Bot Timed Tasks (tasks with timer) """
     ''' This class is created by "botMaintenanceCommands", 
-    this because that class need to close the tasks before stopping the bot to avoid warnings/errors '''
+    this mostly because that class need to close the tasks before stopping the bot to avoid warnings/errors '''
     # ---------------------------------------------------------------------
 
     # list of class essential variables, the None variables are assigned in the constructor because i need the bot reference
     botVariables = None  # used for 2 api keys
     YT_key = None
-    YT_watchLink = "https://www.youtube.com/watch?v="
 
     statusChanged = False  # to skip continuous status change
 
@@ -32,7 +33,7 @@ class BotTimedTasks:
         current_time = datetime.datetime.now() - datetime.timedelta(
             hours=1)  # check new videos in the past hour (current time - 1h)
         current_time = current_time.strftime("%Y-%m-%dT%H:%M:%SZ")  # ISO 8601 time format
-        print("YT First check:" + str(current_time))
+        print("[BOT youtube_check]:YT First check:" + str(current_time))
         while not self.bot.is_closed:
             if not self.bot.maintenanceMode:  # check for maintenanceMode (if yes, let's skip task content for safety)
                 # create url with parameters
@@ -43,31 +44,33 @@ class BotTimedTasks:
                         async with session.get(url) as resp:
                             r_json = await resp.json()
                     if "error" in r_json:  # an error occurred with the request
-                        print("An error occurred in YT timed request")
+                        print("[BOT youtube_check]:An error occurred in YT timed request")
                         print(str(r_json))
                     else:  # no errors
                         if int(r_json['pageInfo']['totalResults']) == 1:  # if there is a new video
-                            print("New video found, sending message")
+                            print("[BOT youtube_check]:New video found, sending message")
                             message = channel['notificationMessage'] + "\n**" + r_json['items'][0]['snippet'][
-                                'title'] + "** \n" + self.YT_watchLink + r_json['items'][0]['contentDetails']['upload'][
-                                          'videoId'] + "\n"
+                                'title'] + "** \n" + "https://www.youtube.com/watch?v=" + \
+                                      r_json['items'][0]['contentDetails']['upload']['videoId'] + "\n"
                             try:
-                                await self.bot.send_message(discord.Server(id=int(channel['DISCORDchannelID'])), message)
+                                await self.bot.send_message(discord.Server(id=int(channel['DISCORDchannelID'])),
+                                                            message)
                             except discord.errors.Forbidden:
-                                print("ERROR: Can't send the message in the specified channel")
-                            print("Youtube Notification Message sent!")
+                                print("[BOT youtube_check]:ERROR: Can't send the message in the specified channel")
+                            print("[BOT youtube_check]:Youtube Notification Message sent!")
                 # end for each channel
-                print("End of Youtube check for " + str(len(self.botVariables.get_list_youtube_channels_check())) + " channel(s)")
+                print("[BOT youtube_check]:End of Youtube check for " + str(
+                    len(self.botVariables.get_list_youtube_channels_check())) + " channel(s)")
             await asyncio.sleep(3600)  # task runs every hour
             print("------------------------")
             current_time = datetime.datetime.now() - datetime.timedelta(
                 hours=1)  # check new videos in the past hour (current time - 1h)
             current_time = current_time.strftime("%Y-%m-%dT%H:%M:%SZ")  # ISO 8601 time format
-            print("YT check:" + str(current_time))
+            print("[BOT youtube_check]:YT check:" + str(current_time))
         print("--Youtube Task loop finished--")
 
     # ---------------------------------------------------------------------
-    # this task check every hour for a new video of the specified channel, sending a message if a new video is found
+    # this task check every 2.5 minutes the status of discord servers
 
     async def discord_status_check(self):
         await self.bot.wait_until_ready()  # wait until the bot is ready
@@ -75,7 +78,7 @@ class BotTimedTasks:
         current_time = datetime.datetime.now() - datetime.timedelta(
             hours=1)  # check new videos in the past hour (current time - 1h)
         current_time = current_time.strftime("%Y-%m-%dT%H:%M:%SZ")  # ISO 8601 time format
-        print("Discord Status First check:" + str(current_time))
+        print("[BOT discord_status_check]:Discord Status First check:" + str(current_time))
         while not self.bot.is_closed:
             if not self.bot.maintenanceMode:  # check for maintenanceMode (if yes, let's skip task content for safety)
                 url = "https://srhpyqt94yxb.statuspage.io/api/v2/summary.json"
@@ -94,6 +97,20 @@ class BotTimedTasks:
                                                        game=discord.Game(name=self.bot.lastInGameStatus))
             await asyncio.sleep(150)  # task runs every 2.5 min (150s)
         print("--Discord Status Task loop finished--")
+
+    # ---------------------------------------------------------------------
+    # this task check every N minutes to randomize bot status
+
+    async def randomize_bot_status(self):
+        await self.bot.wait_until_ready()  # wait until the bot is ready
+        while not self.bot.is_closed:
+            # check for maintenanceMode (if yes, let's skip task content for safety)
+            if not self.bot.maintenanceMode and not self.bot.isInStreamingStatus and self.bot.hasAListOfStates:
+                await self.bot.change_presence(
+                    game=discord.Game(name=BotMethods.get_random_bot_state(self.bot.listOfStates)))
+                print("[BOT randomize_bot_status]:Status correctly changed...")
+            await asyncio.sleep(self.botVariables.get_bot_random_state_change_time())  # task runs every N min
+        print("--Discord Randomize Status loop finished--")
 
     # ---------------------------------------------------------------------
 
