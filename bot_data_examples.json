@@ -26,13 +26,13 @@
     ]
   },
   "version": "0.98.25",
-  "build": "10",
+  "build": "20",
   "is_beta": false,
   "description": "Bot by ScrappyCocco (Some commands are hidden from help)",
   "bot_icon": "https://discordapp.com/assets/2c21aeda16de354ba5334551a883b481.png",
   "bot_status": {
     "defaultStatus": "Branzini 4 Ever",
-    "random_status_change_interval": 600,
+    "random_status_change_interval": 1800,
     "save_to_file": {
       "save_state_to_file": true,
       "file_name": "state.txt"

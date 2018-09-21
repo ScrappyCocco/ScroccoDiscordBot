@@ -307,8 +307,6 @@ class BotMaintenanceCommands:
         """Print the current Discord Status
         Usage: !discordstatus
         """
-        await self.bot.send_message(ctx.message.channel, "This command is not ready, sorry")
-        return
         print("-------------------------")
         url = "https://srhpyqt94yxb.statuspage.io/api/v2/summary.json"
         async with aiohttp.ClientSession() as session:  # async GET request
@@ -322,10 +320,15 @@ class BotMaintenanceCommands:
                              icon_url=ctx.message.author.avatar_url)
             embed.set_thumbnail(
                 url='https://cdn.discordapp.com/attachments/276674976210485248/304963039545786368/1492797249_shield-error.png')
-            embed.add_field(name="Incidents:", value="Everything is ok! No problems found", inline=False)
-            for i in range(min(3, len(r_json["incidents"][0])), 0, -1):
-                print("Not ready")
-                # TODO - NEED A DISCORD STATUS JSON TO END THIS COMMAND
+            embed.add_field(name="Incidents:", value=str(r_json["incidents"][0]["name"]), inline=False)
+            for i in range(min(3, len(r_json["incidents"][0]["incident_updates"])), 0, -1):
+                update_date_object = datetime.strptime(r_json["incidents"][0]["incident_updates"][i][0:19],
+                                                       '%Y-%m-%dT%H:%M:%S')
+                embed.add_field(name="Incident Update:" + str(
+                    r_json["incidents"][0]["incident_updates"][i]["status"]) + " - Updated at:" + str(
+                    update_date_object.strftime('%H:%M:%S %d-%m-%Y')),
+                                value=str(r_json["incidents"][0]["incident_updates"][i]["body"]),
+                                inline=False)
         else:
             print("Discord Status seems Normal")
             embed = discord.Embed(title="Discord Server Status", url="https://status.discordapp.com/",
@@ -356,7 +359,18 @@ class BotMaintenanceCommands:
         print("-------------------------")
         if BotMethods.is_owner(ctx.message.author):
             if len(args) == 0:
-                await self.bot.send_message(ctx.message.channel, "Current status: " + str(self.bot.lastInGameStatus))
+                # If the bot has a list of states i print all the possible states
+                if self.bot.hasAListOfStates:
+                    list_of_states = ""
+                    # Create a string with all the states
+                    for bot_state in self.bot.listOfStates:
+                        list_of_states += bot_state + ", "
+                    await self.bot.send_message(ctx.message.channel,
+                                                "Current status: " + str(
+                                                    self.bot.lastInGameStatus) + "\nFrom list of states:{" + list_of_states + "}")
+                else:
+                    await self.bot.send_message(ctx.message.channel,
+                                                "Current status: " + str(self.bot.lastInGameStatus))
             else:
                 if len(args) > 1:
                     await self.bot.send_message(ctx.message.channel, "I need only a parameter!")
@@ -364,6 +378,7 @@ class BotMaintenanceCommands:
                 new_state = str(args[0])
                 # Is a list of states
                 if new_state.startswith("{") and new_state.endswith("}"):
+                    print("List of states found, saving and randomizing status...")
                     # Save that is a list
                     self.bot.hasAListOfStates = True
                     # Save the list removing the {} and splitting the text
