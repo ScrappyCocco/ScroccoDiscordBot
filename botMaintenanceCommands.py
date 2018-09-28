@@ -321,9 +321,10 @@ class BotMaintenanceCommands:
             embed.set_thumbnail(
                 url='https://cdn.discordapp.com/attachments/276674976210485248/304963039545786368/1492797249_shield-error.png')
             embed.add_field(name="Incidents:", value=str(r_json["incidents"][0]["name"]), inline=False)
-            for i in range(min(3, len(r_json["incidents"][0]["incident_updates"])), 0, -1):
-                update_date_object = datetime.strptime(r_json["incidents"][0]["incident_updates"][i][0:19],
-                                                       '%Y-%m-%dT%H:%M:%S')
+            # Go from min(3, len(r_json["incidents"][0]["incident_updates"])-1) (3 or len-1) to -1 to print 3 incident updates
+            for i in range(min(3, len(r_json["incidents"][0]["incident_updates"]) - 1), -1, -1):
+                update_date_object = datetime.strptime(
+                    r_json["incidents"][0]["incident_updates"][i]["updated_at"][0:19], '%Y-%m-%dT%H:%M:%S')
                 embed.add_field(name="Incident Update:" + str(
                     r_json["incidents"][0]["incident_updates"][i]["status"]) + " - Updated at:" + str(
                     update_date_object.strftime('%H:%M:%S %d-%m-%Y')),
