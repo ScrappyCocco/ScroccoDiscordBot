@@ -505,6 +505,56 @@ class BotCommonCommands:
 
     # ---------------------------------------------------------------------
 
+    @commands.command(pass_context=True, hidden=True)
+    async def showcolor(self, ctx, *args):
+        """Show an image with the given color code
+        Usage: !showcolor #COLORHEX/(R,G,B)
+        Example: !showcolor #ff0000
+        Example: !showcolor (255, 0, 0)
+        """
+        if len(args) == 1:
+            argstring = str(args[0]).strip()
+            # request the color informations to the api
+            if argstring.startswith("(") and argstring.endswith(")"):
+                url = "http://www.thecolorapi.com/id?rgb=rgb("
+                rgblist = argstring[1:-1].split(',')
+                for color in rgblist:
+                    url += color.strip() + ","
+                url = url[:-1] + ")"
+            elif argstring.startswith("#"):
+                url = "http://www.thecolorapi.com/id?hex=" + argstring[1:]
+            else:
+                await self.bot.send_message(ctx.message.channel,
+                                            "Color format non valid, for more see " + self.command_prefix + "help showcolor")
+                return
+            reply_error = False
+            request_result = None
+            async with aiohttp.ClientSession() as session:
+                async with session.get(url) as resp:  # the website use get
+                    if not str(resp.status) == "200":
+                        reply_error = True
+                    else:
+                        request_result = await resp.json()
+            if reply_error:
+                await self.bot.send_message(ctx.message.channel,
+                                            "*An error occurred requesting the color... is your color code valid?*")
+            else:
+                embed = discord.Embed(title="Color Display", url=request_result["image"]["bare"],
+                                      color=(request_result["rgb"]["r"] << 16) + (request_result["rgb"]["g"] << 8) +
+                                            request_result["rgb"]["b"])
+                embed.set_author(name="Color asked by by " + ctx.message.author.name,
+                                 icon_url=ctx.message.author.avatar_url)
+                embed.add_field(name="Color Hex Value:", value=request_result["hex"]["value"], inline=False)
+                embed.add_field(name="Color RGB Value:", value=request_result["rgb"]["value"], inline=False)
+                embed.set_footer(text=self.botVariables.get_description(),
+                                 icon_url=self.botVariables.get_bot_icon())
+                await self.bot.send_message(ctx.message.channel, embed=embed)
+        else:
+            await self.bot.send_message(ctx.message.channel,
+                                        "**Usage:** " + self.command_prefix + "showcolor #COLORHEX/\"(R,G,B)\", for more see " + self.command_prefix + "help showcolor")
+
+    # ---------------------------------------------------------------------
+
     @commands.command(pass_context=True)
     async def lmgtfy(self, ctx, *args):
         """Generate a "let me google it for you" url
@@ -636,7 +686,8 @@ class BotCommonCommands:
                 definitions_found.sort(key=lambda UrbanDefinition: UrbanDefinition.votes, reverse=True)
                 # create the embed to send
                 embed = discord.Embed(title="Urban Dictionary - Link",
-                                      url="https://www.urbandictionary.com/define.php?term=" + str(args[0]),
+                                      url="https://www.urbandictionary.com/define.php?term=" +
+                                          urllib.parse.quote(str(args[0])),
                                       color=0x1d2439,
                                       description="Best 3 urban dictionary results for \"" + str(args[0]) + "\"")
                 embed.set_author(name="Search required by " + ctx.message.author.name,
