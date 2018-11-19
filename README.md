@@ -1,3 +1,6 @@
+[![Quality Status](https://sonarcloud.io/api/project_badges/measure?project=ScrappyCocco_ScroccoDiscordBot&metric=alert_status
+)](https://sonarcloud.io/dashboard?id=ScrappyCocco_ScroccoDiscordBot)
+
 # Scrocco Discord Bot
 This is a little Python Bot i made for my Discord server and a couple of friends's Discord server.
 

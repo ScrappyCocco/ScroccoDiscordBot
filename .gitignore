@@ -1,3 +1,5 @@
 .idea/
 __pycache__/
 bot_data.json
+
+\.scannerwork/
