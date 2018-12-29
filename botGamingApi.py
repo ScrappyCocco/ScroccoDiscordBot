@@ -18,6 +18,7 @@ from steamapi.steamapi import core
 from botMethodsClass import BotMethods
 from steamapi.steamapi import user
 from datetime import datetime
+from howlongtobeatpy import HowLongToBeat
 
 
 # ---------------------------------------------------------------------
@@ -138,7 +139,8 @@ class BotGamingCommands:
                         request_player_operators = await resp.json()
             except (json.JSONDecodeError, aiohttp.client_exceptions.ClientResponseError):
                 print("R6 - Error downloading the data")
-                await self.bot.send_message(ctx.message.channel, "An error occurred requesting your data, please retry later... (api.r6stats.com error)")
+                await self.bot.send_message(ctx.message.channel,
+                                            "An error occurred requesting your data, please retry later... (api.r6stats.com error)")
                 return
             print("R6 - Download completed, creating the embed")
             # creating the discord Embed response
@@ -649,6 +651,50 @@ class BotGamingCommands:
         except KeyError:
             await self.bot.send_message(ctx.message.channel,
                                         "Error getting the image... check " + self.command_prefix + "help rl ")
+
+    # ---------------------------------------------------------------------
+
+    @commands.command(pass_context=True)
+    async def time(self, ctx, *args):
+        """Print the time to complete a game from howlongtobeat
+        Usage: !time "game name"
+        Example !time "awesome game"
+        """
+        if len(args) == 0 or len(args) > 1:
+            await self.bot.send_message(ctx.message.channel,
+                                        "**Usage:** " + self.command_prefix + "time \"game name\", see " + self.command_prefix + "help time for more")
+        else:
+            results_list = await HowLongToBeat().async_search(args[0])
+            if results_list is not None and len(results_list) > 0:
+                max_sim = -1
+                best_element = None
+                for element in results_list:
+                    if element.similarity > max_sim:
+                        max_sim = element.similarity
+                        best_element = element
+                embed = discord.Embed(title="HowLongToBeat details about " + str(best_element.game_name),
+                                      colour=discord.Colour(0x000000),
+                                      url=str(best_element.game_web_link),
+                                      description="Details about how long is to complete the game " + str(
+                                          best_element.game_name) + " playing in different ways",
+                                      timestamp=datetime.utcfromtimestamp(time.time())
+                                      )
+                embed.set_thumbnail(
+                    url=str(best_element.game_image_url))
+                embed.set_author(name=ctx.message.author.name, url="", icon_url=ctx.message.author.avatar_url)
+                embed.set_footer(text=self.botVariables.get_description(), icon_url=self.botVariables.get_bot_icon())
+                embed.add_field(name="Main",
+                                value=(str(best_element.gameplay_main) + " " + str(best_element.gameplay_main_unit)),
+                                inline=False)
+                embed.add_field(name="Main + Extra",
+                                value=(str(best_element.gameplay_main_extra) + " " + str(best_element.gameplay_main_extra_unit)),
+                                inline=False)
+                embed.add_field(name="Completionist",
+                                value=(str(best_element.gameplay_completionist) + " " + str(best_element.gameplay_completionist_unit)),
+                                inline=False)
+                await self.bot.send_message(ctx.message.channel, embed=embed)
+            else:
+                await self.bot.send_message(ctx.message.channel, "Looks like i've not found anything :(")
 
     # ---------------------------------------------------------------------
 
