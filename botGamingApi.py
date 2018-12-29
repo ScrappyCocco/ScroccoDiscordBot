@@ -683,15 +683,33 @@ class BotGamingCommands:
                     url=str(best_element.game_image_url))
                 embed.set_author(name=ctx.message.author.name, url="", icon_url=ctx.message.author.avatar_url)
                 embed.set_footer(text=self.botVariables.get_description(), icon_url=self.botVariables.get_bot_icon())
-                embed.add_field(name="Main",
-                                value=(str(best_element.gameplay_main) + " " + str(best_element.gameplay_main_unit)),
-                                inline=False)
-                embed.add_field(name="Main + Extra",
-                                value=(str(best_element.gameplay_main_extra) + " " + str(best_element.gameplay_main_extra_unit)),
-                                inline=False)
-                embed.add_field(name="Completionist",
-                                value=(str(best_element.gameplay_completionist) + " " + str(best_element.gameplay_completionist_unit)),
-                                inline=False)
+                if best_element.gameplay_main_label is not None:  # Check if the name is available first
+                    if best_element.gameplay_main_unit is None:  # Then check if the time is available
+                        embed.add_field(name=str(best_element.gameplay_main_label), value="Not available...",
+                                        inline=False)
+                    else:
+                        embed.add_field(name=str(best_element.gameplay_main_label),
+                                        value=(str(best_element.gameplay_main) + " " + str(
+                                            best_element.gameplay_main_unit)),
+                                        inline=False)
+                if best_element.gameplay_main_extra_label is not None:  # Check if the name is available first
+                    if best_element.gameplay_main_extra_unit is None:  # Then check if the time is available
+                        embed.add_field(name=str(best_element.gameplay_main_extra_label), value="Not available...",
+                                        inline=False)
+                    else:
+                        embed.add_field(name=str(best_element.gameplay_main_extra_label),
+                                        value=(str(best_element.gameplay_main_extra) + " " + str(
+                                            best_element.gameplay_main_extra_unit)),
+                                        inline=False)
+                if best_element.gameplay_completionist_label is not None:  # Check if the name is available first
+                    if best_element.gameplay_completionist_unit is None:  # Then check if the time is available
+                        embed.add_field(name=str(best_element.gameplay_completionist_label), value="Not available...",
+                                        inline=False)
+                    else:
+                        embed.add_field(name=str(best_element.gameplay_completionist_label),
+                                        value=(str(best_element.gameplay_completionist) + " " + str(
+                                            best_element.gameplay_completionist_unit)),
+                                        inline=False)
                 await self.bot.send_message(ctx.message.channel, embed=embed)
             else:
                 await self.bot.send_message(ctx.message.channel, "Looks like i've not found anything :(")
