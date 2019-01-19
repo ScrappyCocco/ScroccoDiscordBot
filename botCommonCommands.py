@@ -787,6 +787,9 @@ class BotCommonCommands:
                         async with session.get(request_search_link, headers={'X-Mashape-Key': str(api_key),
                                                                              'Accept': 'application/json'}) as resp:  # the website use get
                             request_result = await resp.json()
+                    if 'message' in request_result:
+                        await self.bot.send_message(ctx.message.channel, "*An error occurred downloading the data...*")
+                        return
                     # prepare the embed message
                     embed = discord.Embed(title=str(request_result[0]['Title']),
                                           colour=discord.Colour(0xffcc00),
