@@ -709,6 +709,8 @@ class BotCommonCommands:
                     example_text = definitions_found[x].example
                     if len(example_text) > 1024:  # cut the string, is too long
                         example_text = example_text[:1000] + "[TEXT TOO LONG]..."
+                    elif len(example_text) < 5:
+                        example_text = "Example not available..."
                     embed.add_field(name="Example(s):", value=example_text, inline=False)
                     embed.add_field(name="---------------------------------------------",
                                     value="---------------------------------------------", inline=False)
