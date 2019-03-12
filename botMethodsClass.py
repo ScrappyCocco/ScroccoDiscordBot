@@ -127,7 +127,7 @@ class BotMethods:
             uuid = r['id']  # getting the user MinecraftID
             print("get_player_minecraft_uuid: Minecraft ID Downloaded")
             return uuid
-        except (json.decoder.JSONDecodeError, aiohttp.client_exceptions.ContentTypeError):
+        except (json.decoder.JSONDecodeError, aiohttp.ContentTypeError):
             print("get_player_minecraft_uuid: Error getting PlayerID")
             return None
 

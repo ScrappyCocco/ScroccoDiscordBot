@@ -16,13 +16,8 @@ class BotTimedTasks:
     """ Class with Bot Timed Tasks (tasks with timer) """
     ''' This class is created by "botMaintenanceCommands", 
     this mostly because that class need to close the tasks before stopping the bot to avoid warnings/errors '''
+
     # ---------------------------------------------------------------------
-
-    # list of class essential variables, the None variables are assigned in the constructor because i need the bot reference
-    botVariables = None  # used for 2 api keys
-    YT_key = None
-
-    statusChanged = False  # to skip continuous status change
 
     # ---------------------------------------------------------------------
     # this task check every hour for a new video of the specified channel, sending a message if a new video is found
@@ -87,9 +82,9 @@ class BotTimedTasks:
                         r_json = await resp.json()
                 if str(r_json["status"]["indicator"]) != "none" or len(r_json["incidents"]) != 0:
                     if not self.statusChanged:
+                        self.statusChanged = True
                         await self.bot.change_presence(status=discord.Status.do_not_disturb, game=discord.Game(
                             name="Discord Error - Check status.discordapp.com"))
-                        self.statusChanged = True
                 else:
                     if self.statusChanged:
                         self.statusChanged = False
@@ -118,6 +113,8 @@ class BotTimedTasks:
         print("CALLING MINI-CLASS-->" + self.__class__.__name__ + " class called")
         self.bot = bot
         self.botVariables = self.bot.bot_variables_reference
+        # to skip continuous status change
+        self.statusChanged = False
         # assigning variables value now i can use botVariables
         self.YT_key = self.botVariables.get_youtube_api_key()
 

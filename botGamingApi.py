@@ -137,7 +137,7 @@ class BotGamingCommands:
                 async with aiohttp.ClientSession() as session:
                     async with session.get(url_operators) as resp:
                         request_player_operators = await resp.json()
-            except (json.JSONDecodeError, aiohttp.client_exceptions.ClientResponseError):
+            except (json.JSONDecodeError, aiohttp.ClientResponseError):
                 print("R6 - Error downloading the data")
                 await self.bot.send_message(ctx.message.channel,
                                             "An error occurred requesting your data, please retry later... (api.r6stats.com error)")
@@ -579,9 +579,9 @@ class BotGamingCommands:
                 embed.add_field(name="Level", value=str(player.getLevel()))
                 embed.add_field(name="Karma", value=str(player.JSON['karma']))
                 embed.add_field(name="First Login",
-                                value=str(time.strftime('%d\%m\%Y %H:%M:%S', time.gmtime(first_login_epoch_timestamp))))
+                                value=str(time.strftime('%d\\%m\\%Y %H:%M:%S', time.gmtime(first_login_epoch_timestamp))))
                 embed.add_field(name="Last Login",
-                                value=str(time.strftime('%d\%m\%Y %H:%M:%S', time.gmtime(last_login_epoch_timestamp))))
+                                value=str(time.strftime('%d\\%m\\%Y %H:%M:%S', time.gmtime(last_login_epoch_timestamp))))
                 await self.bot.send_message(ctx.message.channel, embed=embed)
         else:  # parameters aren't correct - print the correct usage of the command
             await self.bot.send_message(ctx.message.channel, "**Usage:** " + self.command_prefix + "hy McName")

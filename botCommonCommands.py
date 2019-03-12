@@ -106,7 +106,7 @@ class BotCommonCommands:
                 async with session.get(url) as resp:
                     r = await resp.json()
             await self.bot.send_message(ctx.message.channel, r['file'])
-        except aiohttp.client_exceptions.ContentTypeError:
+        except aiohttp.ContentTypeError:
             print("Cannot send cat image...")
 
     # ---------------------------------------------------------------------
@@ -198,7 +198,7 @@ class BotCommonCommands:
                 async with session.post("https://api.imgflip.com/caption_image", data=request_data) as resp:
                     try:
                         r = await resp.json()
-                    except (UnicodeDecodeError, aiohttp.client_exceptions.ClientResponseError):
+                    except (UnicodeDecodeError, aiohttp.ClientResponseError):
                         print("Meme reply is not a json...")
                         await self.bot.send_message(ctx.message.channel, "*An error occurred generating the meme...*")
                         return
@@ -602,7 +602,7 @@ class BotCommonCommands:
                     r = await resp.text()
                     try:
                         r_json = await resp.json()
-                    except (UnicodeDecodeError, aiohttp.client_exceptions.ClientResponseError):
+                    except (UnicodeDecodeError,  aiohttp.ClientResponseError):
                         print("Hacked reply is not a json...")
             if str(r) == "<Response [404]>" or str(r) == "":
                 print("Not found")
@@ -685,20 +685,20 @@ class BotCommonCommands:
                 # Sort the definition using votes
                 definitions_found.sort(key=lambda UrbanDefinition: UrbanDefinition.votes, reverse=True)
                 # create the embed to send
+                if len(args) == 2 and args[1].isdigit():
+                    number_of_results = int(args[1])
+                else:
+                    number_of_results = 1
                 embed = discord.Embed(title="Urban Dictionary - Link",
                                       url="https://www.urbandictionary.com/define.php?term=" +
                                           urllib.parse.quote(str(args[0])),
                                       color=0x1d2439,
-                                      description="Best 3 urban dictionary results for \"" + str(args[0]) + "\"")
+                                      description="Best " + str(number_of_results) + " urban dictionary results for \"" + str(args[0]) + "\"")
                 embed.set_author(name="Search required by " + ctx.message.author.name,
                                  icon_url=ctx.message.author.avatar_url)
                 embed.set_thumbnail(
                     url='https://cdn.discordapp.com/attachments/276674976210485248/350641481872179200/featured-image4.jpg')
                 # Calculate number of results to display and start creating the embed fields
-                if len(args) == 2 and args[1].isdigit():
-                    number_of_results = int(args[1])
-                else:
-                    number_of_results = 1
                 for x in range(0, min(len(definitions_found), number_of_results)):
                     # Check text and prepare embed
                     definition_text = definitions_found[x].definition

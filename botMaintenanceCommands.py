@@ -144,7 +144,6 @@ class BotMaintenanceCommands:
         Usage: !joined To get your join date
         or !joined @User To get User's join date
         """
-        print("-------------------------")
         if ctx is not None:
             if ctx.message.server is None:  # private message
                 print("Can't find join-date in private chat")
@@ -169,7 +168,40 @@ class BotMaintenanceCommands:
                     await self.bot.send_message(ctx.message.channel,
                                                 "**" + ctx.message.author.name + "** joined this server: " + str(
                                                     date_string))
-        print("-------------------------")
+
+    # ---------------------------------------------------------------------
+
+    @commands.command(pass_context=True)
+    async def birthday(self, ctx):
+        """Print the date when you created your discord account
+        Usage: !birthday To get your account creation date
+        or !birthday @User To get User's birthday
+        """
+        if ctx is not None:
+            mention = False
+            if ctx.message.server is None:  # private message
+                date = ctx.message.author.created_at
+            else:
+                date = ""
+                mention = False
+                if len(ctx.message.mentions) == 1:
+                    mention = True
+                    for CurrentMember in ctx.message.server.members:
+                        if CurrentMember.id == ctx.message.mentions[0].id:
+                            date = CurrentMember.created_at
+                            break
+                else:
+                    date = ctx.message.author.joined_at
+            date_string = date.strftime('%H:%M:%S %d-%m-%Y')
+            if mention:
+                await self.bot.send_message(ctx.message.channel,
+                                            "**" + ctx.message.mentions[
+                                                0].name + "** created his Discord account: " + str(
+                                                date_string))
+            else:
+                await self.bot.send_message(ctx.message.channel,
+                                            "**" + ctx.message.author.name + "** created his Discord account: " + str(
+                                                date_string))
 
     # ---------------------------------------------------------------------
 

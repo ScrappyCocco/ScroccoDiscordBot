@@ -25,8 +25,8 @@
       }
     ]
   },
-  "version": "0.98.25",
-  "build": "41",
+  "version": "0.98.27",
+  "build": "10",
   "is_beta": false,
   "description": "Bot by ScrappyCocco (Some commands are hidden from help)",
   "bot_icon": "https://discordapp.com/assets/2c21aeda16de354ba5334551a883b481.png",
