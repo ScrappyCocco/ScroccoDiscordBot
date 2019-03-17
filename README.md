@@ -19,18 +19,22 @@ To running the bot you'll need Python (i used python-3.6.X) and to install all t
 pip install -r requirements.txt
 ```
 
-You need also **all** the API key you'll find in [bot_data_examples.json](bot_data_examples.json) (cleverbot, steam, ...),
+You need also **all** the API key you'll find in [bot_data_examples.json](src/json/bot_data_examples.json) (cleverbot, steam, ...),
 so you must fill all the variables in "bot_data_examples.json" and **rename it** in "bot_data.json"
-(a little documentation of the JSON file can be found in [botVariablesClass.py](botVariablesClass.py)).
+(a little documentation of the JSON file can be found in [bot_data.schema.json](src/json/bot_data.schema.json)).
 
 **If you don't want a command**, you have to MANUALLY delete it, this is how: 
 1. If the command use an api key, start removing the method that get it and its call in _full_startup_check()_ in the _botVariables_ class;
+*(Now the JSON is validated using the JSON Schema, so if you remove the command, make the JSON validate inserting a fake string)*
 1. Now you have to remove the command, locate it and delete the whole command;
 1. Repeat this for every command you don't want in the bot.
 
 (If you remove the check from _botVariables_ but not the command you'll have runtime errors when someone use that command)
 
 Finally, remember to download the git submodules, i use them in the code.
+```
+git submodule update --init --recursive
+```
 
 ## Starting the bot
 
