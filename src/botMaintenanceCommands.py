@@ -38,8 +38,8 @@ class BotMaintenanceCommands:
         if BotMethods.is_owner(ctx.message.author):
             await self.bot.send_message(ctx.message.channel, "Stopping bot... Bye!")
             # stopping tasks
-            for C_Task in self.Timed_Tasks:
-                C_Task.cancel()
+            for c_task in self.Timed_Tasks:
+                c_task.cancel()
                 print("UNLOADING-->Timed-Task cancelled")
             del self.TaskManager  # delete the task manager
             await self.bot.logout()
@@ -153,9 +153,9 @@ class BotMaintenanceCommands:
                 mention = False
                 if len(ctx.message.mentions) == 1:
                     mention = True
-                    for CurrentMember in ctx.message.server.members:
-                        if CurrentMember.id == ctx.message.mentions[0].id:
-                            date = CurrentMember.joined_at
+                    for current_member in ctx.message.server.members:
+                        if current_member.id == ctx.message.mentions[0].id:
+                            date = current_member.joined_at
                             break
                 else:
                     date = ctx.message.author.joined_at
@@ -186,9 +186,9 @@ class BotMaintenanceCommands:
                 mention = False
                 if len(ctx.message.mentions) == 1:
                     mention = True
-                    for CurrentMember in ctx.message.server.members:
-                        if CurrentMember.id == ctx.message.mentions[0].id:
-                            date = CurrentMember.created_at
+                    for current_member in ctx.message.server.members:
+                        if current_member.id == ctx.message.mentions[0].id:
+                            date = current_member.created_at
                             break
                 else:
                     date = ctx.message.author.joined_at
@@ -261,8 +261,8 @@ class BotMaintenanceCommands:
                                         "Parameters not correct, see " + self.command_prefix + "help channelid")
             return
         final_string = ""
-        for currentServer in self.bot.servers:
-            for current_channel in currentServer.channels:
+        for current_server in self.bot.servers:
+            for current_channel in current_server.channels:
                 if current_channel.type == discord.ChannelType.text:  # if it's a text channel and not a voice channel
                     if current_channel.name == str(args[0]) or str(args[0]) == "*":  # the name is equal
                         found = True
@@ -285,10 +285,10 @@ class BotMaintenanceCommands:
             await self.bot.send_message(ctx.message.channel,
                                         "You don't have access to this command :stuck_out_tongue: ")
             return
-        for currentServer in self.bot.servers:
+        for current_server in self.bot.servers:
             found = True
-            final_string += currentServer.name + " - ID: " + str(currentServer.id) + " - " + str(
-                currentServer.member_count) + " Members \n"
+            final_string += current_server.name + " - ID: " + str(current_server.id) + " - " + str(
+                current_server.member_count) + " Members \n"
         if not found:
             await self.bot.send_message(ctx.message.channel, "Nothing found...")
         else:

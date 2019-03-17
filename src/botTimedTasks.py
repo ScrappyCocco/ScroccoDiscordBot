@@ -81,13 +81,13 @@ class BotTimedTasks:
                     async with session.get(url) as resp:
                         r_json = await resp.json()
                 if str(r_json["status"]["indicator"]) != "none" or len(r_json["incidents"]) != 0:
-                    if not self.statusChanged:
-                        self.statusChanged = True
+                    if not self.status_changed:
+                        self.status_changed = True
                         await self.bot.change_presence(status=discord.Status.do_not_disturb, game=discord.Game(
                             name="Discord Error - Check status.discordapp.com"))
                 else:
-                    if self.statusChanged:
-                        self.statusChanged = False
+                    if self.status_changed:
+                        self.status_changed = False
                         await self.bot.change_presence(status=discord.Status.online,
                                                        game=discord.Game(name=self.bot.lastInGameStatus))
             await asyncio.sleep(150)  # task runs every 2.5 min (150s)
@@ -114,7 +114,7 @@ class BotTimedTasks:
         self.bot = bot
         self.botVariables = self.bot.bot_variables_reference
         # to skip continuous status change
-        self.statusChanged = False
+        self.status_changed = False
         # assigning variables value now i can use botVariables
         self.YT_key = self.botVariables.get_youtube_api_key()
 

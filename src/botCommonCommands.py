@@ -251,10 +251,9 @@ class BotCommonCommands:
             if received_string.startswith('"') and received_string.endswith('"'):
                 received_string = received_string[1:-1]
             pos = received_string.find("\\")
-            if pos != -1:
-                if received_string[pos + 1] != " ":
-                    print("Error:" + received_string[pos + 1])
-                    return
+            if pos != -1 and received_string[pos + 1] != " ":
+                print("Error:" + received_string[pos + 1])
+                return
             pos = received_string.find("\"")
             if pos != -1:
                 print("Error:" + received_string[pos + 1])
@@ -628,8 +627,8 @@ class BotCommonCommands:
                     value_to_print = "**Website:** " + str(json_received[index]['Domain']) + "\n**Date:** " + str(
                         json_received[index]['BreachDate'])
                     value_to_print += "\n**Stolen:** "
-                    for currentIndex in range(len(json_received[index]['DataClasses'])):
-                        value_to_print += str(json_received[index]['DataClasses'][currentIndex]) + ", "
+                    for current_index in range(len(json_received[index]['DataClasses'])):
+                        value_to_print += str(json_received[index]['DataClasses'][current_index]) + ", "
                     embed.add_field(name=str(json_received[index]['Title']), value=value_to_print, inline=False)
                 embed.set_footer(text="Using haveibeenpwned.com")
                 await self.bot.send_message(ctx.message.channel, embed=embed)

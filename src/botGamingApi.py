@@ -56,7 +56,6 @@ class BotGamingCommands:
             async with aiohttp.ClientSession() as session:
                 async with session.get(url) as resp:
                     r_text = await resp.text()
-                    # r = requests.get(url)
                     if str(r_text) == "<Response [404]>" or str(r_text) == "Not Found":  # user not found
                         await self.bot.send_message(ctx.message.channel, "Error: 404 User not found")
                         return
@@ -333,9 +332,9 @@ class BotGamingCommands:
             embed.add_field(name="In-Game:", value=playing)
 
             recently = ""
-            for SteamGame in steam_user.recently_played:
-                if SteamGame is not None:
-                    recently += str(SteamGame) + "\n"
+            for steam_game in steam_user.recently_played:
+                if steam_game is not None:
+                    recently += str(steam_game) + "\n"
 
             embed.add_field(name="Recent Activity:", value=recently)
             await self.bot.send_message(ctx.message.channel, embed=embed)
@@ -579,9 +578,11 @@ class BotGamingCommands:
                 embed.add_field(name="Level", value=str(player.getLevel()))
                 embed.add_field(name="Karma", value=str(player.JSON['karma']))
                 embed.add_field(name="First Login",
-                                value=str(time.strftime('%d\\%m\\%Y %H:%M:%S', time.gmtime(first_login_epoch_timestamp))))
+                                value=str(
+                                    time.strftime('%d\\%m\\%Y %H:%M:%S', time.gmtime(first_login_epoch_timestamp))))
                 embed.add_field(name="Last Login",
-                                value=str(time.strftime('%d\\%m\\%Y %H:%M:%S', time.gmtime(last_login_epoch_timestamp))))
+                                value=str(
+                                    time.strftime('%d\\%m\\%Y %H:%M:%S', time.gmtime(last_login_epoch_timestamp))))
                 await self.bot.send_message(ctx.message.channel, embed=embed)
         else:  # parameters aren't correct - print the correct usage of the command
             await self.bot.send_message(ctx.message.channel, "**Usage:** " + self.command_prefix + "hy McName")

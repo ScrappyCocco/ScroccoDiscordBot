@@ -2,6 +2,7 @@
 # ---------------------------------------------------------------------
 # CHANGING DIR
 import os
+
 os.chdir("src")
 # ---------------------------------------------------------------------
 # IMPORTS
@@ -218,7 +219,6 @@ async def on_message(message):
         if message.content.startswith(mention):  # yes the message starts with a mention, it's me?
             new_message = message.content.replace(str(mention), "",
                                                   1)  # remove the mention from the message (only 1)
-            # new_message = new_message[1:]  # remove the additional space (not necessary)
             for found_mention in message.mentions:  # convert all mentions to names to make the message clear
                 new_message = new_message.replace(str(found_mention.mention), str(found_mention.name))
             # ---------------------------------------------------------------------
