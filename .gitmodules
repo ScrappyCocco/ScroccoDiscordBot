@@ -1,0 +1,3 @@
+[submodule "src/steamapi"]
+	path = src/steamapi
+	url = https://github.com/smiley/steamapi.git
