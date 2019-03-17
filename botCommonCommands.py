@@ -602,7 +602,7 @@ class BotCommonCommands:
                     r = await resp.text()
                     try:
                         r_json = await resp.json()
-                    except (UnicodeDecodeError,  aiohttp.ClientResponseError):
+                    except (UnicodeDecodeError, aiohttp.ClientResponseError):
                         print("Hacked reply is not a json...")
             if str(r) == "<Response [404]>" or str(r) == "":
                 print("Not found")
@@ -675,9 +675,12 @@ class BotCommonCommands:
                 # Store all definitions in an array
                 definitions_found = []
                 for definition in request_result["list"]:  # choose the best result with positive-percentage
-                    percentage = (definition["thumbs_up"] / (
-                            definition["thumbs_up"] + definition["thumbs_down"])) * 100
-                    percentage = percentage * (definition["thumbs_up"] + definition["thumbs_down"])
+                    div = definition["thumbs_up"] + definition["thumbs_down"]
+                    if div == 0:
+                        percentage = 0
+                    else:
+                        percentage = (definition["thumbs_up"] / (div)) * 100
+                        percentage = percentage * (definition["thumbs_up"] + definition["thumbs_down"])
                     definitions_found.append(
                         self.UrbanDefinition(definition['author'], definition['example'], definition['definition'],
                                              percentage)
@@ -693,7 +696,8 @@ class BotCommonCommands:
                                       url="https://www.urbandictionary.com/define.php?term=" +
                                           urllib.parse.quote(str(args[0])),
                                       color=0x1d2439,
-                                      description="Best " + str(number_of_results) + " urban dictionary results for \"" + str(args[0]) + "\"")
+                                      description="Best " + str(
+                                          number_of_results) + " urban dictionary results for \"" + str(args[0]) + "\"")
                 embed.set_author(name="Search required by " + ctx.message.author.name,
                                  icon_url=ctx.message.author.avatar_url)
                 embed.set_thumbnail(
