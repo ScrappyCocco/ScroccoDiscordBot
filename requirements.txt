@@ -1,13 +1,11 @@
+jsonschema==3.0.1
 aiohttp==3.5.4
 async-timeout==3.0.0
-certifi==2019.3.9
-chardet==3.0.4
 discord.py==0.16.12
 futures==3.1.1
 goslate==1.5.1
 howlongtobeatpy==0.1.4
 hypixel==0.7.9
-idna==2.8
 multidict==4.5.2
 packaging==19.0
 pyparsing==2.3.1

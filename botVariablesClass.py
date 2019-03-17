@@ -1,6 +1,7 @@
 # ---------------------------------------------------------------------
 # IMPORTS
 
+from jsonschema import validate
 import json
 
 
@@ -20,6 +21,13 @@ class BotVariables:
     def __init__(self, should_check=False):
         print("CALLING MINI-CLASS-->" + self.__class__.__name__ + " class called")
         file_name = "bot_data.json"
+        json_schema_file_name = "bot_data.schema.json"
+        try:
+            with open(json_schema_file_name) as data_file:
+                self.bot_json_schema = json.load(data_file)
+        except FileNotFoundError:
+            print("FATAL ERROR-->" + json_schema_file_name + " FILE NOT FOUND, ABORTING...")
+            quit(1)
         try:
             with open(file_name) as data_file:
                 self.bot_data_file = json.load(data_file)
@@ -27,6 +35,7 @@ class BotVariables:
             print("FATAL ERROR-->" + file_name + " FILE NOT FOUND, ABORTING...")
             quit(1)
         if should_check:  # used because i do a full check only the first time the bot load
+            self.json_schema_check()
             self.full_startup_check()
         # After the full_startup_check, i know there are no problems
         self.command_prefix = self.get_command_prefix()
@@ -34,8 +43,14 @@ class BotVariables:
     def __del__(self):
         print("DESTROYING MINI-CLASS-->" + self.__class__.__name__ + " class called")
 
+    def json_schema_check(self):
+        print("---STARTING JSON SCHEMA CHECK---")
+        print("//If this fails, something is your bot_data.json is not correct!")
+        validate(instance=self.bot_data_file, schema=self.bot_json_schema)
+        print("---JSON SCHEMA CHECK ENDED---")
+
     def full_startup_check(self):
-        print("---STARTING FULL JSON CHECK---")
+        print("---STARTING FULL JSON VALUES CHECK---")
         self.get_clever_key()
         self.get_hypixel_key()
         self.get_gif_key()
@@ -53,7 +68,7 @@ class BotVariables:
         self.get_rocket_league_key()
         self.get_youtube_api_key()
         self.get_discord_bot_token(False)
-        print("---FULL JSON CHECK COMPLETED---")
+        print("---FULL JSON VALUES CHECK COMPLETED---")
 
     def check_empty_key(self, key):
         """Function that check the key for errors.
