@@ -19,26 +19,32 @@ To running the bot you'll need Python (i used python-3.6.X) and to install all t
 pip install -r requirements.txt
 ```
 
-You need also **all** the API key you'll find in [bot_data_examples.json](bot_data_examples.json) (cleverbot, steam, ...),
+You need also **all** the API key you'll find in [bot_data_examples.json](src/json/bot_data_examples.json) (cleverbot, Steam, ...),
 so you must fill all the variables in "bot_data_examples.json" and **rename it** in "bot_data.json"
-(a little documentation of the JSON file can be found in [botVariablesClass.py](botVariablesClass.py)).
+(a little documentation of the JSON file can be found in [bot_data.schema.json](src/json/bot_data.schema.json)).
 
 **If you don't want a command**, you have to MANUALLY delete it, this is how: 
-1. If the command use an api key, start removing the method that get it and its call in _full_startup_check()_ in the _botVariables_ class;
+1. If the command use an api key, start removing the method that get it and its call in _full_startup_check()_ in _botVariablesClass.py_.
+*(The JSON is now also validated using the JSON Schema at startup, so if you remove the command, make the JSON validate successfully inserting a fake string)*;
 1. Now you have to remove the command, locate it and delete the whole command;
 1. Repeat this for every command you don't want in the bot.
 
-(If you remove the check from _botVariables_ but not the command you'll have runtime errors when someone use that command)
+(If you remove the check from _botVariablesClass.py_ but not the command code you'll have runtime errors when someone use that command)
 
 Finally, remember to download the git submodules, i use them in the code.
+```
+git submodule update --init --recursive
+```
 
 ## Starting the bot
 
 After you installed and configured everything you can try to run the main class (botMainClass.py) with the command:
 ```
-py botMainClass.py
+py src/botMainClass.py
 ``` 
 This will start the bot or show the errors you have to fix.
+
+(If you're using a unix system, remember to change `py` to `python3`)
 
 ## Built Using
 

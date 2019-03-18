@@ -1,0 +1,389 @@
+{
+    "$schema": "http://json-schema.org/schema#",
+    "type": "object",
+    "title": "This is a JSON Schema to validate the bot_data.json on startup",
+    "description": "If you don't want a command, you should remove the validation from this file or force it inserting a fake string into the required field, any string that is long at least 1 character is ok",
+    "properties": {
+        "apiKeys": {
+            "type": "object",
+            "title": "List of main api-keys used in few commands",
+            "description": "REMEMBER THAT if an api key is empty the bot won't start or the command won't work correctly, IF YOU DON'T WANT a command you have to MANUALLY remove the api key check (down here) and the whole command",
+            "properties": {
+                "cleverbot": {
+                    "title": "Cleverbot api key",
+                    "description": "Used for cleverbot, get yours from  https://www.cleverbot.com/api/",
+                    "type": "string",
+                    "minLength": 1
+                },
+                "hypixel": {
+                    "title": "Hypixel Minecraft Server - API key",
+                    "description": "Used for hypixel api, get yours from https://api.hypixel.net/",
+                    "type": "string",
+                    "minLength": 1
+                },
+                "steam": {
+                    "title": "Steam API key",
+                    "description": "Used for steam api, get yours from https://steamcommunity.com/dev/apikey",
+                    "type": "string",
+                    "minLength": 1
+                },
+                "gif": {
+                    "title": "GIF Search API key",
+                    "description": "Used for gifs api, get yours from http://api.giphy.com/",
+                    "type": "string",
+                    "minLength": 1
+                },
+                "google_shortener": {
+                    "title": "Google shortener api key",
+                    "description": "Get yours from https://developers.google.com/url-shortener/v1/getting_started#APIKey",
+                    "type": "string",
+                    "minLength": 1
+                },
+                "X-Mashape-Key": {
+                    "title": "Key for using the metacritic api with 'movievotes' command,",
+                    "description": "Get yours from https://market.mashape.com/marcalencc/metacritic",
+                    "type": "string",
+                    "minLength": 1
+                }
+            },
+            "additionalProperties": false,
+            "required": [
+                "cleverbot",
+                "hypixel",
+                "steam",
+                "gif",
+                "google_shortener",
+                "X-Mashape-Key"
+            ]
+        },
+        "weather": {
+            "type": "object",
+            "title": "Weather API",
+            "properties": {
+                "key": {
+                    "title": "Weather API key",
+                    "description": "Get yours from http://api.wunderground.com/",
+                    "type": "string",
+                    "minLength": 1
+                },
+                "default_country": {
+                    "title": "Identification of the default country for the weather API",
+                    "description": "Weather default_country must be in the 'ISO 3166-1 alpha-2' format",
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 3
+                }
+            },
+            "additionalProperties": false,
+            "required": [
+                "key",
+                "default_country"
+            ]
+        },
+        "rocketleague": {
+            "type": "object",
+            "title": "Rocket League API",
+            "properties": {
+                "key": {
+                    "description": "Get yours from https://developers.rocketleaguestats.com",
+                    "type": "string",
+                    "minLength": 1
+                },
+                "default_platform": {
+                    "title": "Default platform that will be used in the research",
+                    "description": "Default platform could be Steam, Ps4 OR XboxOne",
+                    "type": "string",
+                    "enum": [
+                        "Steam",
+                        "Ps4",
+                        "Xbox"
+                    ]
+                }
+            },
+            "additionalProperties": false,
+            "required": [
+                "key",
+                "default_platform"
+            ]
+        },
+        "youtube": {
+            "type": "object",
+            "title": "Youtube API to notify new videos",
+            "properties": {
+                "key": {
+                    "title": "API Key",
+                    "description": "Get yours from https://developers.google.com/youtube/v3/getting-started",
+                    "type": "string",
+                    "minLength": 1
+                },
+                "channels": {
+                    "title": "List of channels to check",
+                    "description": "IF you don't want this function, leave an empty array (using [])",
+                    "type": "array",
+                    "default": [],
+                    "uniqueItems": true,
+                    "items": {
+                        "title": "A Youtube channel to check",
+                        "type": "object",
+                        "properties": {
+                            "YTchannelID": {
+                                "title": "The youtube channel-id to check new videos",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "DISCORDchannelID": {
+                                "title": "The discord channel where to send youtube notifications",
+                                "type": "string",
+                                "minLength": 1,
+                                "pattern": "^([0-9])+$"
+                            },
+                            "notificationMessage": {
+                                "title": "The message to send at the beginning of the youtube alert",
+                                "type": "string",
+                                "minLength": 1
+                            }
+                        },
+                        "additionalProperties": false,
+                        "required": [
+                            "YTchannelID",
+                            "DISCORDchannelID",
+                            "notificationMessage"
+                        ]
+                    }
+                }
+            },
+            "additionalProperties": false,
+            "required": [
+                "key",
+                "channels"
+            ]
+        },
+        "version": {
+            "title": "Bot version",
+            "description": "Specify the bot version, you should NOT change this value if you don't edit the bot source",
+            "type": "string",
+            "minLength": 1
+        },
+        "build": {
+            "title": "Bot build string",
+            "description": "Specify the bot version, you should NOT change this value if you don't edit the bot source",
+            "type": "string",
+            "minLength": 1
+        },
+        "is_beta": {
+            "description": "Specify if the bot have to use the beta api key or the final api key",
+            "type": "boolean"
+        },
+        "description": {
+            "description": "Bot simple description, write what you want in here",
+            "type": "string",
+            "minLength": 1
+        },
+        "bot_icon": {
+            "description": "The url of the bot default icon (used only in some embed codes)",
+            "type": "string",
+            "minLength": 1
+        },
+        "bot_status": {
+            "type": "object",
+            "title": "Bot variables about the in-game status",
+            "description": "All the informations and settings about the bot in-game status",
+            "properties": {
+                "defaultStatus": {
+                    "title": "Bot default status",
+                    "description": "The default bot IN-GAME status (if the bot can't download the last on startup, will use this state) - can be a simple status like \"Hello\" or a list of statuses that will used every 10 minutes, \"{Hello 1---Hello 2---I'm a bot}\"",
+                    "type": "string",
+                    "minLength": 1
+                },
+                "random_status_change_interval": {
+                    "title": "The interval to change the in-game status",
+                    "description": "The seconds to wait before randomizing the status again (if the bot has a list of statuses) - This SHOULD BE at least 60 (one minute) discord doesn't like if you change state too frequently",
+                    "type": "integer",
+                    "exclusiveMinimum": 0
+                },
+                "save_to_file": {
+                    "title": "Settings about saving the state to a text file",
+                    "type": "object",
+                    "properties": {
+                        "save_state_to_file": {
+                            "description": "If the state should be read/written to a text file",
+                            "type": "boolean"
+                        },
+                        "file_name": {
+                            "description": "The name of the file to read and to write",
+                            "type": "string",
+                            "minLength": 1
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "save_state_to_file",
+                        "file_name"
+                    ]
+                },
+                "server_state_saving": {
+                    "title": "Settings about saving the state in a server",
+                    "type": "object",
+                    "properties": {
+                        "save_state_to_server": {
+                            "description": "If the state should be read/saved from the server",
+                            "type": "boolean"
+                        },
+                        "readStateUrl": {
+                            "description": "Read url where i store the current in-game status to read it in case of reboot or update",
+                            "type": "string",
+                            "minLength": 1
+                        },
+                        "writeStateUrl": {
+                            "description": "Write url where i write the new in-game status to read it in case of reboot or update",
+                            "type": "string",
+                            "minLength": 1
+                        },
+                        "writeStateParamName": {
+                            "description": "\"GameString\" the param name for the POST request at writeStateUrl - when i update the in-game status i make a post-request to \"writeStateUrl\" passing the new status in a param called as the value of \"writeStateParamName\" to save the status on server (do it as you want, up to you), from there i can read it (on bot startup) making a simple request to \"readStateUrl\"",
+                            "type": "string",
+                            "minLength": 1
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "save_state_to_server",
+                        "readStateUrl",
+                        "writeStateUrl",
+                        "writeStateParamName"
+                    ]
+                }
+            },
+            "additionalProperties": false,
+            "required": [
+                "defaultStatus",
+                "random_status_change_interval",
+                "save_to_file",
+                "server_state_saving"
+            ]
+        },
+        "commands_prefix": {
+            "description": "The prefix of the commands (in this case !command)",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1
+        },
+        "open_source_link": {
+            "description": "Bot source code page - appear with !source command",
+            "type": "string",
+            "minLength": 1
+        },
+        "private_chat_alert": {
+            "description": "The message the bot will send to users using the private chat with the bot for their first time",
+            "type": "string",
+            "minLength": 1
+        },
+        "owners_data": {
+            "type": "object",
+            "title": "Informations about owners and message forwarding",
+            "properties": {
+                "owners_list": {
+                    "title": "Discord username of who can admin the bot, example: 'ScrappyCocco#4468'",
+                    "type": "array",
+                    "default": [],
+                    "uniqueItems": true,
+                    "items": {
+                        "name": {
+                            "title": "ID of an owner",
+                            "type": "string",
+                            "minLength": 1
+                        }
+                    }
+                },
+                "ownerPrivateMessagesID": {
+                    "title": "DiscordID to forward private messages",
+                    "description": "Discord id (in my case) where private messages will be sent, empty if you want to deactivate it",
+                    "type": "string"
+                }
+            },
+            "additionalProperties": false,
+            "required": [
+                "owners_list",
+                "ownerPrivateMessagesID"
+            ]
+        },
+        "startup_extensions": {
+            "title": "List of bot extensions to load",
+            "description": "Discord extensions to load on startup DO NOT touch that list if you don't edited the bot source code",
+            "type": "array",
+            "default": [],
+            "uniqueItems": true,
+            "items": {
+                "name": {
+                    "title": "Name of the extension to load",
+                    "type": "string",
+                    "minLength": 1
+                }
+            }
+        },
+        "meme_generator": {
+            "type": "object",
+            "title": "Meme generator login data",
+            "description": "Username and password of meme generator (get yours from https://api.imgflip.com/)",
+            "properties": {
+                "username": {
+                    "title": "Username to use",
+                    "type": "string",
+                    "minLength": 1
+                },
+                "password": {
+                    "title": "Password to use",
+                    "type": "string",
+                    "minLength": 1
+                }
+            },
+            "additionalProperties": false,
+            "required": [
+                "username",
+                "password"
+            ]
+        },
+        "discord_tokens": {
+            "type": "object",
+            "title": "BOT Beta and final discord api token",
+            "description": "There are 2 api keys because i use the 'beta', key before publishing the bot in his 'final' version - you can create apps from https://discordapp.com/developers/applications/me - if you have (or want) only 1 api key, put that kay in BOTH discordFinalBotApiToken and discordBetaBotApiToken",
+            "properties": {
+                "discordFinalBotApiToken": {
+                    "title": "Bot release token",
+                    "type": "string",
+                    "minLength": 1
+                },
+                "discordBetaBotApiToken": {
+                    "title": "Bot test (beta) token",
+                    "type": "string",
+                    "minLength": 1
+                }
+            },
+            "additionalProperties": false,
+            "required": [
+                "discordFinalBotApiToken",
+                "discordBetaBotApiToken"
+            ]
+        }
+    },
+    "additionalProperties": false,
+    "required": [
+        "apiKeys",
+        "weather",
+        "rocketleague",
+        "youtube",
+        "version",
+        "build",
+        "is_beta",
+        "description",
+        "bot_icon",
+        "bot_status",
+        "commands_prefix",
+        "open_source_link",
+        "private_chat_alert",
+        "owners_data",
+        "startup_extensions",
+        "meme_generator",
+        "discord_tokens"
+    ]
+}

@@ -162,11 +162,11 @@ class BotModerationCommands:
             counter = 0
             # Try to kick all the users with that role
             try:
-                for CurrentMember in server_members:
+                for current_member in server_members:
                     # Kick the user if he has that role
-                    if selected_role in CurrentMember.roles:
-                        print("Found user to kick:" + CurrentMember.name)
-                        await self.bot.kick(CurrentMember)
+                    if selected_role in current_member.roles:
+                        print("Found user to kick:" + current_member.name)
+                        await self.bot.kick(current_member)
                         counter += 1
                 await self.bot.send_message(ctx.message.channel,
                                             "Successfully kicked " + str(counter) + " users with the given role!")
@@ -202,14 +202,14 @@ class BotModerationCommands:
                 return
             print("Found " + str(len(server_members)) + " members to analyze")
             counter = 0
-            for CurrentMember in server_members:
-                if (action == "remove") and (selected_role in CurrentMember.roles):  # remove the role
-                    await self.bot.remove_roles(CurrentMember, selected_role)
-                    print("Role removed for user:" + CurrentMember.name)
+            for current_member in server_members:
+                if (action == "remove") and (selected_role in current_member.roles):  # remove the role
+                    await self.bot.remove_roles(current_member, selected_role)
+                    print("Role removed for user:" + current_member.name)
                     counter += 1
-                if (action == "add") and (selected_role not in CurrentMember.roles):  # add the role
-                    await self.bot.add_roles(CurrentMember, selected_role)
-                    print("Role added for user:" + CurrentMember.name)
+                if (action == "add") and (selected_role not in current_member.roles):  # add the role
+                    await self.bot.add_roles(current_member, selected_role)
+                    print("Role added for user:" + current_member.name)
                     counter += 1
             await self.bot.send_message(ctx.message.channel,
                                         "Successfully executed '" + action + " role' for " + str(counter) + " users!")
@@ -290,15 +290,15 @@ class BotModerationCommands:
             print("Found " + str(len(server_members)) + " members to analyze")
             counter = 0
             # For every user check and add the role
-            for CurrentMember in server_members:
-                if len(CurrentMember.roles) == 0 and empty_role:
-                    await self.bot.add_roles(CurrentMember, new_role)
+            for current_member in server_members:
+                if len(current_member.roles) == 0 and empty_role:
+                    await self.bot.add_roles(current_member, new_role)
                     counter += 1
                 else:
-                    if old_role in CurrentMember.roles:
-                        await self.bot.remove_roles(CurrentMember, old_role)
-                        await self.bot.add_roles(CurrentMember, new_role)
-                        print("Role Updated for user:" + CurrentMember.name)
+                    if old_role in current_member.roles:
+                        await self.bot.remove_roles(current_member, old_role)
+                        await self.bot.add_roles(current_member, new_role)
+                        print("Role Updated for user:" + current_member.name)
                         counter += 1
             await self.bot.send_message(ctx.message.channel,
                                         "Successfully updated role for " + str(counter) + " users!")

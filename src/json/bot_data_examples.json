@@ -1,0 +1,86 @@
+{
+    "apiKeys": {
+        "cleverbot": "YourKey",
+        "hypixel": "YourKey",
+        "steam": "YourKey",
+        "gif": "YourKey",
+        "google_shortener": "YourKey",
+        "X-Mashape-Key": "YourKey"
+    },
+    "weather": {
+        "key": "YourKey",
+        "default_country": "IT"
+    },
+    "rocketleague": {
+        "key": "YourKey",
+        "default_platform": "Steam"
+    },
+    "youtube": {
+        "key": "YourKey",
+        "channels": [
+            {
+                "YTchannelID": "",
+                "DISCORDchannelID": "",
+                "notificationMessage": "New video published!"
+            }
+        ]
+    },
+    "version": "0.98.27",
+    "build": "45",
+    "is_beta": false,
+    "description": "Bot by ScrappyCocco (Some commands are hidden from help)",
+    "bot_icon": "https://discordapp.com/assets/2c21aeda16de354ba5334551a883b481.png",
+    "bot_status": {
+        "defaultStatus": "Branzini 4 Ever",
+        "random_status_change_interval": 1800,
+        "save_to_file": {
+            "save_state_to_file": true,
+            "file_name": "state.txt"
+        },
+        "server_state_saving": {
+            "save_state_to_server": false,
+            "readStateUrl": "http://URL/readState.php",
+            "writeStateUrl": "http://URL/writeState.php",
+            "writeStateParamName": "GameString"
+        }
+    },
+    "commands_prefix": "!",
+    "open_source_link": "https://github.com/ScrappyCocco/ScroccoDiscordBot",
+    "private_chat_alert": "Remember that every non-command message you write will be sent to the bot owner, so it MUST BE important!",
+    "owners_data": {
+        "owners_list": [
+            {
+                "name": "ScrappyCocco#1234"
+            },
+            {
+                "name": "..."
+            }
+        ],
+        "ownerPrivateMessagesID": ""
+    },
+    "startup_extensions": [
+        {
+            "name": "botGamingApi"
+        },
+        {
+            "name": "botMaintenanceCommands"
+        },
+        {
+            "name": "botCommonCommands"
+        },
+        {
+            "name": "botModerationCommands"
+        },
+        {
+            "name": "botErrorManager"
+        }
+    ],
+    "meme_generator": {
+        "username": "",
+        "password": ""
+    },
+    "discord_tokens": {
+        "discordFinalBotApiToken": "YourKey",
+        "discordBetaBotApiToken": "YourKey"
+    }
+}
