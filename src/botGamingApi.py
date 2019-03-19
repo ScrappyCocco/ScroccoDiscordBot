@@ -594,12 +594,12 @@ class BotGamingCommands:
 
     @commands.command(pass_context=True)
     async def rl(self, ctx, *args):
-        await self.bot.send_message(ctx.message.channel,
-                                    "This command is currently online because the API has been discontinued... WIll return one day...")
-        return
         """Print the user's rocket league stats in an image
         Usage: !rl "Steam64ID/PSN Username/Xbox GamerTag or XUID" "Steam/Ps4/Xbox"(Optional)
         """
+        await self.bot.send_message(ctx.message.channel,
+                                    "This command is currently online because the API has been discontinued... WIll return one day...")
+        '''
         if len(args) == 0:
             await self.bot.send_message(ctx.message.channel,
                                         "**Usage:** " + self.command_prefix + "rl SteamID, see " + self.command_prefix + "help rl for more")
@@ -657,6 +657,7 @@ class BotGamingCommands:
         except KeyError:
             await self.bot.send_message(ctx.message.channel,
                                         "Error getting the image... check " + self.command_prefix + "help rl ")
+        '''
 
     # ---------------------------------------------------------------------
 
