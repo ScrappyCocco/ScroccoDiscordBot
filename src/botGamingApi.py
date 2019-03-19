@@ -51,15 +51,17 @@ class BotGamingCommands:
                 ow_region = args[1]
             name = args[0]
             name = name.replace("#", "-", 1)
-            url = "http://ow-api.herokuapp.com/profile/pc/" + ow_region + "/" + name
-            print("OW Request:" + url)
+            url = "https://ow-api.com/v1/stats/pc/" + ow_region + "/" + name + "/complete"
             async with aiohttp.ClientSession() as session:
                 async with session.get(url) as resp:
                     r_text = await resp.text()
-                    if str(r_text) == "<Response [404]>" or str(r_text) == "Not Found":  # user not found
+                    if str(r_text) == "<Response [404]>" or "not found" in str(r_text):  # user not found
                         await self.bot.send_message(ctx.message.channel, "Error: 404 User not found")
                         return
                     r = await resp.json()
+            if r['private']:
+                await self.bot.send_message(ctx.message.channel, "The user profile is private...")
+                return
             # creating the discord Embed response
             embed = discord.Embed(title="Overwatch Stats",
                                   colour=discord.Colour(0xefd1a0),
@@ -592,6 +594,9 @@ class BotGamingCommands:
 
     @commands.command(pass_context=True)
     async def rl(self, ctx, *args):
+        await self.bot.send_message(ctx.message.channel,
+                                    "This command is currently online because the API has been discontinued... WIll return one day...")
+        return
         """Print the user's rocket league stats in an image
         Usage: !rl "Steam64ID/PSN Username/Xbox GamerTag or XUID" "Steam/Ps4/Xbox"(Optional)
         """

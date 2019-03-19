@@ -20,8 +20,8 @@ class BotVariables:
 
     def __init__(self, should_check=False):
         print("CALLING MINI-CLASS-->" + self.__class__.__name__ + " class called")
-        file_name = "json/bot_data.json"
-        json_schema_file_name = "json/bot_data.schema.json"
+        file_name = "./json/bot_data.json"
+        json_schema_file_name = "./json/bot_data.schema.json"
         try:
             with open(json_schema_file_name) as data_file:
                 self.bot_json_schema = json.load(data_file)
