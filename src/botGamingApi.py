@@ -24,7 +24,7 @@ from howlongtobeatpy import HowLongToBeat
 # ---------------------------------------------------------------------
 
 
-class BotGamingCommands:
+class BotGamingCommands(commands.Cog):
     """ Class with Bot 'Gaming' commands (statistics for gamers) """
     # ---------------------------------------------------------------------
 
@@ -723,7 +723,7 @@ class BotGamingCommands:
 
     # ---------------------------------------------------------------------
 
-    def __init__(self, bot):
+    def __init__(self, bot: discord.ext.commands.Bot):
         print("CALLING CLASS-->" + self.__class__.__name__ + " class called")
         self.bot = bot
         self.botVariables = self.bot.bot_variables_reference

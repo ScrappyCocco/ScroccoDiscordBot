@@ -11,7 +11,7 @@ from botMethodsClass import BotMethods
 # ---------------------------------------------------------------------
 
 
-class BotModerationCommands:
+class BotModerationCommands(commands.Cog):
     """ Class with Bot 'Moderation' commands (for example ban and kick users) """
 
     # ---------------------------------------------------------------------

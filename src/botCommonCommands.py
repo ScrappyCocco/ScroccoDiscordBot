@@ -22,7 +22,7 @@ from botMethodsClass import BotMethods
 # ---------------------------------------------------------------------
 
 
-class BotCommonCommands:
+class BotCommonCommands(commands.Cog):
     """ Class with Bot 'Common' commands (simple commands, for example cat, meme or gif) """
     # ---------------------------------------------------------------------
 
@@ -841,7 +841,7 @@ class BotCommonCommands:
 
     # ---------------------------------------------------------------------
 
-    def __init__(self, bot):
+    def __init__(self, bot: discord.ext.commands.Bot):
         print("CALLING CLASS-->" + self.__class__.__name__ + " class called")
         self.bot = bot
         self.botVariables = self.bot.bot_variables_reference

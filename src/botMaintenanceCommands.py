@@ -17,7 +17,7 @@ from botMethodsClass import BotMethods
 # ---------------------------------------------------------------------
 
 
-class BotMaintenanceCommands:
+class BotMaintenanceCommands(commands.Cog):
     """ Class with Bot 'Maintenance' commands (for example turning off the bot or changing bot status) """
     # ---------------------------------------------------------------------
 

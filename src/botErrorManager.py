@@ -7,7 +7,7 @@ from discord.ext import commands
 # ---------------------------------------------------------------------
 
 
-class BotErrorManager:
+class BotErrorManager(commands.Cog):
     """ Class with Bot Errors Manager, when an error happen, on_command_error(...) is called """
     # ---------------------------------------------------------------------
 

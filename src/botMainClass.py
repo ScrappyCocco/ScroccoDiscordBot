@@ -292,7 +292,7 @@ async def clearclever(ctx: discord.ext.commands.Context):
 @bot.event
 async def on_ready():
     print("------------------------")
-    print('[BOT on_ready()]:Logged as:' + bot.user.name + " ID:" + bot.user.id)
+    print('[BOT on_ready()]:Logged as:' + bot.user.name + " ID:" + str(bot.user.id))
     # ----------
     await download_and_set_first_status()
     # ----------
