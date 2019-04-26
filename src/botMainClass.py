@@ -97,12 +97,12 @@ async def download_and_set_first_status():
             bot.listOfStates = BotMethods.create_list_from_states_string(state_string)
             # Randomize and use the state
             state_to_use = BotMethods.get_random_bot_state(bot.listOfStates)
-            await bot.change_presence(game=discord.Game(name=state_to_use))
+            await bot.change_presence(activity=discord.Game(name=state_to_use))
             bot.lastInGameStatus = state_to_use
         else:
             bot.hasAListOfStates = False
             bot.lastInGameStatus = state_string
-            await bot.change_presence(game=discord.Game(name=state_string))
+            await bot.change_presence(activity=discord.Game(name=state_string))
         print("Status changed to " + str(bot.lastInGameStatus))
     except websockets.exceptions.ConnectionClosed:
         print("ERROR trying to change bot status")
@@ -117,14 +117,14 @@ async def first_chat_alert(channel, user):
         user_id = user.id
         if user_id not in botVariables.privateChatUsers:  # if is the first time
             botVariables.privateChatUsers.append(user_id)  # add the user ID to the array
-            message_sent = await bot.send_message(channel,
-                                                  " :exclamation:  :exclamation:  :exclamation: :exclamation: :exclamation: \n" +
-                                                  "**" + botVariables.get_private_chat_alert() + "**\n" +
-                                                  " **(As your first message here, it's not processed)**\n " +
-                                                  " :exclamation:  :exclamation:  :exclamation: :exclamation: :exclamation:  \n ")
+            message_sent = await channel.send_message(channel,
+                                                      " :exclamation:  :exclamation:  :exclamation: :exclamation: :exclamation: \n" +
+                                                      "**" + botVariables.get_private_chat_alert() + "**\n" +
+                                                      " **(As your first message here, it's not processed)**\n " +
+                                                      " :exclamation:  :exclamation:  :exclamation: :exclamation: :exclamation:  \n ")
             try:
-                if len(await bot.pins_from(channel)) == 0:  # only if we begin the chat
-                    await bot.pin_message(message_sent)  # pins the message because is important
+                if len(await channel.pins_from(channel)) == 0:  # only if we begin the chat
+                    await channel.pin_message(message_sent)  # pins the message because is important
             except (discord.Forbidden, discord.NotFound, discord.HTTPException):
                 print("ERROR pinning the message")
             return True  # i send the warning
@@ -133,7 +133,7 @@ async def first_chat_alert(channel, user):
 
 
 # function that forward the non-command message to bot owner (if the function is active)
-async def forwards_message(message):
+async def forwards_message(message: discord.message):
     if message.channel.name is None:
         # send private message to bot owner if possible
         if (str(message.author.id) != privateMessagesOwner) and (
@@ -142,15 +142,15 @@ async def forwards_message(message):
                 url_list = ""
                 for attach in message.attachments:
                     url_list += str(attach['url'])  # create a sting with attachments urls
-                await bot.send_message(discord.User(id=privateMessagesOwner),
-                                       "Message from " + str(message.author.name) + "(ID=" + str(
-                                           message.author.id) + "):" + message.content + "\nAttachments: " + url_list)
-                await bot.send_message(message.channel,
-                                       "***Message with attachments has been forwarded!***")
+                await message.channel.send_message(discord.User(id=int(privateMessagesOwner)),
+                                                   "Message from " + str(message.author.name) + "(ID=" + str(
+                                                       message.author.id) + "):" + message.content + "\nAttachments: " + url_list)
+                await message.channel.send_message(message.channel,
+                                                   "***Message with attachments has been forwarded!***")
             else:
-                await bot.send_message(discord.User(id=privateMessagesOwner),
-                                       "Message from " + str(message.author.name) + "(ID=" + str(
-                                           message.author.id) + "):" + message.content)
+                await message.channel.send_message(discord.User(id=int(privateMessagesOwner)),
+                                                   "Message from " + str(message.author.name) + "(ID=" + str(
+                                                       message.author.id) + "):" + message.content)
 
 
 # cleverbot async request - more faster than using the wrapper
@@ -176,8 +176,8 @@ async def cleverbot_request(channel, cleverbot_question):
                         print("Cleverbot Attempt 2 - using content()...\n\n")
                         content = str(await response.content())
                     except UnicodeDecodeError:
-                        await bot.send_message(channel,
-                                               "*Cleverbot fatal error, please use " + bot_command_prefix_string + "clearclever")
+                        await channel.send_message(channel,
+                                                   "*Cleverbot fatal error, please use " + bot_command_prefix_string + "clearclever")
                         return
     if response_error:  # an error occurred (JSON NOT CORRECT - USE THE CONTENT AS A STRING)
         start_pos = content.find("\"output\":\"") + 10
@@ -186,7 +186,7 @@ async def cleverbot_request(channel, cleverbot_question):
             print("Error calculating sub-string positions")
         else:
             reply = content[start_pos:start_pos + (end_pos - start_pos)]  # calculate cleverbot reply substring
-            await bot.send_message(channel, reply)
+            await channel.send_message(channel, reply)
         clear_cleverbot_parameters()  # clear cleverbot to begin a new conversation
     else:  # normal cleverbot reply (json file)
         request_result_cs = content["cs"]
@@ -195,7 +195,7 @@ async def cleverbot_request(channel, cleverbot_question):
                 content["interaction_count"]) > bot.cleverbot_reply_number:
             bot.cleverbot_reply_number = int(content["interaction_count"])
             bot.cleverbot_cs_parameter = request_result_cs
-        await bot.send_message(channel, content["output"])
+        await channel.send_message(channel, content["output"])
 
 
 # ---------------------------------------------------------------------
@@ -252,10 +252,10 @@ async def on_message(message):
 # ---------------------------------------------------------------------
 
 
-@bot.command(pass_context=True)
-async def hello(ctx):
+@bot.command()
+async def hello(ctx: discord.ext.commands.Context):
     """Hello command - simple command for testing"""
-    await bot.send_message(ctx.message.channel, "Hello " + ctx.message.author.name + "!")
+    await ctx.message.channel.send_message(ctx.message.channel, "Hello " + ctx.message.author.name + "!")
 
 
 # ---------------------------------------------------------------------
@@ -272,13 +272,13 @@ def clear_cleverbot_parameters():
         return False
 
 
-@bot.command(pass_context=True, hidden=True)
-async def clearclever(ctx):
+@bot.command(hidden=True)
+async def clearclever(ctx: discord.ext.commands.Context):
     """Clean Cleverbot Conversation"""
     print("-------------------------")
     print("Cleaning...")
     if clear_cleverbot_parameters():
-        await bot.send_message(ctx.message.channel, "*Cleaning Complete*")
+        await ctx.message.channel.send_message(ctx.message.channel, "*Cleaning Complete*")
     else:
         print("Can't clean cleverbot chat")
     print("End of cleaning")
@@ -305,7 +305,7 @@ async def on_ready():
 
 
 @bot.event
-async def on_reaction_add(reaction, user):
+async def on_reaction_add(reaction: discord.Reaction, user: discord.User):
     if user != bot.user:  # if is not me
         print("------------------------")
         if isinstance(reaction.emoji, str):
@@ -317,7 +317,7 @@ async def on_reaction_add(reaction, user):
                 print("UNKNOWN EMOJI OBJECT, ABORTING ADDING REACTION")
                 return
         try:  # try adding my reaction
-            await bot.add_reaction(reaction.message, reaction.emoji)
+            await reaction.message.add_reaction(reaction.message, reaction.emoji)
         except discord.errors.Forbidden:
             print("Can't add my reaction")
         print("------------------------")

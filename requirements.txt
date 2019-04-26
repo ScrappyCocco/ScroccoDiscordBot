@@ -1,7 +1,7 @@
 jsonschema==3.0.1
 aiohttp==3.5.4
 async-timeout==3.0.0
-discord.py==0.16.12
+discord.py==1.0.1
 futures==3.1.1
 goslate==1.5.1
 howlongtobeatpy==0.1.4

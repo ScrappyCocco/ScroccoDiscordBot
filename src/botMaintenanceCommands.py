@@ -30,7 +30,7 @@ class BotMaintenanceCommands:
 
     # ---------------------------------------------------------------------
 
-    @commands.command(pass_context=True, hidden=True)
+    @commands.command(hidden=True)
     async def off(self, ctx):
         """Turn off the bot"""
         print("---------------------------------------------------------------------------")
@@ -50,7 +50,7 @@ class BotMaintenanceCommands:
 
     # ---------------------------------------------------------------------
 
-    @commands.command(pass_context=True, hidden=True)
+    @commands.command(hidden=True)
     async def maintenance(self, ctx, *args):
         """Set the bot in maintenance Mode (1=enabled other=disabled)
         Usage: !maintenance 1
@@ -78,7 +78,7 @@ class BotMaintenanceCommands:
 
     # ---------------------------------------------------------------------
 
-    @commands.command(pass_context=True, hidden=True)
+    @commands.command(hidden=True)
     async def changestate(self, ctx, *args):
         """Change bot state
         Usage: !changestate 0/1/2/3
@@ -121,7 +121,7 @@ class BotMaintenanceCommands:
 
     # ---------------------------------------------------------------------
 
-    @commands.command(pass_context=True)
+    @commands.command()
     async def region(self, ctx):
         """Print server region"""
         print("-------------------------")
@@ -138,7 +138,7 @@ class BotMaintenanceCommands:
 
     # ---------------------------------------------------------------------
 
-    @commands.command(pass_context=True)
+    @commands.command()
     async def joined(self, ctx):
         """Print the date when you joined the server
         Usage: !joined To get your join date
@@ -171,7 +171,7 @@ class BotMaintenanceCommands:
 
     # ---------------------------------------------------------------------
 
-    @commands.command(pass_context=True)
+    @commands.command()
     async def birthday(self, ctx):
         """Print the date when you created your discord account
         Usage: !birthday To get your account creation date
@@ -205,7 +205,7 @@ class BotMaintenanceCommands:
 
     # ---------------------------------------------------------------------
 
-    @commands.command(pass_context=True)
+    @commands.command()
     async def source(self, ctx):
         """Print a link to bot source code"""
         await self.bot.send_message(ctx.message.channel,
@@ -213,7 +213,7 @@ class BotMaintenanceCommands:
 
     # ---------------------------------------------------------------------
 
-    @commands.command(pass_context=True)
+    @commands.command()
     async def commands_list(self, ctx):
         """Display all the commands of the bot (even the hidden commands)
             Usage: !commands_list
@@ -236,7 +236,7 @@ class BotMaintenanceCommands:
 
     # ---------------------------------------------------------------------
 
-    @commands.command(pass_context=True)
+    @commands.command()
     async def ver(self, ctx):
         """Print bot current version"""
         await self.bot.send_message(ctx.message.channel, "**Current Bot Version:** " + self.botVariables.get_version()
@@ -245,7 +245,7 @@ class BotMaintenanceCommands:
 
     # ---------------------------------------------------------------------
 
-    @commands.command(pass_context=True, hidden=True)
+    @commands.command(hidden=True)
     async def channelid(self, ctx, *args):
         """Search a channel with the given name(in bot servers), if it exist, then it print the channel if
         Usage: !channelid public
@@ -274,7 +274,7 @@ class BotMaintenanceCommands:
 
     # ---------------------------------------------------------------------
 
-    @commands.command(pass_context=True, hidden=True)
+    @commands.command(hidden=True)
     async def servers(self, ctx):
         """Show all the servers where the bot is present
         Usage: !servers
@@ -296,7 +296,7 @@ class BotMaintenanceCommands:
 
     # ---------------------------------------------------------------------
 
-    @commands.command(pass_context=True)
+    @commands.command()
     async def serverinfo(self, ctx):
         """Show the current server's info
         Usage: !serverinfo
@@ -334,7 +334,7 @@ class BotMaintenanceCommands:
 
     # ---------------------------------------------------------------------
 
-    @commands.command(pass_context=True)
+    @commands.command()
     async def discordstatus(self, ctx):
         """Print the current Discord Status
         Usage: !discordstatus
@@ -383,7 +383,7 @@ class BotMaintenanceCommands:
 
     # ---------------------------------------------------------------------
 
-    @commands.command(pass_context=True, hidden=True)
+    @commands.command(hidden=True)
     async def game(self, ctx, *args):
         """Edit bot In-Game string
         Usage: !game "new single status"
@@ -457,7 +457,7 @@ class BotMaintenanceCommands:
 
     # ---------------------------------------------------------------------
 
-    @commands.command(pass_context=True, hidden=True)
+    @commands.command(hidden=True)
     async def sendservermessage(self, ctx, *args):
         """Send a message in a server channel
         Usage: !sendservermessage "ServerChannelId" "Message"
@@ -479,7 +479,7 @@ class BotMaintenanceCommands:
 
     # ---------------------------------------------------------------------
 
-    @commands.command(pass_context=True, hidden=True)
+    @commands.command(hidden=True)
     async def sendprivatemessage(self, ctx, *args):
         """Send a message in private (IF POSSIBLE)
         Usage: !sendprivatemessage "UserId" "Message"
@@ -502,7 +502,7 @@ class BotMaintenanceCommands:
 
     # ---------------------------------------------------------------------
 
-    @commands.command(pass_context=True, hidden=True)
+    @commands.command(hidden=True)
     async def rename(self, ctx, *args):
         """Function that change the username of the bot
             Usage: !rename "NoobBot"

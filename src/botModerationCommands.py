@@ -16,7 +16,7 @@ class BotModerationCommands:
 
     # ---------------------------------------------------------------------
 
-    @commands.command(pass_context=True)
+    @commands.command()
     async def banuser(self, ctx):
         """Function that ban a user from the server
         Usage: !banuser @User
@@ -45,7 +45,7 @@ class BotModerationCommands:
 
     # ---------------------------------------------------------------------
 
-    @commands.command(pass_context=True)
+    @commands.command()
     async def unbanuser(self, ctx, *args):
         """Function that un-ban a user from the server
         Usage: !unbanuser UserID
@@ -74,7 +74,7 @@ class BotModerationCommands:
 
     # ---------------------------------------------------------------------
 
-    @commands.command(pass_context=True)
+    @commands.command()
     async def softban(self, ctx):
         """Function that soft-ban (=ban and unban deleting the messages) a user from the server
         Usage: !softban @User
@@ -105,7 +105,7 @@ class BotModerationCommands:
 
     # ---------------------------------------------------------------------
 
-    @commands.command(pass_context=True)
+    @commands.command()
     async def kickuser(self, ctx):
         """Function that kick a user from the server
         Usage: !kickuser @User
@@ -134,7 +134,7 @@ class BotModerationCommands:
 
     # ---------------------------------------------------------------------
 
-    @commands.command(pass_context=True)
+    @commands.command()
     async def kickbyrole(self, ctx, *args):
         """Function that kick all the users with a role from the server (USE WITH CAUTION!)
         Usage: !kickuser "NoobRole"
@@ -178,7 +178,7 @@ class BotModerationCommands:
 
     # ---------------------------------------------------------------------
 
-    @commands.command(pass_context=True, hidden=True)
+    @commands.command(hidden=True)
     async def editallroles(self, ctx, *args):
         """Function that change the role of ALL users (add/remove a role)
         USE WITH CAUTION
@@ -220,7 +220,7 @@ class BotModerationCommands:
 
     # ---------------------------------------------------------------------
 
-    @commands.command(pass_context=True, hidden=True)
+    @commands.command(hidden=True)
     async def editrole(self, ctx, *args):
         """Function that edit a user role (in the server where it's called)
         Usage: !editrole remove "ScrappyCocco" "NoobRole"
@@ -261,7 +261,7 @@ class BotModerationCommands:
 
     # -------------------------------------------------------------------
 
-    @commands.command(pass_context=True, hidden=True)
+    @commands.command(hidden=True)
     async def promoteusers(self, ctx, *args):
         """Function that change the role of ALL users from Old to New (in the server where it's called)
         Usage: !promoteusers "NoobRole" "ProRole"

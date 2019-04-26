@@ -35,7 +35,7 @@ class BotGamingCommands:
 
     # ---------------------------------------------------------------------
 
-    @commands.command(pass_context=True)
+    @commands.command()
     async def ow(self, ctx, *args):
         """Print Overwatch stats of a player
         Usage:** !ow "Name-Tag" "eu(default)/us"[optional]
@@ -97,7 +97,7 @@ class BotGamingCommands:
 
     # ---------------------------------------------------------------------
 
-    @commands.command(pass_context=True)
+    @commands.command()
     async def r6(self, ctx, *args):
         """Print Rainbow6 player's stats
         Usage: !r6 PlayerName Platform(xone/ps4/uplay)
@@ -258,7 +258,7 @@ class BotGamingCommands:
 
     # ---------------------------------------------------------------------
 
-    @commands.command(pass_context=True)
+    @commands.command()
     async def steam(self, ctx, *args):
         """Print the user Steam Profile (MAY NOT WORK AFTER NEW STEAM PRIVACY SETTINGS)
         Usage: !steam "UserID"
@@ -355,7 +355,7 @@ class BotGamingCommands:
             self.app_name = name
             self.similar = similar
 
-    @commands.command(pass_context=True)
+    @commands.command()
     async def steamgame(self, ctx, *args):
         """Print the informations about a steam game
         Usage: !steamgame "Portal 2"
@@ -484,7 +484,7 @@ class BotGamingCommands:
 
     # ---------------------------------------------------------------------
 
-    @commands.command(pass_context=True)
+    @commands.command()
     async def mcskin(self, ctx, *args):
         """Print the Minecraft skin of a user
         Usage: !mcskin "MinecraftUsername"
@@ -514,7 +514,7 @@ class BotGamingCommands:
             await self.bot.send_message(ctx.message.channel, "**Usage:** " + self.command_prefix + "mcskin McName")
         print("-------------------------")
 
-    @commands.command(pass_context=True)
+    @commands.command()
     async def mchead(self, ctx, *args):
         """Print the head of the Minecraft skin of a user
         Usage: !mchead "MinecraftUsername"
@@ -544,7 +544,7 @@ class BotGamingCommands:
             await self.bot.send_message(ctx.message.channel, "**Usage:** " + self.command_prefix + "mchead McName")
         print("-------------------------")
 
-    @commands.command(pass_context=True)
+    @commands.command()
     async def hy(self, ctx, *args):
         """Print the user's stats in the Hypixel Server
         Usage: !hy "MinecraftUsername"
@@ -592,7 +592,7 @@ class BotGamingCommands:
 
     # ---------------------------------------------------------------------
 
-    @commands.command(pass_context=True)
+    @commands.command()
     async def rl(self, ctx, *args):
         """Print the user's rocket league stats in an image
         Usage: !rl "Steam64ID/PSN Username/Xbox GamerTag or XUID" "Steam/Ps4/Xbox"(Optional)
@@ -661,7 +661,7 @@ class BotGamingCommands:
 
     # ---------------------------------------------------------------------
 
-    @commands.command(pass_context=True)
+    @commands.command()
     async def time(self, ctx, *args):
         """Print the time to complete a game from howlongtobeat
         Usage: !time "game name"

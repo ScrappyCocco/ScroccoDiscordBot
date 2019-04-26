@@ -59,7 +59,7 @@ class BotCommonCommands:
 
     # ---------------------------------------------------------------------
 
-    @commands.command(pass_context=True)
+    @commands.command()
     async def gif(self, ctx, *args):
         """Return a random gif (with 0 or more params)
         Usage: !gif x1 x2 x3[Optional]
@@ -95,7 +95,7 @@ class BotCommonCommands:
 
     # ---------------------------------------------------------------------
 
-    @commands.command(pass_context=True)
+    @commands.command()
     async def cat(self, ctx):
         """Print a random cat
         Usage: !cat
@@ -111,7 +111,7 @@ class BotCommonCommands:
 
     # ---------------------------------------------------------------------
 
-    @commands.command(pass_context=True)
+    @commands.command()
     async def meme(self, ctx, *args):
         """Generate a meme with up to 3 phrases (and with the generator id or without)
         example 1: !meme "Hello there Discord" 47235368
@@ -216,7 +216,7 @@ class BotCommonCommands:
 
     # ---------------------------------------------------------------------
 
-    @commands.command(pass_context=True)
+    @commands.command()
     async def party(self, ctx):
         """Party Hard Command
         Usage: !party
@@ -241,7 +241,7 @@ class BotCommonCommands:
 
     # ---------------------------------------------------------------------
 
-    @commands.command(pass_context=True)
+    @commands.command()
     async def printtext(self, ctx, *args):
         """Print a phrase with emotes
         Usage: !printtext "Hello there"
@@ -292,7 +292,7 @@ class BotCommonCommands:
 
     # ---------------------------------------------------------------------
 
-    @commands.command(pass_context=True)
+    @commands.command()
     async def quote(self, ctx):
         """Print a random quote
         Usage: !quote
@@ -306,7 +306,7 @@ class BotCommonCommands:
 
     # ---------------------------------------------------------------------
 
-    @commands.command(pass_context=True)
+    @commands.command()
     async def translate(self, ctx, *args):
         """Translate a text
         Usage: !translate "hello there" fr
@@ -325,7 +325,7 @@ class BotCommonCommands:
 
     # ---------------------------------------------------------------------
 
-    @commands.command(pass_context=True)
+    @commands.command()
     async def weather(self, ctx, *args):
         """Print the current weather in a given city
         (0 is now, 1 is 12h later, 2 tomorrow, ...., 19 is the max[12h for 10 days])
@@ -479,7 +479,7 @@ class BotCommonCommands:
 
     # ---------------------------------------------------------------------
 
-    @commands.command(pass_context=True)
+    @commands.command()
     async def short(self, ctx, *args):
         """Generate a short url from the url given as parameter
         Usage: !short https://www.yoururl.blabla
@@ -504,7 +504,7 @@ class BotCommonCommands:
 
     # ---------------------------------------------------------------------
 
-    @commands.command(pass_context=True, hidden=True)
+    @commands.command(hidden=True)
     async def showcolor(self, ctx, *args):
         """Show an image with the given color code
         Usage: !showcolor #COLORHEX/(R,G,B)
@@ -554,7 +554,7 @@ class BotCommonCommands:
 
     # ---------------------------------------------------------------------
 
-    @commands.command(pass_context=True)
+    @commands.command()
     async def lmgtfy(self, ctx, *args):
         """Generate a "let me google it for you" url
         Usage: !lmgtfy "search box"
@@ -580,7 +580,7 @@ class BotCommonCommands:
 
     # ---------------------------------------------------------------------
 
-    @commands.command(pass_context=True)
+    @commands.command()
     async def hacked(self, ctx, *args):
         """Check if the email or the username have been hacked
         Usage: !hacked test@test.it
@@ -652,7 +652,7 @@ class BotCommonCommands:
             self.definition = definition
             self.votes = votes
 
-    @commands.command(pass_context=True)
+    @commands.command()
     async def ur(self, ctx, *args):
         """Search a word in the urban dictionary
         Usage: !ur <WORD>
@@ -743,7 +743,7 @@ class BotCommonCommands:
             self.film_name = filmname
             self.similar = similar
 
-    @commands.command(pass_context=True)
+    @commands.command()
     async def movievotes(self, ctx, *args):
         """Search the movie votes in metacritic database
         Usage: !movievotes <film Title>
