@@ -37,35 +37,37 @@ class BotCommonCommands(commands.Cog):
         :param url: the url to make shorten
         :return: a short version of the url
         """
-        api_key = self.botVariables.get_google_shortener_key()
-        post_url = 'https://www.googleapis.com/urlshortener/v1/url?key={}'.format(api_key)
-        payload = {'longUrl': url}
-        headers = {'content-type': 'application/json'}
+        api_key = self.botVariables.get_rebrandly_shortener_key()
+
+        link_request = {
+            "destination": url
+        }
+
+        request_headers = {
+            "Content-type": "application/json",
+            "apikey": api_key
+        }
         # make post request
         async with aiohttp.ClientSession() as session:
-            async with session.post(post_url, data=json.dumps(payload),
-                                    headers=headers) as resp:  # the website use get
+            async with session.post("https://api.rebrandly.com/v1/links", data=json.dumps(link_request),
+                                    headers=request_headers) as resp:  # the website use get
                 r = await resp.json()
-        if "id" in r:
-            return r["id"]
+        if "shortUrl" in r:
+            return "https://" + r["shortUrl"]
         else:
             print("Error in get_short_url")
-            error_string = "Error " + str(r["error"]["code"]) + "(" + r["error"]["message"] + ")"
-            if len(r["error"]["errors"]) > 0:  # Contains a list of errors
-                error_string += " - "
-                for err in r["error"]["errors"]:  # Print all errors
-                    error_string += err["message"] + " "
-            return error_string
+            return "Error " + str(r)
 
     # ---------------------------------------------------------------------
 
     @commands.command()
-    async def gif(self, ctx, *args):
+    async def gif(self, ctx: discord.ext.commands.Context, *args):
         """Return a random gif (with 0 or more params)
         Usage: !gif x1 x2 x3[Optional]
         Example: !gif or !gif funny cat
         """
         print("-------------------------")
+        message_channel: discord.abc.Messageable = ctx.message.channel
         currentgifkey = self.botVariables.get_gif_key()
         print("GifRequest:Arguments:" + str(len(args)))
         tag = ""
@@ -75,7 +77,10 @@ class BotCommonCommands(commands.Cog):
             async with aiohttp.ClientSession() as session:
                 async with session.get(url) as resp:
                     r = await resp.json()
-            await self.bot.send_message(ctx.message.channel, r['data']['image_url'])
+            if 'data' in r:
+                await message_channel.send(r['data']['image_url'])
+            elif 'message' in r:
+                await message_channel.send("An error occurred:" + r['message'])
         else:  # request a gif with tags
             for x in range(0, len(args)):
                 tag = tag + args[x]
@@ -88,31 +93,35 @@ class BotCommonCommands(commands.Cog):
                     r = await resp.json()
             print("GifRequest:Gif Found")
             if (len(r['data'])) == 0:
-                await self.bot.send_message(ctx.message.channel, "No GIF found with those tags :frowning: ")
+                await message_channel.send("No GIF found with those tags :frowning: ")
             else:
-                await self.bot.send_message(ctx.message.channel, r['data']['image_url'])
+                if 'data' in r:
+                    await message_channel.send(r['data']['image_url'])
+                elif 'message' in r:
+                    await message_channel.send("An error occurred:" + r['message'])
         print("-------------------------")
 
     # ---------------------------------------------------------------------
 
     @commands.command()
-    async def cat(self, ctx):
+    async def cat(self, ctx: discord.ext.commands.Context):
         """Print a random cat
         Usage: !cat
         """
         url = "http://aws.random.cat/meow"
+        message_channel: discord.abc.Messageable = ctx.message.channel
         try:
             async with aiohttp.ClientSession() as session:
                 async with session.get(url) as resp:
                     r = await resp.json()
-            await self.bot.send_message(ctx.message.channel, r['file'])
+            await message_channel.send(r['file'])
         except aiohttp.ContentTypeError:
             print("Cannot send cat image...")
 
     # ---------------------------------------------------------------------
 
     @commands.command()
-    async def meme(self, ctx, *args):
+    async def meme(self, ctx: discord.ext.commands.Context, *args):
         """Generate a meme with up to 3 phrases (and with the generator id or without)
         example 1: !meme "Hello there Discord" 47235368
         example 2: !meme "Generate a random meme" "For me"
@@ -120,6 +129,7 @@ class BotCommonCommands(commands.Cog):
         example 4: !meme "Hello there Discord" "How are you?" "I'm ok" 47235368
         """
         print("-------------------------")
+        message_channel: discord.abc.Messageable = ctx.message.channel
         error_flag = False
         generator_id = 0
         phrase1 = None
@@ -150,7 +160,7 @@ class BotCommonCommands(commands.Cog):
                     generator_id = int(args[3])  # check is the generator id is valid
                     print("Meme: GenID:" + str(generator_id))
                 except ValueError:
-                    await self.bot.send_message(ctx.message.channel, "The fourth param it's not a number!")
+                    await message_channel.send("The fourth param it's not a number!")
                     error_flag = True
                     print("Meme: GenID Not Correct")
         if 0 < len(args) <= 4 and not error_flag:  # check for parameters and errors
@@ -200,52 +210,53 @@ class BotCommonCommands(commands.Cog):
                         r = await resp.json()
                     except (UnicodeDecodeError, aiohttp.ClientResponseError):
                         print("Meme reply is not a json...")
-                        await self.bot.send_message(ctx.message.channel, "*An error occurred generating the meme...*")
+                        await message_channel.send("*An error occurred generating the meme...*")
                         return
             result = r
             if result['success']:
-                await self.bot.send_message(ctx.message.channel,
-                                            str(result['data']['url']) + " ID Meme:" + str(generator_id))
+                await message_channel.send(str(result['data']['url']) + " ID Meme:" + str(generator_id))
             else:
                 print("Meme Error:" + str(result['error_message']))
-                await self.bot.send_message(ctx.message.channel, "*An error occurred generating the meme...*")
+                await message_channel.send("*An error occurred generating the meme...*")
         else:
-            await self.bot.send_message(ctx.message.channel,
-                                        "**Usage:** " + self.command_prefix + "meme <parameters>, please check " + self.command_prefix + "help meme")
+            await message_channel.send(
+                "**Usage:** " + self.command_prefix + "meme <parameters>, please check " + self.command_prefix + "help meme")
         print("-------------------------")
 
     # ---------------------------------------------------------------------
 
     @commands.command()
-    async def party(self, ctx):
+    async def party(self, ctx: discord.ext.commands.Context):
         """Party Hard Command
         Usage: !party
         """
         print("-------------------------")
+        message_channel: discord.abc.Messageable = ctx.message.channel
         parrots = ["https://cdn.discordapp.com/attachments/276674976210485248/304557572416077824/parrot.gif",
                    "https://cdn.discordapp.com/attachments/276667503034499072/309781525971337226/congaparrot.gif",
                    "https://cdn.discordapp.com/attachments/276667503034499072/309781549639794688/shuffleparrot.gif"]
         link = random.choice(parrots)
         try:
-            if ctx.message.content == "!party" and ctx.message.server is not None:
+            if ctx.message.content == "!party" and ctx.message.guild is not None:
                 print("Deleting the message...")
-                await self.bot.delete_message(ctx.message)
+                await ctx.message.delete()
         except (discord.errors.Forbidden, discord.ext.commands.errors.CommandInvokeError):
             print("Can't delete the message(I Need 2FA?)...")
         embed = discord.Embed(title="Party Hard")
         embed.set_author(name=ctx.message.author.name)
         embed.set_thumbnail(url=link)
-        await self.bot.send_message(ctx.message.channel, embed=embed)
+        await message_channel.send(embed=embed)
         print("Parrot sent!")
         print("-------------------------")
 
     # ---------------------------------------------------------------------
 
     @commands.command()
-    async def printtext(self, ctx, *args):
+    async def printtext(self, ctx: discord.ext.commands.Context, *args):
         """Print a phrase with emotes
         Usage: !printtext "Hello there"
         """
+        message_channel: discord.abc.Messageable = ctx.message.channel
         if len(args) == 1:
             received_string = args[0]
             if received_string.startswith('"') and received_string.endswith('"'):
@@ -285,48 +296,49 @@ class BotCommonCommands(commands.Cog):
                                 final_string += ":question:" + " "
                     else:
                         final_string += c + " "
-            await self.bot.send_message(ctx.message.channel, final_string)
+            await message_channel.send(final_string)
         else:
-            await self.bot.send_message(ctx.message.channel,
-                                        "**Usage:** " + self.command_prefix + "printtext \"phrase\", for more see " + self.command_prefix + "help printtext")
+            await message_channel.send(
+                "**Usage:** " + self.command_prefix + "printtext \"phrase\", for more see " + self.command_prefix + "help printtext")
 
     # ---------------------------------------------------------------------
 
     @commands.command()
-    async def quote(self, ctx):
+    async def quote(self, ctx: discord.ext.commands.Context):
         """Print a random quote
         Usage: !quote
         """
+        message_channel: discord.abc.Messageable = ctx.message.channel
         async with aiohttp.ClientSession() as session:
             async with session.get(
                     "http://quotesondesign.com/wp-json/posts?filter[orderby]=rand&filter[posts_per_page]=1") as resp:
                 r = await resp.json()
-        await self.bot.send_message(ctx.message.channel, "**" + BotMethods.cleanhtml("From " + r[0]['title'])
-                                    + ":**" + html.unescape(BotMethods.cleanhtml(r[0]['content'])))
+        await message_channel.send("**" + BotMethods.cleanhtml("From " + r[0]['title']) + ":**" + html.unescape(
+            BotMethods.cleanhtml(r[0]['content'])))
 
     # ---------------------------------------------------------------------
 
     @commands.command()
-    async def translate(self, ctx, *args):
+    async def translate(self, ctx: discord.ext.commands.Context, *args):
         """Translate a text
         Usage: !translate "hello there" fr
         """
+        message_channel: discord.abc.Messageable = ctx.message.channel
         if len(args) == 2:
             message_received = str(args[0])
             language = str(args[1])
             try:
-                await self.bot.send_message(ctx.message.channel,
-                                            "**Translated text:**" + self.gs.translate(message_received, language))
+                await message_channel.send("**Translated text:**" + self.gs.translate(message_received, language))
             except error.HTTPError:
-                await self.bot.send_message(ctx.message.channel, "HTTP Error 503: Service Unavailable")
+                await message_channel.send("HTTP Error 503: Service Unavailable")
         else:
-            await self.bot.send_message(ctx.message.channel,
-                                        "**Usage:** " + self.command_prefix + "translate \"message\" language(it/en/de...), for more see " + self.command_prefix + "help translate")
+            await message_channel.send(
+                "**Usage:** " + self.command_prefix + "translate \"message\" language(it/en/de...), for more see " + self.command_prefix + "help translate")
 
     # ---------------------------------------------------------------------
 
     @commands.command()
-    async def weather(self, ctx, *args):
+    async def weather(self, ctx: discord.ext.commands.Context, *args):
         """Print the current weather in a given city
         (0 is now, 1 is 12h later, 2 tomorrow, ...., 19 is the max[12h for 10 days])
         (the country code is in ISO-3166 = 2 letters)
@@ -335,9 +347,9 @@ class BotCommonCommands(commands.Cog):
         Usage: !weather Rome 1
         Usage: !weather DE Berlino 1
         """
+        message_channel: discord.abc.Messageable = ctx.message.channel
         if len(args) < 1 or len(args) > 3:
-            await self.bot.send_message(ctx.message.channel,
-                                        "**Please read:** " + self.command_prefix + "help weather")
+            await message_channel.send("**Please read:** " + self.command_prefix + "help weather")
             return
         else:
             country_code = False
@@ -356,27 +368,27 @@ class BotCommonCommands(commands.Cog):
                         try:
                             day = int(args[1])
                         except ValueError:
-                            await self.bot.send_message(ctx.message.channel,
-                                                        "**Check the day or the country code, please read:** " + self.command_prefix + "help weather")
+                            await message_channel.send(
+                                "**Check the day or the country code, please read:** " + self.command_prefix + "help weather")
                             return
                     else:
                         city_name = str(args[1])
                 if len(args) == 3:
                     if not country_code:
-                        await self.bot.send_message(ctx.message.channel,
-                                                    "**Check the country code, please read:** " + self.command_prefix + "help weather")
+                        await message_channel.send(
+                            "**Check the country code, please read:** " + self.command_prefix + "help weather")
                         return
                     else:
                         city_name = str(args[1])
                         try:
                             day = int(args[2])
                         except ValueError:
-                            await self.bot.send_message(ctx.message.channel,
-                                                        "**Check the day or the country code, please read:** " + self.command_prefix + "help weather")
+                            await message_channel.send(
+                                "**Check the day or the country code, please read:** " + self.command_prefix + "help weather")
                             return
             if day > 19:
-                await self.bot.send_message(ctx.message.channel,
-                                            "**Check the day code, please read:** " + self.command_prefix + "help weather")
+                await message_channel.send(
+                    "**Check the day code, please read:** " + self.command_prefix + "help weather")
                 return
             # I've everything now, starting getting the weather
             print("-------------------------")
@@ -389,7 +401,7 @@ class BotCommonCommands(commands.Cog):
                 async with client_session.get(url) as response:
                     request_result = await response.json()  # convert the response to a json file
             try:
-                await self.bot.send_message(ctx.message.channel, "**Error:** " + str(
+                await message_channel.send("**Error:** " + str(
                     request_result["response"]["error"][
                         "description"]) + "(check usage with " + self.command_prefix + "help weather)")
                 print("Error, weather request failed")
@@ -409,7 +421,7 @@ class BotCommonCommands(commands.Cog):
                             final_message += "[More...]\n"
                             break
                     final_message += "```"
-                    await self.bot.send_message(ctx.message.channel, final_message)
+                    await message_channel.send(final_message)
                     return
                 print("No errors found in request, creating embed")
                 day_name = str(request_result["forecast"]["txt_forecast"]["forecastday"][day]["title"])
@@ -471,46 +483,48 @@ class BotCommonCommands(commands.Cog):
 
                 embed.set_footer(text=self.botVariables.get_description(), icon_url=self.botVariables.get_bot_icon())
                 try:
-                    await self.bot.send_message(ctx.message.channel, embed=embed)
+                    await message_channel.send(embed=embed)
                 except HTTPException:
-                    await self.bot.send_message(ctx.message.channel,
-                                                "*A strange error occurred, cannot retrieve that city, sorry...*")
+                    await message_channel.send("*A strange error occurred, cannot retrieve that city, sorry...*")
             print("-------------------------")
 
     # ---------------------------------------------------------------------
 
     @commands.command()
-    async def short(self, ctx, *args):
+    async def short(self, ctx: discord.ext.commands.Context, *args):
         """Generate a short url from the url given as parameter
         Usage: !short https://www.yoururl.blabla
         Example: !short https://www.google.it/imghp
         """
+        message_channel: discord.abc.Messageable = ctx.message.channel
         if len(args) == 1:
             try:
-                if ctx.message.server is not None:
+                if ctx.message.guild is not None:
                     print("Deleting the message...")
-                    await self.bot.delete_message(ctx.message)
+                    await ctx.message.delete()
             except discord.errors.Forbidden:
                 print("Can't delete the message...")
-            short_url = await self.get_short_url(args[0])
-            if short_url.startswith("Error"):  # An error occurred
-                await self.bot.send_message(ctx.message.channel, "**An error occurred** " + short_url)
-            else:
-                await self.bot.send_message(ctx.message.channel, "**Your Short Url:** " + short_url +
-                                            "\n (Generated by: " + ctx.message.author.mention + ")")
+            async with message_channel.typing():
+                short_url = await self.get_short_url(args[0])
+                if short_url.startswith("Error"):  # An error occurred
+                    await message_channel.send("**An error occurred** " + short_url)
+                else:
+                    await message_channel.send(
+                        "**Your Short Url:** " + short_url + "\n (Generated by: " + ctx.message.author.mention + ")")
         else:
-            await self.bot.send_message(ctx.message.channel,
-                                        "**Usage:** " + self.command_prefix + "short <longurl>, for more see " + self.command_prefix + "help short")
+            await message_channel.send(
+                "**Usage:** " + self.command_prefix + "short <longurl>, for more see " + self.command_prefix + "help short")
 
     # ---------------------------------------------------------------------
 
     @commands.command(hidden=True)
-    async def showcolor(self, ctx, *args):
+    async def showcolor(self, ctx: discord.ext.commands.Context, *args):
         """Show an image with the given color code
         Usage: !showcolor #COLORHEX/(R,G,B)
         Example: !showcolor #ff0000
         Example: !showcolor (255, 0, 0)
         """
+        message_channel: discord.abc.Messageable = ctx.message.channel
         if len(args) == 1:
             argstring = str(args[0]).strip()
             # request the color informations to the api
@@ -523,8 +537,8 @@ class BotCommonCommands(commands.Cog):
             elif argstring.startswith("#"):
                 url = "http://www.thecolorapi.com/id?hex=" + argstring[1:]
             else:
-                await self.bot.send_message(ctx.message.channel,
-                                            "Color format non valid, for more see " + self.command_prefix + "help showcolor")
+                await message_channel.send(
+                    "Color format non valid, for more see " + self.command_prefix + "help showcolor")
                 return
             reply_error = False
             request_result = None
@@ -535,8 +549,7 @@ class BotCommonCommands(commands.Cog):
                     else:
                         request_result = await resp.json()
             if reply_error:
-                await self.bot.send_message(ctx.message.channel,
-                                            "*An error occurred requesting the color... is your color code valid?*")
+                await message_channel.send("*An error occurred requesting the color... is your color code valid?*")
             else:
                 embed = discord.Embed(title="Color Display", url=request_result["image"]["bare"],
                                       color=(request_result["rgb"]["r"] << 16) + (request_result["rgb"]["g"] << 8) +
@@ -547,50 +560,52 @@ class BotCommonCommands(commands.Cog):
                 embed.add_field(name="Color RGB Value:", value=request_result["rgb"]["value"], inline=False)
                 embed.set_footer(text=self.botVariables.get_description(),
                                  icon_url=self.botVariables.get_bot_icon())
-                await self.bot.send_message(ctx.message.channel, embed=embed)
+                await message_channel.send(embed=embed)
         else:
-            await self.bot.send_message(ctx.message.channel,
-                                        "**Usage:** " + self.command_prefix + "showcolor #COLORHEX/\"(R,G,B)\", for more see " + self.command_prefix + "help showcolor")
+            await message_channel.send(
+                "**Usage:** " + self.command_prefix + "showcolor #COLORHEX/\"(R,G,B)\", for more see " + self.command_prefix + "help showcolor")
 
     # ---------------------------------------------------------------------
 
     @commands.command()
-    async def lmgtfy(self, ctx, *args):
+    async def lmgtfy(self, ctx: discord.ext.commands.Context, *args):
         """Generate a "let me google it for you" url
         Usage: !lmgtfy "search box"
         Example: !lmgtfy "hello world"
         """
         print("-------------------------")
+        message_channel: discord.abc.Messageable = ctx.message.channel
         if len(args) == 1:
             try:
-                if ctx.message.server is not None:
+                if ctx.message.guild is not None:
                     print("Deleting the message...")
-                    await self.bot.delete_message(ctx.message)
+                    await ctx.message.delete()
             except discord.errors.Forbidden:
                 print("Can't delete the message...")
             # get the api ket and generate the url
             url = "http://lmgtfy.com/?q=" + urllib.parse.quote(args[0])
             # prepare the request
             short_url = await self.get_short_url(url)
-            await self.bot.send_message(ctx.message.channel, "**Your Url:** " + short_url +
-                                        "\n (Generated by: " + ctx.message.author.mention + ")")
+            await message_channel.send(
+                "**Your Url:** " + short_url + "\n (Generated by: " + ctx.message.author.mention + ")")
         else:
-            await self.bot.send_message(ctx.message.channel,
-                                        "**Usage:** " + self.command_prefix + "lmgtfy \"search box\", for more see " + self.command_prefix + "help lmgtfy")
+            await message_channel.send(
+                "**Usage:** " + self.command_prefix + "lmgtfy \"search box\", for more see " + self.command_prefix + "help lmgtfy")
 
     # ---------------------------------------------------------------------
 
     @commands.command()
-    async def hacked(self, ctx, *args):
+    async def hacked(self, ctx: discord.ext.commands.Context, *args):
         """Check if the email or the username have been hacked
         Usage: !hacked test@test.it
         """
         print("-------------------------")
+        message_channel: discord.abc.Messageable = ctx.message.channel
         if len(args) == 1:
             try:
-                if ctx.message.server is not None:
+                if ctx.message.guild is not None:
                     print("Deleting the message...")
-                    await self.bot.delete_message(ctx.message)
+                    await ctx.message.delete()
             except discord.errors.Forbidden:
                 print("Can't delete the message...")
             url = "https://haveibeenpwned.com/api/v2/breachedaccount/"
@@ -612,7 +627,7 @@ class BotCommonCommands(commands.Cog):
                     url='https://cdn.discordapp.com/attachments/276674976210485248/304961315326394369/1492796826_Tick_Mark_Dark.png')
                 embed.add_field(name="Result:", value="Everything is ok! No problems found", inline=False)
                 embed.set_footer(text="Using haveibeenpwned.com")
-                await self.bot.send_message(ctx.message.channel, embed=embed)
+                await message_channel.send(embed=embed)
             else:
                 json_received = r_json
                 print(len(json_received))
@@ -631,10 +646,10 @@ class BotCommonCommands(commands.Cog):
                         value_to_print += str(json_received[index]['DataClasses'][current_index]) + ", "
                     embed.add_field(name=str(json_received[index]['Title']), value=value_to_print, inline=False)
                 embed.set_footer(text="Using haveibeenpwned.com")
-                await self.bot.send_message(ctx.message.channel, embed=embed)
+                await message_channel.send(embed=embed)
         else:
-            await self.bot.send_message(ctx.message.channel,
-                                        "**Usage:** " + self.command_prefix + "hacked \"email or username\", for more see " + self.command_prefix + "help hacked")
+            await message_channel.send(
+                "**Usage:** " + self.command_prefix + "hacked \"email or username\", for more see " + self.command_prefix + "help hacked")
         print("-------------------------")
 
     # ---------------------------------------------------------------------
@@ -653,7 +668,7 @@ class BotCommonCommands(commands.Cog):
             self.votes = votes
 
     @commands.command()
-    async def ur(self, ctx, *args):
+    async def ur(self, ctx: discord.ext.commands.Context, *args):
         """Search a word in the urban dictionary
         Usage: !ur <WORD>
         Usage: !ur <WORD> <NumberOfResults(default = 1)>
@@ -661,6 +676,7 @@ class BotCommonCommands(commands.Cog):
         Example: !ur dunno 5
         """
         print("-------------------------")
+        message_channel: discord.abc.Messageable = ctx.message.channel
         if len(args) == 1 or len(args) == 2:
             request_link = "http://api.urbandictionary.com/v0/define?term=" + str(args[0])
             async with aiohttp.ClientSession() as session:
@@ -668,8 +684,8 @@ class BotCommonCommands(commands.Cog):
                     request_result = await resp.json()
             if len(request_result["list"]) == 0:  # no results found
                 print("No results for that word in urban dictionary")
-                await self.bot.send_message(ctx.message.channel,
-                                            "*No results found for \"" + str(args[0]) + "\" in urban dictionary*")
+                await message_channel.send("*No results found for \"" + str(
+                    args[0]) + "\" in urban dictionary*")
             else:
                 # Store all definitions in an array
                 definitions_found = []
@@ -720,14 +736,14 @@ class BotCommonCommands(commands.Cog):
                 # End for, add footer and send the embed
                 embed.set_footer(text="Using http://www.urbandictionary.com/")
                 try:
-                    await self.bot.send_message(ctx.message.channel, embed=embed)
+                    await message_channel.send(embed=embed)
                     print("Ur embed sent successfully")
                 except discord.errors.HTTPException:
                     print("HTTPException during the sending of ur embed")
-                    await self.bot.send_message(ctx.message.channel, "*An error occurred sending the result...*")
+                    await message_channel.send("*An error occurred sending the result...*")
         else:
-            await self.bot.send_message(ctx.message.channel,
-                                        "**Usage:** " + self.command_prefix + "ur word, for more see " + self.command_prefix + "help ur")
+            await message_channel.send(
+                "**Usage:** " + self.command_prefix + "ur word, for more see " + self.command_prefix + "help ur")
         print("-------------------------")
 
     # ---------------------------------------------------------------------
@@ -744,12 +760,13 @@ class BotCommonCommands(commands.Cog):
             self.similar = similar
 
     @commands.command()
-    async def movievotes(self, ctx, *args):
+    async def movievotes(self, ctx: discord.ext.commands.Context, *args):
         """Search the movie votes in metacritic database
         Usage: !movievotes <film Title>
         Example: !movievotes "Avengers: Infinity War"
         """
         print("-------------------------")
+        message_channel: discord.abc.Messageable = ctx.message.channel
         if len(args) == 1:
             print("Starting search")
             api_key = self.botVariables.get_mashape_metacritic_key()
@@ -793,7 +810,7 @@ class BotCommonCommands(commands.Cog):
                                                                              'Accept': 'application/json'}) as resp:  # the website use get
                             request_result = await resp.json()
                     if 'message' in request_result:
-                        await self.bot.send_message(ctx.message.channel, "*An error occurred downloading the data...*")
+                        await message_channel.send("*An error occurred downloading the data...*")
                         return
                     # prepare the embed message
                     embed = discord.Embed(title=str(request_result[0]['Title']),
@@ -827,16 +844,16 @@ class BotCommonCommands(commands.Cog):
                                         value="Looks like there are no votes for this film...")
                     # --- sending the message ---
                     print("Sending film embed message")
-                    await self.bot.send_message(ctx.message.channel, embed=embed)
+                    await message_channel.send(embed=embed)
                 else:
                     print("No films found")
-                    await self.bot.send_message(ctx.message.channel, "*No films found, check the name...*")
+                    await message_channel.send("*No films found, check the name...*")
             else:
                 print("No films found")
-                await self.bot.send_message(ctx.message.channel, "*No films found, check the name...*")
+                await message_channel.send("*No films found, check the name...*")
         else:
-            await self.bot.send_message(ctx.message.channel,
-                                        "**Usage:** " + self.command_prefix + "movievotes <film Title>, for more see " + self.command_prefix + "help movievotes")
+            await message_channel.send(
+                "**Usage:** " + self.command_prefix + "movievotes <film Title>, for more see " + self.command_prefix + "help movievotes")
         print("-------------------------")
 
     # ---------------------------------------------------------------------

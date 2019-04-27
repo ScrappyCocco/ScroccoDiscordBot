@@ -54,7 +54,7 @@ class BotVariables:
         self.get_clever_key()
         self.get_hypixel_key()
         self.get_gif_key()
-        self.get_google_shortener_key()
+        self.get_rebrandly_shortener_key()
         self.get_mashape_metacritic_key()
         self.get_steam_key()
         if self.get_bot_save_state_to_file() and self.get_bot_save_state_to_server():
@@ -126,15 +126,15 @@ class BotVariables:
             print("ERROR GETTING THE GIF KEY (get yours from http://api.giphy.com/) - ABORTING")
             quit(1)
 
-    def get_google_shortener_key(self):
+    def get_rebrandly_shortener_key(self):
         """Function that return the api key for the google shortener api.
             :return: The google shortener API-KEY.
         """
-        key = self.bot_data_file["apiKeys"]["google_shortener"]
+        key = self.bot_data_file["apiKeys"]["rebrandly_shortener"]
         if self.check_empty_key(key):
             return key
         else:
-            print("ERROR GETTING THE GOOGLE SHORTENER KEY (check bot documentation) - ABORTING")
+            print("ERROR GETTING THE REBRANDLY SHORTENER KEY (check bot documentation) - ABORTING")
             quit(1)
 
     def get_mashape_metacritic_key(self):

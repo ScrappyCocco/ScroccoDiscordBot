@@ -33,9 +33,9 @@
                     "type": "string",
                     "minLength": 1
                 },
-                "google_shortener": {
-                    "title": "Google shortener api key",
-                    "description": "Get yours from https://developers.google.com/url-shortener/v1/getting_started#APIKey",
+                "rebrandly_shortener": {
+                    "title": "Rebrandly shortener api key",
+                    "description": "Get yours from https://developers.rebrandly.com/docs/api-key-authentication",
                     "type": "string",
                     "minLength": 1
                 },
@@ -52,7 +52,7 @@
                 "hypixel",
                 "steam",
                 "gif",
-                "google_shortener",
+                "rebrandly_shortener",
                 "X-Mashape-Key"
             ]
         },
