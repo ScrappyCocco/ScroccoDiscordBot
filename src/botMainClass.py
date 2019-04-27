@@ -110,7 +110,7 @@ async def download_and_set_first_status():
 
 # function that send a message when users use private chat with bot the first time
 async def first_chat_alert(channel, user):
-    if (channel.type != discord.ChannelType.private) or (privateMessagesOwner == "") or (
+    if not isinstance(channel, discord.abc.PrivateChannel) or (privateMessagesOwner == "") or (
             str(user.id) == privateMessagesOwner):  # if the function is not active
         return False
     else:
@@ -154,7 +154,7 @@ async def forwards_message(message: discord.message):
 
 
 # cleverbot async request - more faster than using the wrapper
-async def cleverbot_request(channel, cleverbot_question):
+async def cleverbot_request(channel, cleverbot_question: str):
     formatted_question = urllib.parse.quote(cleverbot_question)  # convert question into url-string
     if bot.cleverbot_cs_parameter == "":
         request_url = "http://www.cleverbot.com/getreply?key=" + cleverbot_api_key + "&input=" + formatted_question
@@ -203,7 +203,7 @@ async def cleverbot_request(channel, cleverbot_question):
 
 
 @bot.event
-async def on_message(message):
+async def on_message(message: discord.message):
     if message.author.bot:  # nothing to do, the message is from me
         return
     # ---------------------------------------------------------------------
@@ -211,10 +211,10 @@ async def on_message(message):
         return
     # ---------------------------------------------------------------------
     # get bot mention
-    if message.server is None:
+    if message.guild is None:
         mention = bot.user.mention
     else:
-        mention = message.server.me.mention
+        mention = message.guild.me.mention
     if len(message.mentions) >= 1:  # message starts with a mention, check if it's mine
         if message.content.startswith(mention):  # yes the message starts with a mention, it's me?
             new_message = message.content.replace(str(mention), "",
