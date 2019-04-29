@@ -10,10 +10,10 @@ import json
 
 class BotVariables:
     bot_data_file = None
-    privateChatUsers = []  # used to advise users that messages are sent to bot owner
-    emptyApiKey = "YourKey"  # used to check if a key is empty
-    emptyUrl = "http://URL/"
-    numbersEmoji = [":zero:", ":one:", ":two:", ":three:", ":four:", ":five:", ":six:", ":seven:", ":eight:", ":nine:"]
+    private_chat_users = []  # used to advise users that messages are sent to bot owner
+    empty_api_key = "YourKey"  # used to check if a key is empty
+    empty_url = "http://URL/"
+    numbers_emoji = [":zero:", ":one:", ":two:", ":three:", ":four:", ":five:", ":six:", ":seven:", ":eight:", ":nine:"]
     command_prefix = ""  # initialized after the check
 
     # -------------------------------------------------
@@ -74,7 +74,7 @@ class BotVariables:
         """Function that check the key for errors.
             :return: True if the key is ok, False if the Key is not valid
         """
-        if key is None or key == "" or key == self.emptyApiKey:
+        if key is None or key == "" or key == self.empty_api_key:
             print("ERROR, A KEY IS EMPTY - CHECK YOUR FILE")
             return False
         return True
@@ -287,13 +287,25 @@ class BotVariables:
         """Function that return the url where to write the status.
             :return: The url to send the new status (saving the status on the web)
         """
-        return self.bot_data_file["bot_status"]["server_state_saving"]["writeStateUrl"]
+        write_url: str = self.bot_data_file["bot_status"]["server_state_saving"]["writeStateUrl"]
+        print("Api:" + self.empty_api_key)
+        print("Url:" + self.empty_url)
+        if self.get_bot_save_state_to_server() and write_url.startswith(self.empty_url):
+            print(
+                "save_state_to_server IS TRUE BUT STATUS WRITE URL STARTS WITH 'http://URL/' SO IS NOT VALID - ABORTING")
+            quit(1)
+        return write_url
 
     def get_server_read_status_url(self):
         """Function that return the url where to read the status.
             :return: The url to read the last status (reading the status from the web)
         """
-        return self.bot_data_file["bot_status"]["server_state_saving"]["readStateUrl"]
+        read_url: str = self.bot_data_file["bot_status"]["server_state_saving"]["readStateUrl"]
+        if self.get_bot_save_state_to_server() and read_url.startswith(self.empty_url):
+            print(
+                "save_state_to_server IS TRUE BUT STATUS READ URL STARTS WITH 'http://URL/' SO IS NOT VALID - ABORTING")
+            quit(1)
+        return read_url
 
     def get_server_write_status_parameter(self):
         """Function that return the POST param for the status
