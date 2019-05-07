@@ -29,8 +29,11 @@ class BotTimedTasks:
             hours=1)  # check new videos in the past hour (current time - 1h)
         current_time = current_time.strftime("%Y-%m-%dT%H:%M:%SZ")  # ISO 8601 time format
         print("[BOT youtube_check]:YT First check:" + str(current_time))
-        while not self.bot.is_closed:
-            if not self.bot.maintenanceMode:  # check for maintenanceMode (if yes, let's skip task content for safety)
+        while not self.bot.is_closed():
+            if not hasattr(self.bot, 'maintenanceMode'):
+                await asyncio.sleep(1)
+            if not getattr(self.bot,
+                           'maintenanceMode'):  # check for maintenanceMode (if yes, let's skip task content for safety)
                 # create url with parameters
                 for channel in self.botVariables.get_list_youtube_channels_check():
                     url = "https://www.googleapis.com/youtube/v3/activities?channelId=" + channel['YTchannelID'] \
@@ -42,17 +45,19 @@ class BotTimedTasks:
                         print("[BOT youtube_check]:An error occurred in YT timed request")
                         print(str(r_json))
                     else:  # no errors
-                        if int(r_json['pageInfo']['totalResults']) == 1:  # if there is a new video
+                        send_channel: discord.abc.Messageable = self.bot.get_channel(int(channel['DISCORDchannelID']))
+                        if send_channel is None:
+                            print("[BOT youtube_check]:Can't find the channel to send the message")
+                        elif int(r_json['pageInfo']['totalResults']) == 1:  # if there is a new video
                             print("[BOT youtube_check]:New video found, sending message")
                             message = channel['notificationMessage'] + "\n**" + r_json['items'][0]['snippet'][
                                 'title'] + "** \n" + "https://www.youtube.com/watch?v=" + \
                                       r_json['items'][0]['contentDetails']['upload']['videoId'] + "\n"
                             try:
-                                await self.bot.send_message(discord.Server(id=int(channel['DISCORDchannelID'])),
-                                                            message)
+                                await send_channel.send(message)
+                                print("[BOT youtube_check]:Youtube Notification Message sent!")
                             except discord.errors.Forbidden:
                                 print("[BOT youtube_check]:ERROR: Can't send the message in the specified channel")
-                            print("[BOT youtube_check]:Youtube Notification Message sent!")
                 # end for each channel
                 print("[BOT youtube_check]:End of Youtube check for " + str(
                     len(self.botVariables.get_list_youtube_channels_check())) + " channel(s)")
