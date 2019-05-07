@@ -31,12 +31,13 @@ class BotMaintenanceCommands(commands.Cog):
     # ---------------------------------------------------------------------
 
     @commands.command(hidden=True)
-    async def off(self, ctx):
+    async def off(self, ctx: discord.ext.commands.Context):
         """Turn off the bot"""
         print("---------------------------------------------------------------------------")
         print("Shut Down Required")
+        message_channel: discord.abc.Messageable = ctx.message.channel
         if BotMethods.is_owner(ctx.message.author):
-            await self.bot.send_message(ctx.message.channel, "Stopping bot... Bye!")
+            await message_channel.send("Stopping bot... Bye!")
             # stopping tasks
             for c_task in self.Timed_Tasks:
                 c_task.cancel()
@@ -45,41 +46,39 @@ class BotMaintenanceCommands(commands.Cog):
             await self.bot.logout()
             # await self.bot.close() not necessary apparently
         else:
-            await self.bot.send_message(ctx.message.channel,
-                                        "You don't have access to this command :stuck_out_tongue: ")
+            await message_channel.send("You don't have access to this command :stuck_out_tongue: ")
 
     # ---------------------------------------------------------------------
 
     @commands.command(hidden=True)
-    async def maintenance(self, ctx, *args):
+    async def maintenance(self, ctx: discord.ext.commands.Context, *args):
         """Set the bot in maintenance Mode (1=enabled other=disabled)
         Usage: !maintenance 1
         """
+        message_channel: discord.abc.Messageable = ctx.message.channel
         if BotMethods.is_owner(ctx.message.author):
             print("-------------------------")
             if len(args) == 1:
                 if str(args[0]) == "1" or str(args[0]).lower() == "on":
                     print("Turning on maintenance mode")
                     await self.bot.change_presence(status=discord.Status.do_not_disturb,
-                                                   game=discord.Game(name='UNDER MAINTENANCE'))
+                                                   activity=discord.Game(name='UNDER MAINTENANCE'))
                     self.bot.maintenanceMode = True
                 else:
                     print("Turning off maintenance mode")
                     await self.bot.change_presence(status=discord.Status.online,
-                                                   game=discord.Game(name=self.bot.lastInGameStatus))
+                                                   activity=discord.Game(name=getattr(self.bot, 'lastInGameStatus')))
                     self.bot.maintenanceMode = False
             else:
-                await self.bot.send_message(ctx.message.channel,
-                                            "Parameters not correct, see " + self.command_prefix + "help maintenance")
+                await message_channel.send("Parameters not correct, see " + self.command_prefix + "help maintenance")
             print("-------------------------")
         else:
-            await self.bot.send_message(ctx.message.channel,
-                                        "You don't have access to this command  :stuck_out_tongue: ")
+            await message_channel.send("You don't have access to this command  :stuck_out_tongue: ")
 
     # ---------------------------------------------------------------------
 
     @commands.command(hidden=True)
-    async def changestate(self, ctx, *args):
+    async def changestate(self, ctx: discord.ext.commands.Context, *args):
         """Change bot state
         Usage: !changestate 0/1/2/3
         Usage: !changestate 4 "Streaming Title" "Twitch Stream URL"
@@ -106,48 +105,50 @@ class BotMaintenanceCommands(commands.Cog):
                 if status_received == 4:
                     self.bot.isInStreamingStatus = True
                     await self.bot.change_presence(
-                        game=discord.Game(name=str(args[1]), url=str(args[2]), type=1))
+                        activity=discord.Game(name=str(args[1]), url=str(args[2]), type=1))
                     print("Streaming status applied")
                     return
                 if status_received < 0 or status_received > 3:
                     print("State Not Correct, going online")
                     new_status = discord.Status.online
                 # apply the state with the old in-game status
-                await self.bot.change_presence(status=new_status, game=discord.Game(name=self.bot.lastInGameStatus))
+                await self.bot.change_presence(status=new_status, activity=discord.Game(name=getattr(self.bot, 'lastInGameStatus')))
             print("-------------------------")
         else:
-            await self.bot.send_message(ctx.message.channel,
-                                        "You don't have access to this command  :stuck_out_tongue: ")
+            message_channel: discord.abc.Messageable = ctx.message.channel
+            await message_channel.send("You don't have access to this command  :stuck_out_tongue: ")
 
     # ---------------------------------------------------------------------
 
     @commands.command()
-    async def region(self, ctx):
+    async def region(self, ctx: discord.ext.commands.Context):
         """Print server region"""
         print("-------------------------")
+        message_channel: discord.abc.Messageable = ctx.message.channel
         if ctx is not None:
-            if ctx.message.server is None:  # private message
+            if ctx.message.guild is None:  # private message
                 print("Can't find region in private chat")
-                await self.bot.send_message(ctx.message.channel, "*Can't get server-region in private*")
+                await message_channel.send("*Can't get server-region in private*")
             else:
                 region = str(ctx.message.server.region)
                 server_name = str(ctx.message.server.name)
                 print("Region Found: " + region)
-                await self.bot.send_message(ctx.message.channel, "Server Location: **" + server_name + "**: " + region)
+                await message_channel.send("Server Location: **" + server_name + "**: " + region)
         print("-------------------------")
 
     # ---------------------------------------------------------------------
 
     @commands.command()
-    async def joined(self, ctx):
+    async def joined(self, ctx: discord.ext.commands.Context):
         """Print the date when you joined the server
         Usage: !joined To get your join date
         or !joined @User To get User's join date
         """
         if ctx is not None:
+            message_channel: discord.abc.Messageable = ctx.message.channel
             if ctx.message.server is None:  # private message
                 print("Can't find join-date in private chat")
-                await self.bot.send_message(ctx.message.channel, "*Can't get join-date in private channel*")
+                await message_channel.send("*Can't get join-date in private channel*")
             else:
                 date = ""
                 mention = False
@@ -161,23 +162,22 @@ class BotMaintenanceCommands(commands.Cog):
                     date = ctx.message.author.joined_at
                 date_string = date.strftime('%H:%M:%S %d-%m-%Y')
                 if mention:
-                    await self.bot.send_message(ctx.message.channel,
-                                                "**" + ctx.message.mentions[0].name + "** joined this server: " + str(
+                    await message_channel.send("**" + ctx.message.mentions[0].name + "** joined this server: " + str(
                                                     date_string))
                 else:
-                    await self.bot.send_message(ctx.message.channel,
-                                                "**" + ctx.message.author.name + "** joined this server: " + str(
+                    await message_channel.send("**" + ctx.message.author.name + "** joined this server: " + str(
                                                     date_string))
 
     # ---------------------------------------------------------------------
 
     @commands.command()
-    async def birthday(self, ctx):
+    async def birthday(self, ctx: discord.ext.commands.Context):
         """Print the date when you created your discord account
         Usage: !birthday To get your account creation date
         or !birthday @User To get User's birthday
         """
         if ctx is not None:
+            message_channel: discord.abc.Messageable = ctx.message.channel
             mention = False
             if ctx.message.server is None:  # private message
                 date = ctx.message.author.created_at
@@ -194,115 +194,113 @@ class BotMaintenanceCommands(commands.Cog):
                     date = ctx.message.author.joined_at
             date_string = date.strftime('%H:%M:%S %d-%m-%Y')
             if mention:
-                await self.bot.send_message(ctx.message.channel,
-                                            "**" + ctx.message.mentions[
+                await message_channel.send("**" + ctx.message.mentions[
                                                 0].name + "** created his Discord account: " + str(
                                                 date_string))
             else:
-                await self.bot.send_message(ctx.message.channel,
-                                            "**" + ctx.message.author.name + "** created his Discord account: " + str(
+                await message_channel.send("**" + ctx.message.author.name + "** created his Discord account: " + str(
                                                 date_string))
 
     # ---------------------------------------------------------------------
 
     @commands.command()
-    async def source(self, ctx):
+    async def source(self, ctx: discord.ext.commands.Context):
         """Print a link to bot source code"""
-        await self.bot.send_message(ctx.message.channel,
-                                    "Go and explore my source code at: " + self.botVariables.get_open_source_link())
+        message_channel: discord.abc.Messageable = ctx.message.channel
+        await message_channel.send("Go and explore my source code at: " + self.botVariables.get_open_source_link())
 
     # ---------------------------------------------------------------------
 
     @commands.command()
-    async def commands_list(self, ctx):
+    async def commands_list(self, ctx: discord.ext.commands.Context):
         """Display all the commands of the bot (even the hidden commands)
             Usage: !commands_list
         """
-        if ctx.message.server is None:  # private message
-            await self.bot.send_message(ctx.message.channel,
-                                        "*Can't check if you're an admin in private chat. Execute this command in a server*")
+        message_channel: discord.abc.Messageable = ctx.message.channel
+        if ctx.message.guild is None:  # private message
+            await message_channel.send("*Can't check if you're an admin in private chat. Execute this command in a server*")
             return
         if BotMethods.is_owner(ctx.message.author) or BotMethods.is_server_admin(ctx.message.author):
             final_string = "```LIST OF ALL BOT COMMANDS, SEE " + self.command_prefix + "HELP COMMAND FOR OTHER INFORMATIONS \n \n"
             for cmd in self.bot.commands:
                 final_string += str(cmd) + "\n"
             final_string += "```"
-            await self.bot.send_message(ctx.message.author, final_string)
+            await ctx.message.author.dm_channel.send(final_string)
             if ctx.message.server is not None:  # not in private message
-                await self.bot.send_message(ctx.message.channel, "*List sent in private*")
+                await message_channel.send("*List sent in private*")
         else:
-            await self.bot.send_message(ctx.message.channel,
-                                        "You don't have access to this command :stuck_out_tongue: ")
+            await message_channel.send("You don't have access to this command :stuck_out_tongue: ")
 
     # ---------------------------------------------------------------------
 
     @commands.command()
-    async def ver(self, ctx):
+    async def ver(self, ctx: discord.ext.commands.Context):
         """Print bot current version"""
-        await self.bot.send_message(ctx.message.channel, "**Current Bot Version:** " + self.botVariables.get_version()
+        message_channel: discord.abc.Messageable = ctx.message.channel
+        await message_channel.send("**Current Bot Version:** " + self.botVariables.get_version()
                                     + " **Build:** " + self.botVariables.get_build()
                                     + " - **API Version:** " + discord.__version__)
 
     # ---------------------------------------------------------------------
 
     @commands.command(hidden=True)
-    async def channelid(self, ctx, *args):
+    async def channelid(self, ctx: discord.ext.commands.Context, *args):
         """Search a channel with the given name(in bot servers), if it exist, then it print the channel if
         Usage: !channelid public
         Usage: !channelid * (show all channels in all servers, big command, take long time)
         """
         found = False
+        message_channel: discord.abc.Messageable = ctx.message.channel
         if not BotMethods.is_owner(ctx.message.author):
-            await self.bot.send_message(ctx.message.channel,
-                                        "You don't have access to this command :stuck_out_tongue: ")
+            await message_channel.send("You don't have access to this command :stuck_out_tongue: ")
             return
         if len(args) != 1:  # params not correct
-            await self.bot.send_message(ctx.message.channel,
-                                        "Parameters not correct, see " + self.command_prefix + "help channelid")
+            await message_channel.send("Parameters not correct, see " + self.command_prefix + "help channelid")
             return
         final_string = ""
-        for current_server in self.bot.servers:
+        for current_server in self.bot.guilds:
             for current_channel in current_server.channels:
                 if current_channel.type == discord.ChannelType.text:  # if it's a text channel and not a voice channel
                     if current_channel.name == str(args[0]) or str(args[0]) == "*":  # the name is equal
                         found = True
                         final_string += "**Channel Found:** " + current_channel.name + " - " + current_channel.server.name + " --> ID= " + current_channel.id + "\n"
         if not found:
-            await self.bot.send_message(ctx.message.channel, "Nothing found...")
+            await message_channel.send("Nothing found...")
         else:
-            await self.bot.send_message(ctx.message.channel, final_string)
+            await message_channel.send(final_string)
 
     # ---------------------------------------------------------------------
 
     @commands.command(hidden=True)
-    async def servers(self, ctx):
+    async def servers(self, ctx: discord.ext.commands.Context):
         """Show all the servers where the bot is present
         Usage: !servers
         """
         found = False
         final_string = ""
+        message_channel: discord.abc.Messageable = ctx.message.channel
         if not BotMethods.is_owner(ctx.message.author):
-            await self.bot.send_message(ctx.message.channel,
-                                        "You don't have access to this command :stuck_out_tongue: ")
+            await message_channel.send("You don't have access to this command :stuck_out_tongue: ")
             return
-        for current_server in self.bot.servers:
+        for current_server in self.bot.guilds:
             found = True
             final_string += current_server.name + " - ID: " + str(current_server.id) + " - " + str(
                 current_server.member_count) + " Members \n"
         if not found:
-            await self.bot.send_message(ctx.message.channel, "Nothing found...")
+            await message_channel.send("Nothing found...")
         else:
-            await self.bot.send_message(ctx.message.channel, final_string)
+            await message_channel.send(final_string)
 
     # ---------------------------------------------------------------------
 
     @commands.command()
-    async def serverinfo(self, ctx):
+    async def serverinfo(self, ctx: discord.ext.commands.Context):
         """Show the current server's info
         Usage: !serverinfo
         """
-        if ctx.message.server is None:
-            await self.bot.send_message(ctx.message.channel, "*Can't get server-info in private*")
+        message_channel: discord.abc.Messageable = ctx.message.channel
+        if ctx.message.guild is None:
+            await message_channel.send("*Can't get server-info in private*")
             return
         server_selected = ctx.message.server
         embed = discord.Embed(title=server_selected.name,
@@ -329,17 +327,17 @@ class BotMaintenanceCommands(commands.Cog):
         embed.add_field(name="Server Text Channels:", value=str(text_channels_count))
         embed.add_field(name="Server Voice Channels:", value=str(voice_channels_count))
 
-        await self.bot.send_message(ctx.message.channel,
-                                    embed=embed)  # send the discord embed message with the servers info
+        await message_channel.send(embed=embed)  # send the discord embed message with the servers info
 
     # ---------------------------------------------------------------------
 
     @commands.command()
-    async def discordstatus(self, ctx):
+    async def discordstatus(self, ctx: discord.ext.commands.Context):
         """Print the current Discord Status
         Usage: !discordstatus
         """
         print("-------------------------")
+        message_channel: discord.abc.Messageable = ctx.message.channel
         url = "https://srhpyqt94yxb.statuspage.io/api/v2/summary.json"
         async with aiohttp.ClientSession() as session:  # async GET request
             async with session.get(url) as resp:
@@ -377,19 +375,19 @@ class BotMaintenanceCommands(commands.Cog):
             text="Discord Status updated at: " + str(datetime_object.strftime('%H:%M:%S %d-%m-%Y')) + " timezone: " +
                  r_json["page"]["time_zone"], icon_url=self.botVariables.get_bot_icon())
         # send the embed
-        await self.bot.send_message(ctx.message.channel,
-                                    embed=embed)  # send the discord embed message with the servers status info
+        await message_channel.send(embed=embed)  # send the discord embed message with the servers status info
         print("-------------------------")
 
     # ---------------------------------------------------------------------
 
     @commands.command(hidden=True)
-    async def game(self, ctx, *args):
+    async def game(self, ctx: discord.ext.commands.Context, *args):
         """Edit bot In-Game string
         Usage: !game "new single status"
         Usage: !game "{Hello 1---JS Suck!---I'm a bot}"
         """
         print("-------------------------")
+        message_channel: discord.abc.Messageable = ctx.message.channel
         if BotMethods.is_owner(ctx.message.author):
             if len(args) == 0:
                 # If the bot has a list of states i print all the possible states
@@ -398,15 +396,13 @@ class BotMaintenanceCommands(commands.Cog):
                     # Create a string with all the states
                     for bot_state in self.bot.listOfStates:
                         list_of_states += bot_state + ", "
-                    await self.bot.send_message(ctx.message.channel,
-                                                "Current status: " + str(
+                    await message_channel.send("Current status: " + str(
                                                     self.bot.lastInGameStatus) + "\nFrom list of states:{" + list_of_states + "}")
                 else:
-                    await self.bot.send_message(ctx.message.channel,
-                                                "Current status: " + str(self.bot.lastInGameStatus))
+                    await message_channel.send("Current status: " + str(self.bot.lastInGameStatus))
             else:
                 if len(args) > 1:
-                    await self.bot.send_message(ctx.message.channel, "I need only a parameter!")
+                    await message_channel.send("I need only a parameter!")
                     return
                 new_state = str(args[0])
                 # Is a list of states
@@ -444,87 +440,82 @@ class BotMaintenanceCommands(commands.Cog):
                     else:
                         print("No save state on file or server found - ERROR SAVING NEW STATUS... Check bot data json")
                 # change the bot in-game status
-                if self.bot.isInStreamingStatus:
-                    await self.bot.send_message(ctx.message.channel,
-                                                "The bot is currently in streaming status, state saved but not changed")
+                if getattr(self.bot, 'isInStreamingStatus'):
+                    await message_channel.send("The bot is currently in streaming status, state saved but not changed")
                 else:
-                    await self.bot.change_presence(game=discord.Game(name=new_state_to_use))
-                    await self.bot.send_message(ctx.message.channel, "Status correctly changed!")
+                    await self.bot.change_presence(activity=discord.Game(name=new_state_to_use))
+                    await message_channel.send("Status correctly changed!")
         else:
-            await self.bot.send_message(ctx.message.channel,
-                                        "You don't have access to this command  :stuck_out_tongue: ")
+            await message_channel.send("You don't have access to this command  :stuck_out_tongue: ")
         print("-------------------------")
 
     # ---------------------------------------------------------------------
 
     @commands.command(hidden=True)
-    async def sendservermessage(self, ctx, *args):
+    async def sendservermessage(self, ctx: discord.ext.commands.Context, *args):
         """Send a message in a server channel
         Usage: !sendservermessage "ServerChannelId" "Message"
         """
+        message_channel: discord.abc.Messageable = ctx.message.channel
         if BotMethods.is_owner(ctx.message.author):
             if len(args) == 2:
                 channel_id = args[0]
                 message = args[1]
                 try:
-                    await self.bot.send_message(discord.Server(id=int(channel_id)), message)
+                    await self.bot.get_channel(int(channel_id)).send(message)
                 except discord.errors.Forbidden:
                     print("ERROR: Can't send the message")
             else:
-                await self.bot.send_message(ctx.message.channel,
-                                            "Parameters not correct, see " + self.command_prefix + "help sendservermessage")
+                await message_channel.send("Parameters not correct, see " + self.command_prefix + "help sendservermessage")
         else:
-            await self.bot.send_message(ctx.message.channel,
-                                        "You don't have access to this command  :stuck_out_tongue: ")
+            await message_channel.send("You don't have access to this command  :stuck_out_tongue: ")
 
     # ---------------------------------------------------------------------
 
     @commands.command(hidden=True)
-    async def sendprivatemessage(self, ctx, *args):
+    async def sendprivatemessage(self, ctx: discord.ext.commands.Context, *args):
         """Send a message in private (IF POSSIBLE)
         Usage: !sendprivatemessage "UserId" "Message"
         """
+        message_channel: discord.abc.Messageable = ctx.message.channel
         if BotMethods.is_owner(ctx.message.author):
             if len(args) == 2:
                 recipient = args[0]
                 message = args[1]
                 try:
-                    await self.bot.send_message(discord.User(id=int(recipient)),
-                                                "**Message from " + ctx.message.author.name + ":**" + message)
+                    await self.bot.get_user(int(recipient)).dm_channel.send("**Message from " + ctx.message.author.name + ":**" + message)
                 except discord.errors.Forbidden:
                     print("ERROR: Can't send the message")
             else:
-                await self.bot.send_message(ctx.message.channel,
-                                            "Parameters not correct, see " + self.command_prefix + "help sendprivatemessage")
+                await message_channel.send("Parameters not correct, see " + self.command_prefix + "help sendprivatemessage")
         else:
-            await self.bot.send_message(ctx.message.channel,
-                                        "You don't have access to this command  :stuck_out_tongue: ")
+            await message_channel.send("You don't have access to this command  :stuck_out_tongue: ")
 
     # ---------------------------------------------------------------------
 
     @commands.command(hidden=True)
-    async def rename(self, ctx, *args):
+    async def rename(self, ctx: discord.ext.commands.Context, *args):
         """Function that change the username of the bot
             Usage: !rename "NoobBot"
         """
+        message_channel: discord.abc.Messageable = ctx.message.channel
         if not BotMethods.is_owner(ctx.message.author):
-            await self.bot.send_message(ctx.message.channel,
-                                        "You don't have access to this command  :stuck_out_tongue: ")
+            await message_channel.send("You don't have access to this command  :stuck_out_tongue: ")
             return
         if len(args) == 1:
             print("-------------------------")
             new_name = args[0]
             print("BOT RENAME:" + new_name)
-            await self.bot.edit_profile(username=new_name)
+            await self.bot.user.edit(username=new_name)
             print("-------------------------")
         else:
-            await self.bot.send_message(ctx.message.channel, "Parameters not correct...")
+            await message_channel.send("Parameters not correct...")
 
     # ---------------------------------------------------------------------
 
-    def __init__(self, bot):
+    def __init__(self, bot: discord.ext.commands.Bot):
         print("CALLING CLASS-->" + self.__class__.__name__ + " class called")
-        self.bot = bot
+        self.bot: discord.ext.commands.Bot = bot
         self.botVariables = self.bot.bot_variables_reference
         # assigning variables value now i can use botVariables
         self.command_prefix = self.botVariables.command_prefix

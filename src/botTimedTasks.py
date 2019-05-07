@@ -7,6 +7,7 @@ import asyncio
 import datetime
 
 from botMethodsClass import BotMethods
+from discord.ext import commands
 
 
 # ---------------------------------------------------------------------
@@ -79,8 +80,11 @@ class BotTimedTasks:
             hours=1)  # check new videos in the past hour (current time - 1h)
         current_time = current_time.strftime("%Y-%m-%dT%H:%M:%SZ")  # ISO 8601 time format
         print("[BOT discord_status_check]:Discord Status First check:" + str(current_time))
-        while not self.bot.is_closed:
-            if not self.bot.maintenanceMode:  # check for maintenanceMode (if yes, let's skip task content for safety)
+        while not self.bot.is_closed():
+            if not hasattr(self.bot, 'maintenanceMode'):
+                await asyncio.sleep(1)
+            if not getattr(self.bot,
+                           'maintenanceMode'):  # check for maintenanceMode (if yes, let's skip task content for safety)
                 url = "https://srhpyqt94yxb.statuspage.io/api/v2/summary.json"
                 async with aiohttp.ClientSession() as session:  # async GET request
                     async with session.get(url) as resp:
@@ -88,13 +92,12 @@ class BotTimedTasks:
                 if str(r_json["status"]["indicator"]) != "none" or len(r_json["incidents"]) != 0:
                     if not self.status_changed:
                         self.status_changed = True
-                        await self.bot.change_presence(status=discord.Status.do_not_disturb, game=discord.Game(
+                        await self.bot.change_presence(status=discord.Status.do_not_disturb, activity=discord.Game(
                             name="Discord Error - Check status.discordapp.com"))
                 else:
                     if self.status_changed:
                         self.status_changed = False
-                        await self.bot.change_presence(status=discord.Status.online,
-                                                       game=discord.Game(name=self.bot.lastInGameStatus))
+                        await self.bot.change_presence(status=discord.Status.online, activity=discord.Game(name=getattr(self.bot, 'lastInGameStatus')))
             await asyncio.sleep(150)  # task runs every 2.5 min (150s)
         print("--Discord Status Task loop finished--")
 
@@ -105,18 +108,18 @@ class BotTimedTasks:
         await self.bot.wait_until_ready()  # wait until the bot is ready
         while not self.bot.is_closed:
             # check for maintenanceMode (if yes, let's skip task content for safety)
-            if not self.bot.maintenanceMode and not self.bot.isInStreamingStatus and self.bot.hasAListOfStates:
+            if not getattr(self.bot, 'maintenanceMode') and not getattr(self.bot, 'isInStreamingStatus') and getattr(self.bot, 'hasAListOfStates'):
                 await self.bot.change_presence(
-                    game=discord.Game(name=BotMethods.get_random_bot_state(self.bot.listOfStates)))
+                    activity=discord.Game(name=BotMethods.get_random_bot_state(getattr(self.bot, 'listOfStates'))))
                 print("[BOT randomize_bot_status]:Status correctly changed...")
             await asyncio.sleep(self.botVariables.get_bot_random_state_change_time())  # task runs every N min
         print("--Discord Randomize Status loop finished--")
 
     # ---------------------------------------------------------------------
 
-    def __init__(self, bot):
+    def __init__(self, bot: discord.ext.commands.Bot):
         print("CALLING MINI-CLASS-->" + self.__class__.__name__ + " class called")
-        self.bot = bot
+        self.bot: discord.ext.commands.Bot = bot
         self.botVariables = self.bot.bot_variables_reference
         # to skip continuous status change
         self.status_changed = False
