@@ -9,7 +9,8 @@
     },
     "weather": {
         "key": "YourKey",
-        "default_country": "IT"
+        "default_country": "IT",
+        "default_language": "it-IT"
     },
     "rocketleague": {
         "key": "YourKey",

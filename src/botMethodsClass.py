@@ -62,19 +62,6 @@ class BotMethods:
     # ---------------------------------------------------------------------
 
     @staticmethod
-    def convert_hours_to_day(time_var: int):
-        """ This function convert a time-format to another, is used to the weather api
-            :param time_var: the day(0 to 19), is divided in 12h so 0 is today and 1 is today night, 2 is tomorrow....
-            :return: return the day corresponding to the 12h-day format(0-19) to (0-9)
-        """
-        if time_var % 2 == 0:
-            return int(time_var / 2)
-        else:
-            return int((time_var - 1) / 2)
-
-    # ---------------------------------------------------------------------
-
-    @staticmethod
     def platform_to_number(platform_name: str):
         """ This function is used for rocket league api: convert the platform name to his number
         :param platform_name: the platform name (steam, ps4 or xbox)

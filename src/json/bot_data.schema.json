@@ -62,7 +62,7 @@
             "properties": {
                 "key": {
                     "title": "Weather API key",
-                    "description": "Get yours from http://api.wunderground.com/",
+                    "description": "Get yours from https://developer.accuweather.com/",
                     "type": "string",
                     "minLength": 1
                 },
@@ -72,12 +72,19 @@
                     "type": "string",
                     "minLength": 1,
                     "maxLength": 3
+                },
+                "default_language": {
+                    "title": "String indicating the language in which to return the resource",
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 5
                 }
             },
             "additionalProperties": false,
             "required": [
                 "key",
-                "default_country"
+                "default_country",
+                "default_language"
             ]
         },
         "rocketleague": {

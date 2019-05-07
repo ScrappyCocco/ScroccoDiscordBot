@@ -156,7 +156,7 @@ class BotVariables:
         if self.check_empty_key(key):
             return key
         else:
-            print("ERROR GETTING THE WEATHER KEY (get yours from http://api.wunderground.com/) - ABORTING")
+            print("ERROR GETTING THE WEATHER KEY (get yours from https://developer.accuweather.com/) - ABORTING")
             quit(1)
 
     def get_weather_country(self):
@@ -164,6 +164,12 @@ class BotVariables:
             :return: The default weather country
         """
         return self.bot_data_file["weather"]["default_country"]
+
+    def get_weather_language(self):
+        """Function that return the default weather language for the results
+            :return: The default weather result language
+        """
+        return self.bot_data_file["weather"]["default_language"]
 
     def get_rocket_league_key(self):
         """Function that return the api key for the rocket league stats api.
@@ -174,7 +180,7 @@ class BotVariables:
             return key
         else:
             print(
-                "ERROR GETTING THE ROCKET LEAGUE KEY (get yours from https://developers.rocketleaguestats.com) - ABORTING")
+                "ERROR GETTING THE ROCKET LEAGUE KEY (check bot documentation) - ABORTING")
             quit(1)
 
     def get_rocket_league_platform(self):
@@ -192,7 +198,7 @@ class BotVariables:
             return key
         else:
             print(
-                "ERROR GETTING THE YOUTUBE KEY (get yours from https://developers.google.com/youtube/v3/getting-started) - ABORTING")
+                "ERROR GETTING THE YOUTUBE KEY (check bot documentation) - ABORTING")
             quit(1)
 
     def get_list_youtube_channels_check(self):
