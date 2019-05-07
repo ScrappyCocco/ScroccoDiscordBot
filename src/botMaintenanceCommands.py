@@ -105,14 +105,15 @@ class BotMaintenanceCommands(commands.Cog):
                 if status_received == 4:
                     self.bot.isInStreamingStatus = True
                     await self.bot.change_presence(
-                        activity=discord.Game(name=str(args[1]), url=str(args[2]), type=1))
+                        activity=discord.Streaming(name=str(args[1]), url=str(args[2])))
                     print("Streaming status applied")
                     return
                 if status_received < 0 or status_received > 3:
                     print("State Not Correct, going online")
                     new_status = discord.Status.online
                 # apply the state with the old in-game status
-                await self.bot.change_presence(status=new_status, activity=discord.Game(name=getattr(self.bot, 'lastInGameStatus')))
+                await self.bot.change_presence(status=new_status,
+                                               activity=discord.Game(name=getattr(self.bot, 'lastInGameStatus')))
             print("-------------------------")
         else:
             message_channel: discord.abc.Messageable = ctx.message.channel
@@ -130,8 +131,8 @@ class BotMaintenanceCommands(commands.Cog):
                 print("Can't find region in private chat")
                 await message_channel.send("*Can't get server-region in private*")
             else:
-                region = str(ctx.message.server.region)
-                server_name = str(ctx.message.server.name)
+                region = str(ctx.message.guild.region)
+                server_name = str(ctx.message.guild.name)
                 print("Region Found: " + region)
                 await message_channel.send("Server Location: **" + server_name + "**: " + region)
         print("-------------------------")
@@ -146,7 +147,7 @@ class BotMaintenanceCommands(commands.Cog):
         """
         if ctx is not None:
             message_channel: discord.abc.Messageable = ctx.message.channel
-            if ctx.message.server is None:  # private message
+            if ctx.message.guild is None:  # private message
                 print("Can't find join-date in private chat")
                 await message_channel.send("*Can't get join-date in private channel*")
             else:
@@ -154,7 +155,7 @@ class BotMaintenanceCommands(commands.Cog):
                 mention = False
                 if len(ctx.message.mentions) == 1:
                     mention = True
-                    for current_member in ctx.message.server.members:
+                    for current_member in ctx.message.guild.members:
                         if current_member.id == ctx.message.mentions[0].id:
                             date = current_member.joined_at
                             break
@@ -163,10 +164,10 @@ class BotMaintenanceCommands(commands.Cog):
                 date_string = date.strftime('%H:%M:%S %d-%m-%Y')
                 if mention:
                     await message_channel.send("**" + ctx.message.mentions[0].name + "** joined this server: " + str(
-                                                    date_string))
+                        date_string))
                 else:
                     await message_channel.send("**" + ctx.message.author.name + "** joined this server: " + str(
-                                                    date_string))
+                        date_string))
 
     # ---------------------------------------------------------------------
 
@@ -179,14 +180,14 @@ class BotMaintenanceCommands(commands.Cog):
         if ctx is not None:
             message_channel: discord.abc.Messageable = ctx.message.channel
             mention = False
-            if ctx.message.server is None:  # private message
+            if ctx.message.guild is None:  # private message
                 date = ctx.message.author.created_at
             else:
                 date = ""
                 mention = False
                 if len(ctx.message.mentions) == 1:
                     mention = True
-                    for current_member in ctx.message.server.members:
+                    for current_member in ctx.message.guild.members:
                         if current_member.id == ctx.message.mentions[0].id:
                             date = current_member.created_at
                             break
@@ -195,11 +196,11 @@ class BotMaintenanceCommands(commands.Cog):
             date_string = date.strftime('%H:%M:%S %d-%m-%Y')
             if mention:
                 await message_channel.send("**" + ctx.message.mentions[
-                                                0].name + "** created his Discord account: " + str(
-                                                date_string))
+                    0].name + "** created his Discord account: " + str(
+                    date_string))
             else:
                 await message_channel.send("**" + ctx.message.author.name + "** created his Discord account: " + str(
-                                                date_string))
+                    date_string))
 
     # ---------------------------------------------------------------------
 
@@ -218,15 +219,18 @@ class BotMaintenanceCommands(commands.Cog):
         """
         message_channel: discord.abc.Messageable = ctx.message.channel
         if ctx.message.guild is None:  # private message
-            await message_channel.send("*Can't check if you're an admin in private chat. Execute this command in a server*")
+            await message_channel.send(
+                "*Can't check if you're an admin in private chat. Execute this command in a server*")
             return
         if BotMethods.is_owner(ctx.message.author) or BotMethods.is_server_admin(ctx.message.author):
             final_string = "```LIST OF ALL BOT COMMANDS, SEE " + self.command_prefix + "HELP COMMAND FOR OTHER INFORMATIONS \n \n"
             for cmd in self.bot.commands:
                 final_string += str(cmd) + "\n"
             final_string += "```"
+            if ctx.message.author.dm_channel is None:
+                await ctx.message.author.create_dm()
             await ctx.message.author.dm_channel.send(final_string)
-            if ctx.message.server is not None:  # not in private message
+            if ctx.message.guild is not None:  # not in private message
                 await message_channel.send("*List sent in private*")
         else:
             await message_channel.send("You don't have access to this command :stuck_out_tongue: ")
@@ -238,8 +242,8 @@ class BotMaintenanceCommands(commands.Cog):
         """Print bot current version"""
         message_channel: discord.abc.Messageable = ctx.message.channel
         await message_channel.send("**Current Bot Version:** " + self.botVariables.get_version()
-                                    + " **Build:** " + self.botVariables.get_build()
-                                    + " - **API Version:** " + discord.__version__)
+                                   + " **Build:** " + self.botVariables.get_build()
+                                   + " - **API Version:** " + discord.__version__)
 
     # ---------------------------------------------------------------------
 
@@ -260,10 +264,11 @@ class BotMaintenanceCommands(commands.Cog):
         final_string = ""
         for current_server in self.bot.guilds:
             for current_channel in current_server.channels:
-                if current_channel.type == discord.ChannelType.text:  # if it's a text channel and not a voice channel
+                if isinstance(current_channel, discord.TextChannel):  # if it's a text channel and not a voice channel
                     if current_channel.name == str(args[0]) or str(args[0]) == "*":  # the name is equal
                         found = True
-                        final_string += "**Channel Found:** " + current_channel.name + " - " + current_channel.server.name + " --> ID= " + current_channel.id + "\n"
+                        final_string += "**Channel Found:** " + current_channel.name + " - " + current_channel.guild.name + " --> ID= " + str(
+                            current_channel.id) + "\n"
         if not found:
             await message_channel.send("Nothing found...")
         else:
@@ -302,7 +307,7 @@ class BotMaintenanceCommands(commands.Cog):
         if ctx.message.guild is None:
             await message_channel.send("*Can't get server-info in private*")
             return
-        server_selected = ctx.message.server
+        server_selected = ctx.message.guild
         embed = discord.Embed(title=server_selected.name,
                               colour=discord.Colour(0x169DDF),
                               description=server_selected.name + " server info",
@@ -315,9 +320,9 @@ class BotMaintenanceCommands(commands.Cog):
         voice_channels_count = 0
         text_channels_count = 0
         for current_channel in server_selected.channels:
-            if current_channel.type == channel.ChannelType.text:
+            if isinstance(current_channel, discord.TextChannel):
                 text_channels_count += 1
-            if current_channel.type == channel.ChannelType.voice:
+            if isinstance(current_channel, discord.VoiceChannel):
                 voice_channels_count += 1
 
         embed.add_field(name="Server Region:", value=str(server_selected.region))
@@ -397,7 +402,7 @@ class BotMaintenanceCommands(commands.Cog):
                     for bot_state in self.bot.listOfStates:
                         list_of_states += bot_state + ", "
                     await message_channel.send("Current status: " + str(
-                                                    self.bot.lastInGameStatus) + "\nFrom list of states:{" + list_of_states + "}")
+                        self.bot.lastInGameStatus) + "\nFrom list of states:{" + list_of_states + "}")
                 else:
                     await message_channel.send("Current status: " + str(self.bot.lastInGameStatus))
             else:
@@ -466,7 +471,8 @@ class BotMaintenanceCommands(commands.Cog):
                 except discord.errors.Forbidden:
                     print("ERROR: Can't send the message")
             else:
-                await message_channel.send("Parameters not correct, see " + self.command_prefix + "help sendservermessage")
+                await message_channel.send(
+                    "Parameters not correct, see " + self.command_prefix + "help sendservermessage")
         else:
             await message_channel.send("You don't have access to this command  :stuck_out_tongue: ")
 
@@ -483,11 +489,16 @@ class BotMaintenanceCommands(commands.Cog):
                 recipient = args[0]
                 message = args[1]
                 try:
-                    await self.bot.get_user(int(recipient)).dm_channel.send("**Message from " + ctx.message.author.name + ":**" + message)
+                    user = self.bot.get_user(int(recipient))
+                    if user.dm_channel is None:
+                        await user.create_dm()
+                    await user.dm_channel.send(
+                        "**Message from " + ctx.message.author.name + ":**" + message)
                 except discord.errors.Forbidden:
                     print("ERROR: Can't send the message")
             else:
-                await message_channel.send("Parameters not correct, see " + self.command_prefix + "help sendprivatemessage")
+                await message_channel.send(
+                    "Parameters not correct, see " + self.command_prefix + "help sendprivatemessage")
         else:
             await message_channel.send("You don't have access to this command  :stuck_out_tongue: ")
 
