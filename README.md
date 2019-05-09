@@ -6,6 +6,8 @@ This is a little Python Bot i made for my Discord server and a couple of friends
 
 Born in middle 2016 as little bot with only few commands, Scrocco is now a complete and fully-functional Discord Bot.
 
+Since May 2019 Scrocco use `discord.py 1.0.1` the latest version of Discord Python Api made by Danny.  
+
 ## Getting Started
 
 These instructions will get you a copy of the bot up and running on your local machine for development and testing purposes.
