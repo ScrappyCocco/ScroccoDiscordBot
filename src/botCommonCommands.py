@@ -270,7 +270,7 @@ class BotCommonCommands(commands.Cog):
                 print("Error:" + received_string[pos + 1])
                 return
             final_string = ""
-            number_emoji = self.botVariables.numbersEmoji
+            number_emoji = self.botVariables.numbers_emoji
             for c in received_string:
                 if c.isalnum():
                     try:
@@ -340,7 +340,7 @@ class BotCommonCommands(commands.Cog):
     @commands.command()
     async def weather(self, ctx: discord.ext.commands.Context, *args):
         """Print the current weather in a given city
-        (0 is now, 1 is 12h later, 2 tomorrow, ...., 19 is the max[12h for 10 days])
+        It can be asked for 1 to 5 days, 1 is default
         (the country code is in ISO-3166 = 2 letters)
         Usage: !weather Venice
         Usage: !weather IT Rome
@@ -386,100 +386,87 @@ class BotCommonCommands(commands.Cog):
                             await message_channel.send(
                                 "**Check the day or the country code, please read:** " + self.command_prefix + "help weather")
                             return
-            if day > 19:
+            if day > 5:
                 await message_channel.send(
                     "**Check the day code, please read:** " + self.command_prefix + "help weather")
                 return
+            # Find the city id
+            weather_api_key = self.botVariables.get_weather_key()
+            weather_api_language = self.botVariables.get_weather_language()
+            print("Making city request")
+            city_url = "http://dataservice.accuweather.com/locations/v1/cities/" + country_code_str + "/search?apikey="
+            city_url += str(weather_api_key)
+            city_url += "&q=" + urllib.parse.quote_plus(str(city_name))
+            city_url += "&language=" + weather_api_language
+            async with aiohttp.ClientSession() as client_session:
+                async with client_session.get(city_url) as response:
+                    city_request_result = await response.json()
+            if city_request_result == "":
+                await message_channel.send("*Can't find a valid city with that name...*")
+                return
+            if len(city_request_result) == 0:
+                await message_channel.send(
+                    "*Can't find a valid city with that name, check that the country code is valid "
+                    "and remember that the city name must be in language:" +
+                    weather_api_language + "...*")
+                return
+            city_id = city_request_result[0]['Key']
             # I've everything now, starting getting the weather
             print("-------------------------")
             print("Making weather request")
-            half_day = BotMethods.convert_hours_to_day(
-                day)  # this because the weather is divided in 10 days and 20 times 12h
-            url = "http://api.wunderground.com/api/" + self.botVariables.get_weather_key() + "/"
-            url += "forecast10day/q/" + country_code_str + "/" + city_name + ".json"
+            url = "http://dataservice.accuweather.com/forecasts/v1/daily/5day/" + str(city_id)
+            url += "?apikey=" + weather_api_key
+            url += "&language=" + weather_api_language
+            url += "&details=true&metric=true"
             async with aiohttp.ClientSession() as client_session:
                 async with client_session.get(url) as response:
                     request_result = await response.json()  # convert the response to a json file
             try:
-                await message_channel.send("**Error:** " + str(
-                    request_result["response"]["error"][
-                        "description"]) + "(check usage with " + self.command_prefix + "help weather)")
-                print("Error, weather request failed")
+                await message_channel.send("**Error:** Code:" + str(request_result["Code"]) + " Message" + str(
+                    request_result["Message"]) + "(check usage with " + self.command_prefix + "help weather)")
+                print("Error, weather request failed - " + str(request_result))
                 return
             except KeyError:
                 try:  # simple try to see if the key exist
-                    str(request_result["forecast"]["txt_forecast"]["forecastday"][day]["title"])
+                    str(request_result["DailyForecasts"][0]["Date"])
                 except KeyError:
-                    print("Error - City not defined")
-                    final_message = "```\n"
-                    final_message += "Error: Multiple Cities found...\n"
-                    cont = 0
-                    for city in request_result["response"]["results"]:
-                        final_message += city["name"] + " - " + city["country_name"] + "(" + city["country"] + ")\n"
-                        cont += 1
-                        if cont > 4:
-                            final_message += "[More...]\n"
-                            break
-                    final_message += "```"
-                    await message_channel.send(final_message)
+                    print("Error - Can't read the response from server")
+                    await message_channel.send("Error - Can't read the response from server")
                     return
                 print("No errors found in request, creating embed")
-                day_name = str(request_result["forecast"]["txt_forecast"]["forecastday"][day]["title"])
-                day_number = str(request_result["forecast"]["simpleforecast"]["forecastday"][half_day]["date"]["day"])
-                month_number = str(
-                    request_result["forecast"]["simpleforecast"]["forecastday"][half_day]["date"]["month"])
-                year_number = str(request_result["forecast"]["simpleforecast"]["forecastday"][half_day]["date"]["year"])
-                embed = discord.Embed(title="Weather",
+                description = "Weather in " + city_name + " ["
+                description += city_request_result[0]['AdministrativeArea']['LocalizedName'] + "] ["
+                description += city_request_result[0]['Country']['LocalizedName'] + "]"
+                embed = discord.Embed(title="AccuWeather Weather",
                                       colour=discord.Colour(0x088DA5),
-                                      url="https://www.wunderground.com/",
-                                      description="Weather in \"" + city_name + "\" during \"" + day_name + "\" " + day_number + "/" + month_number + "/" + year_number,
+                                      url=request_result['Headline']['Link'],
+                                      description=description,
                                       timestamp=datetime.utcfromtimestamp(time.time())
                                       )
-                embed.set_thumbnail(url=request_result["forecast"]["txt_forecast"]["forecastday"][day]["icon_url"])
+                embed.set_thumbnail(
+                    url="https://cdn.discordapp.com/attachments/396666575081439243/575372381162569728/86e3c061daf1a86ed17d74eb0948f713.png")
                 embed.set_author(name=ctx.message.author.name, url="", icon_url=ctx.message.author.avatar_url)
                 try:
                     # description of the day
-                    day_description = request_result["forecast"]["txt_forecast"]["forecastday"][day]["fcttext_metric"]
+                    day_description = request_result["Headline"]["Text"]
                 except KeyError:
                     day_description = "Not found..."
                 embed.add_field(name="Short Description:", value=day_description, inline=False)
 
-                try:
-                    # min temperature of the day
-                    key_value = request_result["forecast"]["simpleforecast"]["forecastday"][half_day]["low"]["celsius"]
-                    if key_value == "":
-                        temp_min = "Not available"
-                    else:
-                        temp_min = key_value
-                except KeyError:
-                    temp_min = "Not found..."
-                embed.add_field(name="Min Temperature:", value=temp_min, inline=True)
+                for i in range(0, max(1, day)):
+                    day_element = request_result['DailyForecasts'][i]
+                    date_time_str = day_element['Date'][:10]
+                    date_time_obj = datetime.strptime(date_time_str, '%Y-%m-%d')
+                    title = "Weather in " + str(date_time_obj.day) + "/" + str(date_time_obj.month) + "/" + str(
+                        date_time_obj.year)
+                    content = "Temperature Min:" + str(day_element['Temperature']['Minimum']['Value']) + str(
+                        day_element['Temperature']['Minimum']['Unit'])
+                    content += " - Max:" + str(day_element['Temperature']['Maximum']['Value']) + str(
+                        day_element['Temperature']['Maximum']['Unit'])
+                    content += " - Weather during day:" + str(day_element['Day']['ShortPhrase'])
+                    content += " - Weather during night:" + str(day_element['Night']['ShortPhrase'])
 
-                try:
-                    # max temperature of the day
-                    key_value = request_result["forecast"]["simpleforecast"]["forecastday"][half_day]["high"]["celsius"]
-                    if key_value == "":
-                        temp_max = "Not available"
-                    else:
-                        temp_max = key_value
-                except KeyError:
-                    temp_max = "Not found..."
-                embed.add_field(name="Max Temperature:", value=temp_max, inline=True)
-
-                try:
-                    # Average Humidity temperature of the day
-                    avg_humid = str(
-                        request_result["forecast"]["simpleforecast"]["forecastday"][half_day]["avehumidity"]) + "%"
-                except KeyError:
-                    avg_humid = "Not found..."
-                embed.add_field(name="Average Humidity:", value=avg_humid, inline=True)
-
-                try:
-                    # short weather condition
-                    condition = request_result["forecast"]["simpleforecast"]["forecastday"][half_day]["conditions"]
-                except KeyError:
-                    condition = "Not found..."
-                embed.add_field(name="Conditions:", value=condition, inline=True)
+                    embed.add_field(name=title, value=content, inline=False)
 
                 embed.set_footer(text=self.botVariables.get_description(), icon_url=self.botVariables.get_bot_icon())
                 try:
