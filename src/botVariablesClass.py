@@ -10,10 +10,10 @@ import json
 
 class BotVariables:
     bot_data_file = None
-    privateChatUsers = []  # used to advise users that messages are sent to bot owner
-    emptyApiKey = "YourKey"  # used to check if a key is empty
-    emptyUrl = "http://URL/"
-    numbersEmoji = [":zero:", ":one:", ":two:", ":three:", ":four:", ":five:", ":six:", ":seven:", ":eight:", ":nine:"]
+    private_chat_users = []  # used to advise users that messages are sent to bot owner
+    empty_api_key = "YourKey"  # used to check if a key is empty
+    empty_url = "http://URL/"
+    numbers_emoji = [":zero:", ":one:", ":two:", ":three:", ":four:", ":five:", ":six:", ":seven:", ":eight:", ":nine:"]
     command_prefix = ""  # initialized after the check
 
     # -------------------------------------------------
@@ -54,7 +54,7 @@ class BotVariables:
         self.get_clever_key()
         self.get_hypixel_key()
         self.get_gif_key()
-        self.get_google_shortener_key()
+        self.get_rebrandly_shortener_key()
         self.get_mashape_metacritic_key()
         self.get_steam_key()
         if self.get_bot_save_state_to_file() and self.get_bot_save_state_to_server():
@@ -74,7 +74,7 @@ class BotVariables:
         """Function that check the key for errors.
             :return: True if the key is ok, False if the Key is not valid
         """
-        if key is None or key == "" or key == self.emptyApiKey:
+        if key is None or key == "" or key == self.empty_api_key:
             print("ERROR, A KEY IS EMPTY - CHECK YOUR FILE")
             return False
         return True
@@ -126,15 +126,15 @@ class BotVariables:
             print("ERROR GETTING THE GIF KEY (get yours from http://api.giphy.com/) - ABORTING")
             quit(1)
 
-    def get_google_shortener_key(self):
+    def get_rebrandly_shortener_key(self):
         """Function that return the api key for the google shortener api.
             :return: The google shortener API-KEY.
         """
-        key = self.bot_data_file["apiKeys"]["google_shortener"]
+        key = self.bot_data_file["apiKeys"]["rebrandly_shortener"]
         if self.check_empty_key(key):
             return key
         else:
-            print("ERROR GETTING THE GOOGLE SHORTENER KEY (check bot documentation) - ABORTING")
+            print("ERROR GETTING THE REBRANDLY SHORTENER KEY (check bot documentation) - ABORTING")
             quit(1)
 
     def get_mashape_metacritic_key(self):
@@ -156,7 +156,7 @@ class BotVariables:
         if self.check_empty_key(key):
             return key
         else:
-            print("ERROR GETTING THE WEATHER KEY (get yours from http://api.wunderground.com/) - ABORTING")
+            print("ERROR GETTING THE WEATHER KEY (get yours from https://developer.accuweather.com/) - ABORTING")
             quit(1)
 
     def get_weather_country(self):
@@ -164,6 +164,12 @@ class BotVariables:
             :return: The default weather country
         """
         return self.bot_data_file["weather"]["default_country"]
+
+    def get_weather_language(self):
+        """Function that return the default weather language for the results
+            :return: The default weather result language
+        """
+        return self.bot_data_file["weather"]["default_language"]
 
     def get_rocket_league_key(self):
         """Function that return the api key for the rocket league stats api.
@@ -174,7 +180,7 @@ class BotVariables:
             return key
         else:
             print(
-                "ERROR GETTING THE ROCKET LEAGUE KEY (get yours from https://developers.rocketleaguestats.com) - ABORTING")
+                "ERROR GETTING THE ROCKET LEAGUE KEY (check bot documentation) - ABORTING")
             quit(1)
 
     def get_rocket_league_platform(self):
@@ -192,7 +198,7 @@ class BotVariables:
             return key
         else:
             print(
-                "ERROR GETTING THE YOUTUBE KEY (get yours from https://developers.google.com/youtube/v3/getting-started) - ABORTING")
+                "ERROR GETTING THE YOUTUBE KEY (check bot documentation) - ABORTING")
             quit(1)
 
     def get_list_youtube_channels_check(self):
@@ -287,13 +293,25 @@ class BotVariables:
         """Function that return the url where to write the status.
             :return: The url to send the new status (saving the status on the web)
         """
-        return self.bot_data_file["bot_status"]["server_state_saving"]["writeStateUrl"]
+        write_url: str = self.bot_data_file["bot_status"]["server_state_saving"]["writeStateUrl"]
+        print("Api:" + self.empty_api_key)
+        print("Url:" + self.empty_url)
+        if self.get_bot_save_state_to_server() and write_url.startswith(self.empty_url):
+            print(
+                "save_state_to_server IS TRUE BUT STATUS WRITE URL STARTS WITH 'http://URL/' SO IS NOT VALID - ABORTING")
+            quit(1)
+        return write_url
 
     def get_server_read_status_url(self):
         """Function that return the url where to read the status.
             :return: The url to read the last status (reading the status from the web)
         """
-        return self.bot_data_file["bot_status"]["server_state_saving"]["readStateUrl"]
+        read_url: str = self.bot_data_file["bot_status"]["server_state_saving"]["readStateUrl"]
+        if self.get_bot_save_state_to_server() and read_url.startswith(self.empty_url):
+            print(
+                "save_state_to_server IS TRUE BUT STATUS READ URL STARTS WITH 'http://URL/' SO IS NOT VALID - ABORTING")
+            quit(1)
+        return read_url
 
     def get_server_write_status_parameter(self):
         """Function that return the POST param for the status

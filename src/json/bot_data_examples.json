@@ -4,12 +4,13 @@
         "hypixel": "YourKey",
         "steam": "YourKey",
         "gif": "YourKey",
-        "google_shortener": "YourKey",
+        "rebrandly_shortener": "YourKey",
         "X-Mashape-Key": "YourKey"
     },
     "weather": {
         "key": "YourKey",
-        "default_country": "IT"
+        "default_country": "IT",
+        "default_language": "it-IT"
     },
     "rocketleague": {
         "key": "YourKey",
@@ -25,8 +26,8 @@
             }
         ]
     },
-    "version": "0.98.27",
-    "build": "46",
+    "version": "0.98.30",
+    "build": "10",
     "is_beta": false,
     "description": "Bot by ScrappyCocco (Some commands are hidden from help)",
     "bot_icon": "https://discordapp.com/assets/2c21aeda16de354ba5334551a883b481.png",
