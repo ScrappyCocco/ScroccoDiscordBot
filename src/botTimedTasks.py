@@ -97,7 +97,8 @@ class BotTimedTasks:
                 else:
                     if self.status_changed:
                         self.status_changed = False
-                        await self.bot.change_presence(status=discord.Status.online, activity=discord.Game(name=getattr(self.bot, 'lastInGameStatus')))
+                        await self.bot.change_presence(status=discord.Status.online,
+                                                       activity=discord.Game(name=getattr(self.bot, 'lastInGameStatus')))
             await asyncio.sleep(150)  # task runs every 2.5 min (150s)
         print("--Discord Status Task loop finished--")
 

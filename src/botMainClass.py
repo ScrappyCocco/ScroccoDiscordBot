@@ -176,7 +176,8 @@ async def cleverbot_request(channel: discord.abc.Messageable, cleverbot_question
                         print("Cleverbot Attempt 2 - using content()...\n\n")
                         content = str(response.content)
                     except UnicodeDecodeError:
-                        await channel.send("*Cleverbot fatal error, please use " + bot_command_prefix_string + "clearclever")
+                        await channel.send(
+                            "*Cleverbot fatal error, please use " + bot_command_prefix_string + "clearclever")
                         return
     if response_error:  # an error occurred (JSON NOT CORRECT - USE THE CONTENT AS A STRING)
         start_pos = content.find("\"output\":\"") + 10
@@ -221,7 +222,8 @@ async def on_message(message: discord.message):
             for found_mention in message.mentions:  # convert all mentions to names to make the message clear
                 new_message = new_message.replace(str(found_mention.mention), str(found_mention.name))
             # ---------------------------------------------------------------------
-            if getattr(bot, 'maintenanceMode') and not BotMethods.is_owner(message.author):  # if it's in maintenance Mode
+            if getattr(bot, 'maintenanceMode') and not BotMethods.is_owner(
+                    message.author):  # if it's in maintenance Mode
                 return
             new_message = new_message.lstrip()  # remove additional spaces from cleverbot question (before and after)
             print("Cleverbot Question received, asking cleverbot...")

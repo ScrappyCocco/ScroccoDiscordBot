@@ -6,7 +6,6 @@ import time
 import discord
 import os
 import urllib
-import requests
 import json
 import aiohttp
 import hypixel

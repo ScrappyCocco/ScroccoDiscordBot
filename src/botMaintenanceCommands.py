@@ -8,7 +8,6 @@ import requests
 import time
 import aiohttp
 
-from discord import channel
 from datetime import datetime
 from botTimedTasks import BotTimedTasks
 from botMethodsClass import BotMethods
