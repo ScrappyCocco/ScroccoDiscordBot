@@ -16,6 +16,14 @@ class BotModerationCommands(commands.Cog):
 
     # ---------------------------------------------------------------------
 
+    async def checkcommandinserver(self, message: discord.message):
+        if message.guild is None:
+            await message.channel.send("*Can't execute this in private, execute the command in a server*")
+            return True
+        return False
+
+    # ---------------------------------------------------------------------
+
     @commands.command()
     async def banuser(self, ctx: discord.ext.commands.Context):
         """Function that ban a user from the server
@@ -23,8 +31,7 @@ class BotModerationCommands(commands.Cog):
         """
         # Check that the command is not executed in private message
         message_channel: discord.abc.Messageable = ctx.message.channel
-        if ctx.message.guild is None:
-            await message_channel.send("*Can't execute this in private, execute the command in a server*")
+        if self.checkcommandinserver(ctx.message):
             return
         # Check that is a server admin that want to ban users (could check specifically for ban permission)
         if BotMethods.is_server_admin(ctx.message.author):
@@ -52,8 +59,7 @@ class BotModerationCommands(commands.Cog):
         """
         # Check that the command is not executed in private message
         message_channel: discord.abc.Messageable = ctx.message.channel
-        if ctx.message.guild is None:
-            await message_channel.send("*Can't execute this in private, execute the command in a server*")
+        if self.checkcommandinserver(ctx.message):
             return
         # Check that is a server admin that want to ban users (could check specifically for unbanuser permission)
         if BotMethods.is_server_admin(ctx.message.author):
@@ -81,8 +87,7 @@ class BotModerationCommands(commands.Cog):
         """
         # Check that the command is not executed in private message
         message_channel: discord.abc.Messageable = ctx.message.channel
-        if ctx.message.guild is None:
-            await message_channel.send("*Can't execute this in private, execute the command in a server*")
+        if self.checkcommandinserver(ctx.message):
             return
         # Check that is a server admin that want to ban users (could check specifically for banuser permission)
         if BotMethods.is_server_admin(ctx.message.author):
@@ -111,8 +116,7 @@ class BotModerationCommands(commands.Cog):
         """
         # Check that the command is not executed in private message
         message_channel: discord.abc.Messageable = ctx.message.channel
-        if ctx.message.guild is None:
-            await message_channel.send("*Can't execute this in private, execute the command in a server*")
+        if self.checkcommandinserver(ctx.message):
             return
         # Check that is a server admin that want to ban users (could check specifically for kickuser permission)
         if BotMethods.is_server_admin(ctx.message.author):
@@ -140,8 +144,7 @@ class BotModerationCommands(commands.Cog):
         """
         # Check that the command is not executed in private message
         message_channel: discord.abc.Messageable = ctx.message.channel
-        if ctx.message.guild is None:
-            await message_channel.send("*Can't execute this in private, execute the command in a server*")
+        if self.checkcommandinserver(ctx.message):
             return
         # Check that is a server admin that want to ban users (could check specifically for kickuser permission)
         if BotMethods.is_server_admin(ctx.message.author):
@@ -183,8 +186,7 @@ class BotModerationCommands(commands.Cog):
         Usage: !editallroles add "ProRole"
         """
         message_channel: discord.abc.Messageable = ctx.message.channel
-        if ctx.message.guild is None:
-            await message_channel.send("*Can't edit roles in private, execute the command in a server*")
+        if self.checkcommandinserver(ctx.message):
             return
         if BotMethods.is_server_admin(ctx.message.author):
             if len(args) != 2 or (str(args[0]).lower() != "remove" and str(args[0]).lower() != "add"):
@@ -224,8 +226,7 @@ class BotModerationCommands(commands.Cog):
         Usage: !editrole add "ScrappyCocco" "ProRole"
         """
         message_channel: discord.abc.Messageable = ctx.message.channel
-        if ctx.message.guild is None:
-            await message_channel.send("*Can't edit roles in private, execute the command in a server*")
+        if self.checkcommandinserver(ctx.message):
             return
         if BotMethods.is_server_admin(ctx.message.author):
             if len(args) != 3:
@@ -264,8 +265,7 @@ class BotModerationCommands(commands.Cog):
         Usage: !promoteusers "EMPTY" "ProRole"
         """
         message_channel: discord.abc.Messageable = ctx.message.channel
-        if ctx.message.guild is None:
-            await message_channel.send("*Can't edit roles in private, execute the command in a server*")
+        if self.checkcommandinserver(ctx.message):
             return
         if BotMethods.is_server_admin(ctx.message.author):
             if len(args) != 2:
