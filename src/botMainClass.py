@@ -135,22 +135,29 @@ async def first_chat_alert(channel: discord.abc.Messageable, user: discord.User)
 
 # function that forward the non-command message to bot owner (if the function is active)
 async def forwards_message(message: discord.message):
-    if message.channel.name is None:
-        # send private message to bot owner if possible
-        if (str(message.author.id) != privateMessagesOwner) and (
-                privateMessagesOwner != ""):  # not sending messages to myself or not if the function is not active
-            if len(message.attachments) > 0:  # not sending attachments
-                url_list = ""
-                for attach in message.attachments:
-                    url_list += str(attach['url'])  # create a sting with attachments urls
-                await bot.get_channel(int(privateMessagesOwner)).send(
-                    "Message from " + str(message.author.name) + "(ID=" + str(
-                        message.author.id) + "):" + message.content + "\nAttachments: " + url_list)
-                await message.channel.send("***Message with attachments has been forwarded!***")
-            else:
-                await bot.get_channel(int(privateMessagesOwner)).send(
-                    "Message from " + str(message.author.name) + "(ID=" + str(
-                        message.author.id) + "):" + message.content)
+    # send private message to bot owner if possible
+    if (str(message.author.id) != privateMessagesOwner) and (
+            privateMessagesOwner != ""):  # not sending messages to myself or not if the function is not active
+        if len(message.attachments) > 0:  # not sending attachments
+            url_list = ""
+            for attach in message.attachments:
+                url_list += str(attach.url)  # create a sting with attachments urls
+            user = bot.get_user(int(privateMessagesOwner))
+            channel = user.dm_channel
+            if channel is None:
+                await user.create_dm()
+                channel = user.dm_channel
+            await channel.send("Message from " + str(message.author.name) + "(ID=" + str(
+                message.author.id) + "):" + message.content + "\nAttachments: " + url_list)
+            await message.channel.send("***Message with attachments has been forwarded!***")
+        else:
+            user = bot.get_user(int(privateMessagesOwner))
+            channel = user.dm_channel
+            if channel is None:
+                await user.create_dm()
+                channel = user.dm_channel
+            await channel.send(
+                "Message from " + str(message.author.name) + "(ID=" + str(message.author.id) + "):" + message.content)
 
 
 # cleverbot async request - more faster than using the wrapper
@@ -236,7 +243,7 @@ async def on_message(message: discord.message):
             if message.content.startswith(
                     bot_command_prefix_string):  # if starts with command-prefix then process as command
                 await bot.process_commands(message)  # tell the bot to try to execute the command
-            else:  # forward the message (if active)
+            elif message.guild is None:  # forward the message (if active)
                 await forwards_message(message)
     else:
         if message.content.find("\\") == -1:  # error check for special chars
@@ -246,7 +253,7 @@ async def on_message(message: discord.message):
             if message.content.startswith(
                     bot_command_prefix_string):  # if starts with command-prefix then process as command
                 await bot.process_commands(message)  # tell the bot to try to execute the command
-            else:  # forward the message (if active)
+            elif message.guild is None:  # forward the message (if active)
                 await forwards_message(message)
 
 
