@@ -513,7 +513,7 @@ class BotCommonCommands(commands.Cog):
         """Show an image with the given color code
         Usage: !showcolor #COLORHEX/(R,G,B)
         Example: !showcolor #ff0000
-        Example: !showcolor (255, 0, 0)
+        Example: !showcolor "(255, 0, 0)"
         """
         message_channel: discord.abc.Messageable = ctx.message.channel
         if len(args) == 1:

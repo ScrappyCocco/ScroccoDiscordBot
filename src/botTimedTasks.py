@@ -93,12 +93,13 @@ class BotTimedTasks:
                     if not self.status_changed:
                         self.status_changed = True
                         await self.bot.change_presence(status=discord.Status.do_not_disturb, activity=discord.Game(
-                            name="Discord Error - Check status.discordapp.com"))
+                            name="Discord Error - !discordstatus - Check status.discordapp.com"))
                 else:
                     if self.status_changed:
                         self.status_changed = False
                         await self.bot.change_presence(status=discord.Status.online,
-                                                       activity=discord.Game(name=getattr(self.bot, 'lastInGameStatus')))
+                                                       activity=discord.Game(
+                                                           name=getattr(self.bot, 'lastInGameStatus')))
             await asyncio.sleep(150)  # task runs every 2.5 min (150s)
         print("--Discord Status Task loop finished--")
 
@@ -109,7 +110,8 @@ class BotTimedTasks:
         await self.bot.wait_until_ready()  # wait until the bot is ready
         while not self.bot.is_closed:
             # check for maintenanceMode (if yes, let's skip task content for safety)
-            if not getattr(self.bot, 'maintenanceMode') and not getattr(self.bot, 'isInStreamingStatus') and getattr(self.bot, 'hasAListOfStates'):
+            if not getattr(self.bot, 'maintenanceMode') and not getattr(self.bot, 'isInStreamingStatus') and getattr(
+                    self.bot, 'hasAListOfStates'):
                 await self.bot.change_presence(
                     activity=discord.Game(name=BotMethods.get_random_bot_state(getattr(self.bot, 'listOfStates'))))
                 print("[BOT randomize_bot_status]:Status correctly changed...")

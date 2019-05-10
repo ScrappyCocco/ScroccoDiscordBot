@@ -124,24 +124,25 @@ class BotGamingCommands(commands.Cog):
             print(url_operators)
             # first request, check for errors
             print("R6 - Starting First Request")
-            try:
-                async with aiohttp.ClientSession() as session:
-                    async with session.get(url_stats) as resp:
-                        request_player_stats = await resp.json()
-                if 'status' in request_player_stats:  # an error occurred looking for the player
-                    print("R6 - Player does not exist")
-                    await message_channel.send("*No player found with that name...*")
-                    await temp_message.delete()
+            async with message_channel.typing():
+                try:
+                    async with aiohttp.ClientSession() as session:
+                        async with session.get(url_stats) as resp:
+                            request_player_stats = await resp.json()
+                    if 'status' in request_player_stats:  # an error occurred looking for the player
+                        print("R6 - Player does not exist")
+                        await message_channel.send("*No player found with that name...*")
+                        await temp_message.delete()
+                        return
+                    print("R6 - No errors downloading the players, downloading other data...")
+                    async with aiohttp.ClientSession() as session:
+                        async with session.get(url_operators) as resp:
+                            request_player_operators = await resp.json()
+                except (json.JSONDecodeError, aiohttp.ClientResponseError):
+                    print("R6 - Error downloading the data")
+                    await message_channel.send(
+                        "An error occurred requesting your data, please retry later... (api.r6stats.com error)")
                     return
-                print("R6 - No errors downloading the players, downloading other data...")
-                async with aiohttp.ClientSession() as session:
-                    async with session.get(url_operators) as resp:
-                        request_player_operators = await resp.json()
-            except (json.JSONDecodeError, aiohttp.ClientResponseError):
-                print("R6 - Error downloading the data")
-                await message_channel.send(
-                    "An error occurred requesting your data, please retry later... (api.r6stats.com error)")
-                return
             print("R6 - Download completed, creating the embed")
             # creating the discord Embed response
             embed = discord.Embed(title="Rainbow6 Stats Link",
