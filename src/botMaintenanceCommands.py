@@ -426,7 +426,7 @@ class BotMaintenanceCommands(commands.Cog):
                 print("Changing my status in:" + new_state_to_use)
                 url = self.botVariables.get_server_write_status_url()
                 # request to save the state on the web
-                if self.botVariables.emptyUrl not in url and self.botVariables.get_bot_save_state_to_server():
+                if self.botVariables.empty_url not in url and self.botVariables.get_bot_save_state_to_server():
                     r = requests.post(url,
                                       data={self.botVariables.get_server_write_status_parameter(): new_state,
                                             })

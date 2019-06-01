@@ -141,7 +141,7 @@ async def forwards_message(message: discord.message):
         if len(message.attachments) > 0:  # not sending attachments
             url_list = ""
             for attach in message.attachments:
-                url_list += str(attach.url)  # create a sting with attachments urls
+                url_list += str(attach.url) + " - "  # create a sting with attachments urls
             user = bot.get_user(int(privateMessagesOwner))
             channel = user.dm_channel
             if channel is None:
