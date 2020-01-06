@@ -467,6 +467,7 @@ class BotMaintenanceCommands(commands.Cog):
                 message = args[1]
                 try:
                     await self.bot.get_channel(int(channel_id)).send(message)
+                    await message_channel.send("Message sent without errors")
                 except discord.errors.Forbidden:
                     print("ERROR: Can't send the message")
             else:
@@ -493,6 +494,7 @@ class BotMaintenanceCommands(commands.Cog):
                         await user.create_dm()
                     await user.dm_channel.send(
                         "**Message from " + ctx.message.author.name + ":**" + message)
+                    await message_channel.send("Message sent without errors")
                 except discord.errors.Forbidden:
                     print("ERROR: Can't send the message")
             else:
