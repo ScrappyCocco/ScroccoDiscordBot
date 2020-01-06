@@ -223,7 +223,12 @@ async def on_message(message: discord.message):
     else:
         mention = message.guild.me.mention
     if len(message.mentions) >= 1:  # message starts with a mention, check if it's mine
-        if message.content.startswith(mention):  # yes the message starts with a mention, it's me?
+        alternative_mention = mention[:2] + '!' + mention[2:]
+        if message.content.startswith(mention) or message.content.startswith(
+                alternative_mention):  # yes the message starts with a mention, it's me?
+            if not message.content.startswith(mention):
+                print("mention replaced with alternative_mention")
+                mention = alternative_mention
             new_message = message.content.replace(str(mention), "",
                                                   1)  # remove the mention from the message (only 1)
             for found_mention in message.mentions:  # convert all mentions to names to make the message clear
@@ -232,7 +237,7 @@ async def on_message(message: discord.message):
             if getattr(bot, 'maintenanceMode') and not BotMethods.is_owner(
                     message.author):  # if it's in maintenance Mode
                 return
-            new_message = new_message.lstrip()  # remove additional spaces from cleverbot question (before and after)
+            new_message = new_message.strip()  # remove additional spaces from cleverbot question (before and after)
             print("Cleverbot Question received, asking cleverbot...")
             await cleverbot_request(message.channel, new_message)
             print("-------------------------")
