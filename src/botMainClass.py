@@ -168,24 +168,25 @@ async def cleverbot_request(channel: discord.abc.Messageable, cleverbot_question
     else:
         request_url = "http://www.cleverbot.com/getreply?key=" + cleverbot_api_key + "&input=" + formatted_question + "&cs=" + bot.cleverbot_cs_parameter
     response_error = False
-    async with aiohttp.ClientSession() as client_session:
-        async with client_session.get(request_url) as response:
-            try:
-                content = await response.json()
-            except UnicodeDecodeError:  # JSON ERROR
-                print("CLEVERBOT ERROR")
-                response_error = True
+    async with channel.typing():
+        async with aiohttp.ClientSession() as client_session:
+            async with client_session.get(request_url) as response:
                 try:
-                    print("Cleverbot Attempt 1 - using read()...\n\n")
-                    content = str(await response.read())
-                except UnicodeDecodeError:
+                    content = await response.json()
+                except UnicodeDecodeError:  # JSON ERROR
+                    print("CLEVERBOT ERROR")
+                    response_error = True
                     try:
-                        print("Cleverbot Attempt 2 - using content()...\n\n")
-                        content = str(response.content)
+                        print("Cleverbot Attempt 1 - using read()...\n\n")
+                        content = str(await response.read())
                     except UnicodeDecodeError:
-                        await channel.send(
-                            "*Cleverbot fatal error, please use " + bot_command_prefix_string + "clearclever")
-                        return
+                        try:
+                            print("Cleverbot Attempt 2 - using content()...\n\n")
+                            content = str(response.content)
+                        except UnicodeDecodeError:
+                            await channel.send(
+                                "*Cleverbot fatal error, please use " + bot_command_prefix_string + "clearclever")
+                            return
     if response_error:  # an error occurred (JSON NOT CORRECT - USE THE CONTENT AS A STRING)
         start_pos = content.find("\"output\":\"") + 10
         end_pos = content.find("\"conversation_id\":") - 2
@@ -223,7 +224,12 @@ async def on_message(message: discord.message):
     else:
         mention = message.guild.me.mention
     if len(message.mentions) >= 1:  # message starts with a mention, check if it's mine
-        if message.content.startswith(mention):  # yes the message starts with a mention, it's me?
+        alternative_mention = mention[:2] + '!' + mention[2:]
+        if message.content.startswith(mention) or message.content.startswith(
+                alternative_mention):  # yes the message starts with a mention, it's me?
+            if not message.content.startswith(mention):
+                print("mention replaced with alternative_mention")
+                mention = alternative_mention
             new_message = message.content.replace(str(mention), "",
                                                   1)  # remove the mention from the message (only 1)
             for found_mention in message.mentions:  # convert all mentions to names to make the message clear
@@ -232,7 +238,7 @@ async def on_message(message: discord.message):
             if getattr(bot, 'maintenanceMode') and not BotMethods.is_owner(
                     message.author):  # if it's in maintenance Mode
                 return
-            new_message = new_message.lstrip()  # remove additional spaces from cleverbot question (before and after)
+            new_message = new_message.strip()  # remove additional spaces from cleverbot question (before and after)
             print("Cleverbot Question received, asking cleverbot...")
             await cleverbot_request(message.channel, new_message)
             print("-------------------------")

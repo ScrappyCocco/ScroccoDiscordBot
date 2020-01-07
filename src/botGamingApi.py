@@ -622,12 +622,7 @@ class BotGamingCommands(commands.Cog):
         else:
             results_list = await HowLongToBeat().async_search(args[0])
             if results_list is not None and len(results_list) > 0:
-                max_sim = -1
-                best_element = None
-                for element in results_list:
-                    if element.similarity > max_sim:
-                        max_sim = element.similarity
-                        best_element = element
+                best_element = max(results_list, key=lambda element: element.similarity)
                 embed = discord.Embed(title="HowLongToBeat details about " + str(best_element.game_name),
                                       colour=discord.Colour(0x000000),
                                       url=str(best_element.game_web_link),

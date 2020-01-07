@@ -313,10 +313,11 @@ class BotCommonCommands(commands.Cog):
         message_channel: discord.abc.Messageable = ctx.message.channel
         async with aiohttp.ClientSession() as session:
             async with session.get(
-                    "http://quotesondesign.com/wp-json/posts?filter[orderby]=rand&filter[posts_per_page]=1") as resp:
-                r = await resp.json()
-        await message_channel.send("**" + BotMethods.cleanhtml("From " + r[0]['title']) + ":**" + html.unescape(
-            BotMethods.cleanhtml(r[0]['content'])))
+                    "https://quotesondesign.com/wp-json/wp/v2/posts/?orderby=rand") as resp:
+                json_resp = await resp.json()
+                r = json_resp[random.randint(0, len(json_resp))]
+        await message_channel.send("**" + BotMethods.cleanhtml("From " + r['title']['rendered']) + ":**" + html.unescape(
+            BotMethods.cleanhtml(r['content']['rendered'])))
 
     # ---------------------------------------------------------------------
 
@@ -592,6 +593,9 @@ class BotCommonCommands(commands.Cog):
         """Check if the email or the username have been hacked
         Usage: !hacked test@test.it
         """
+        print("haveibeenpwned.com require a payment for the API, so this command is now deactivated")
+        return
+        '''
         print("-------------------------")
         message_channel: discord.abc.Messageable = ctx.message.channel
         if len(args) == 1:
@@ -645,6 +649,7 @@ class BotCommonCommands(commands.Cog):
                 "**Usage:** " + self.command_prefix + "hacked \"email or username\", for more see "
                 + self.command_prefix + "help hacked")
         print("-------------------------")
+        '''
 
     # ---------------------------------------------------------------------
 
