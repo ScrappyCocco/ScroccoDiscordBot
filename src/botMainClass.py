@@ -168,24 +168,25 @@ async def cleverbot_request(channel: discord.abc.Messageable, cleverbot_question
     else:
         request_url = "http://www.cleverbot.com/getreply?key=" + cleverbot_api_key + "&input=" + formatted_question + "&cs=" + bot.cleverbot_cs_parameter
     response_error = False
-    async with aiohttp.ClientSession() as client_session:
-        async with client_session.get(request_url) as response:
-            try:
-                content = await response.json()
-            except UnicodeDecodeError:  # JSON ERROR
-                print("CLEVERBOT ERROR")
-                response_error = True
+    async with channel.typing():
+        async with aiohttp.ClientSession() as client_session:
+            async with client_session.get(request_url) as response:
                 try:
-                    print("Cleverbot Attempt 1 - using read()...\n\n")
-                    content = str(await response.read())
-                except UnicodeDecodeError:
+                    content = await response.json()
+                except UnicodeDecodeError:  # JSON ERROR
+                    print("CLEVERBOT ERROR")
+                    response_error = True
                     try:
-                        print("Cleverbot Attempt 2 - using content()...\n\n")
-                        content = str(response.content)
+                        print("Cleverbot Attempt 1 - using read()...\n\n")
+                        content = str(await response.read())
                     except UnicodeDecodeError:
-                        await channel.send(
-                            "*Cleverbot fatal error, please use " + bot_command_prefix_string + "clearclever")
-                        return
+                        try:
+                            print("Cleverbot Attempt 2 - using content()...\n\n")
+                            content = str(response.content)
+                        except UnicodeDecodeError:
+                            await channel.send(
+                                "*Cleverbot fatal error, please use " + bot_command_prefix_string + "clearclever")
+                            return
     if response_error:  # an error occurred (JSON NOT CORRECT - USE THE CONTENT AS A STRING)
         start_pos = content.find("\"output\":\"") + 10
         end_pos = content.find("\"conversation_id\":") - 2
