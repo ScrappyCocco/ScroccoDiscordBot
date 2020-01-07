@@ -593,6 +593,9 @@ class BotCommonCommands(commands.Cog):
         """Check if the email or the username have been hacked
         Usage: !hacked test@test.it
         """
+        print("haveibeenpwned.com require a payment for the API, so this command is now deactivated")
+        return
+        '''
         print("-------------------------")
         message_channel: discord.abc.Messageable = ctx.message.channel
         if len(args) == 1:
@@ -646,6 +649,7 @@ class BotCommonCommands(commands.Cog):
                 "**Usage:** " + self.command_prefix + "hacked \"email or username\", for more see "
                 + self.command_prefix + "help hacked")
         print("-------------------------")
+        '''
 
     # ---------------------------------------------------------------------
 
