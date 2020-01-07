@@ -4,9 +4,6 @@ addons:
   sonarcloud:
     organization: "scrappycocco-github"
 
-jdk:
-  - oraclejdk8
-
 script:
   - sonar-scanner
 
