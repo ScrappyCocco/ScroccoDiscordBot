@@ -594,62 +594,6 @@ class BotCommonCommands(commands.Cog):
         Usage: !hacked test@test.it
         """
         print("haveibeenpwned.com require a payment for the API, so this command is now deactivated")
-        return
-        '''
-        print("-------------------------")
-        message_channel: discord.abc.Messageable = ctx.message.channel
-        if len(args) == 1:
-            try:
-                if ctx.message.guild is not None:
-                    print("Deleting the message...")
-                    await ctx.message.delete()
-            except discord.errors.Forbidden:
-                print("Can't delete the message...")
-            url = "https://haveibeenpwned.com/api/v2/breachedaccount/"
-            print("Request:" + url + "Email")
-            r_json = None  # declare the json
-            async with aiohttp.ClientSession() as session:
-                async with session.get(url + str(args[0])) as resp:  # the website use get
-                    r = await resp.text()
-                    try:
-                        r_json = await resp.json()
-                    except (UnicodeDecodeError, aiohttp.ClientResponseError):
-                        print("Hacked reply is not a json...")
-            if str(r) == "<Response [404]>" or str(r) == "":
-                print("Not found")
-                embed = discord.Embed(title="Hacked?", url='https://haveibeenpwned.com/', color=0x2fea00)
-                embed.set_author(name="Analysis required by " + ctx.message.author.name,
-                                 icon_url=ctx.message.author.avatar_url)
-                embed.set_thumbnail(
-                    url='https://cdn.discordapp.com/attachments/276674976210485248/304961315326394369/1492796826_Tick_Mark_Dark.png')
-                embed.add_field(name="Result:", value="Everything is ok! No problems found", inline=False)
-                embed.set_footer(text="Using haveibeenpwned.com")
-                await message_channel.send(embed=embed)
-            else:
-                json_received = r_json
-                print(len(json_received))
-                embed = discord.Embed(title="Hacked?", url='https://haveibeenpwned.com/',
-                                      description="Websites where you are registered that have been hacked:",
-                                      color=0xff0000)
-                embed.set_author(name="Analysis required by " + ctx.message.author.name,
-                                 icon_url=ctx.message.author.avatar_url)
-                embed.set_thumbnail(
-                    url='https://cdn.discordapp.com/attachments/276674976210485248/304963039545786368/1492797249_shield-error.png')
-                for index in range(len(json_received)):
-                    value_to_print = "**Website:** " + str(json_received[index]['Domain']) + "\n**Date:** " + str(
-                        json_received[index]['BreachDate'])
-                    value_to_print += "\n**Stolen:** "
-                    for current_index in range(len(json_received[index]['DataClasses'])):
-                        value_to_print += str(json_received[index]['DataClasses'][current_index]) + ", "
-                    embed.add_field(name=str(json_received[index]['Title']), value=value_to_print, inline=False)
-                embed.set_footer(text="Using haveibeenpwned.com")
-                await message_channel.send(embed=embed)
-        else:
-            await message_channel.send(
-                "**Usage:** " + self.command_prefix + "hacked \"email or username\", for more see "
-                + self.command_prefix + "help hacked")
-        print("-------------------------")
-        '''
 
     # ---------------------------------------------------------------------
 
