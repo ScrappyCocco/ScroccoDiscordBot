@@ -304,6 +304,46 @@ class BotModerationCommands(commands.Cog):
 
     # ---------------------------------------------------------------------
 
+    @commands.command(hidden=True)
+    async def countusers(self, ctx: discord.ext.commands.Context, *args):
+        """Function that count the number of users with a specific role
+        Usage: !countusers "Role"
+        Usage: !countusers "EMPTY" (count users without a role)
+        """
+        message_channel: discord.abc.Messageable = ctx.message.channel
+        if await self.checkcommandinserver(ctx.message):
+            return
+        if BotMethods.is_server_admin(ctx.message.author):
+            if len(args) != 1:
+                await message_channel.send("Parameter not correct...")
+                return
+            empty_role = False
+            role = None
+            if str(args[0]).lower() == "empty":
+                empty_role = True
+            else:
+                role = discord.utils.get(ctx.message.guild.roles, name=str(args[0]))
+                if role is None:
+                    await message_channel.send("Error - can't find given role...")
+                    return
+            server_members = ctx.message.guild.members
+            counter = 0
+            async with message_channel.typing():
+                for current_member in server_members:
+                    if (len(current_member.roles) == 0 and empty_role) or (role in current_member.roles):
+                        counter += 1
+                if empty_role:
+                    await message_channel.send(str(counter) + " users have no role out of " + str(
+                        len(server_members)) + " server users")
+                else:
+                    await message_channel.send(str(counter) + " users have the role '" + role.name + "' out of " + str(
+                        len(server_members)) + " server users")
+            print("-------------------------")
+        else:
+            await message_channel.send("You don't have access to this command  :stuck_out_tongue: ")
+
+    # -------------------------------------------------------------------
+
     def __init__(self, bot):
         print("CALLING CLASS-->" + self.__class__.__name__ + " class called")
         self.bot = bot
