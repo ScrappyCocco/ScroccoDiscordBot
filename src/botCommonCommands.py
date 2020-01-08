@@ -588,15 +588,6 @@ class BotCommonCommands(commands.Cog):
 
     # ---------------------------------------------------------------------
 
-    @commands.command()
-    async def hacked(self, ctx: discord.ext.commands.Context, *args):
-        """Check if the email or the username have been hacked
-        Usage: !hacked test@test.it
-        """
-        print("haveibeenpwned.com require a payment for the API, so this command is now deactivated")
-
-    # ---------------------------------------------------------------------
-
     # Little class used to store definitions in an array
     class UrbanDefinition(object):
         author = ""

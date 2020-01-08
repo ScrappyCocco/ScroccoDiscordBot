@@ -48,6 +48,13 @@ This will start the bot or show the errors you have to fix.
 
 (If you're using a unix system, remember to change `py` to `python3`)
 
+## Deleted commands
+Since 2016 few APIs have been shut down, so a few commands might be removed from the code.
+
+List of deleted commands:
+* `!hacked`: using haveibeenpwned API v2 this command checked all the breaches with the given email.
+Sadly, there's no longer a free API to use. Command deleted in [this commit](https://github.com/ScrappyCocco/ScroccoDiscordBot/commit/8c90ac7c436ce352094568cd8bc50dd28a1ca6a8);
+
 ## Built Using
 
 * [Danny - Discord.py](https://github.com/Rapptz/discord.py) - Discord Python API
