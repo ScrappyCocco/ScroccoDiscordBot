@@ -191,7 +191,7 @@ class BotMaintenanceCommands(commands.Cog):
                             date = current_member.created_at
                             break
                 else:
-                    date = ctx.message.author.joined_at
+                    date = ctx.message.author.created_at
             date_string = date.strftime('%H:%M:%S %d-%m-%Y')
             if mention:
                 await message_channel.send("**" + ctx.message.mentions[
