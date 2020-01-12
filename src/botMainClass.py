@@ -208,6 +208,16 @@ async def cleverbot_request(channel: discord.abc.Messageable, cleverbot_question
         await channel.send(content["output"])
 
 
+# Function that check if a command exist in bot commands (return True if exist, False otherwise)
+def __check_command_exist(message: discord.message):
+    command = (message.content.strip()[1:]).lower()
+    for bot_command in bot.commands:
+        if command.startswith(bot_command.name.lower()):
+            # command found
+            return True
+    # command doesn't exist
+    return False
+
 # ---------------------------------------------------------------------
 # bot "on_message" event, called when a message is created and sent to a server.
 
@@ -249,8 +259,7 @@ async def on_message(message: discord.message):
             if getattr(bot, 'maintenanceMode') and not BotMethods.is_owner(
                     message.author):  # if it's in maintenance Mode then quit
                 return
-            command = (message.content.strip()[1:]).lower()
-            command_exist = len([x for x in bot.commands if x.name.lower() == command]) == 1
+            command_exist = __check_command_exist(message)
             if message.content.startswith(bot_command_prefix_string) and command_exist:
                 # if starts with command-prefix then process as command
                 await bot.process_commands(message)  # tell the bot to try to execute the command
@@ -261,8 +270,7 @@ async def on_message(message: discord.message):
             if getattr(bot, 'maintenanceMode') and not BotMethods.is_owner(
                     message.author):  # if it's in maintenance Mode then quit
                 return
-            command = (message.content.strip()[1:]).lower()
-            command_exist = len([x for x in bot.commands if x.name.lower() == command]) == 1
+            command_exist = __check_command_exist(message)
             if message.content.startswith(bot_command_prefix_string) and command_exist:
                 # if starts with command-prefix then process as command
                 await bot.process_commands(message)  # tell the bot to try to execute the command
