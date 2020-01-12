@@ -246,8 +246,10 @@ async def on_message(message: discord.message):
             if getattr(bot, 'maintenanceMode') and not BotMethods.is_owner(
                     message.author):  # if it's in maintenance Mode then quit
                 return
-            if message.content.startswith(
-                    bot_command_prefix_string):  # if starts with command-prefix then process as command
+            command = (message.content.strip()[1:]).lower()
+            command_exist = len([x for x in bot.commands if x.name.lower() == command]) == 1
+            if message.content.startswith(bot_command_prefix_string) and command_exist:
+                # if starts with command-prefix then process as command
                 await bot.process_commands(message)  # tell the bot to try to execute the command
             elif message.guild is None:  # forward the message (if active)
                 await forwards_message(message)
@@ -256,8 +258,10 @@ async def on_message(message: discord.message):
             if getattr(bot, 'maintenanceMode') and not BotMethods.is_owner(
                     message.author):  # if it's in maintenance Mode then quit
                 return
-            if message.content.startswith(
-                    bot_command_prefix_string):  # if starts with command-prefix then process as command
+            command = (message.content.strip()[1:]).lower()
+            command_exist = len([x for x in bot.commands if x.name.lower() == command]) == 1
+            if message.content.startswith(bot_command_prefix_string) and command_exist:
+                # if starts with command-prefix then process as command
                 await bot.process_commands(message)  # tell the bot to try to execute the command
             elif message.guild is None:  # forward the message (if active)
                 await forwards_message(message)
