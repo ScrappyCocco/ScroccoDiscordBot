@@ -136,9 +136,9 @@ async def first_chat_alert(channel: discord.abc.Messageable, user: discord.User)
 # function that forward the non-command message to bot owner (if the function is active)
 async def forwards_message(message: discord.message):
     # send private message to bot owner if possible
-    if (str(message.author.id) != privateMessagesOwner) and (
-            privateMessagesOwner != ""):  # not sending messages to myself or not if the function is not active
-        if len(message.attachments) > 0:  # not sending attachments
+    if (str(message.author.id) != privateMessagesOwner) and (privateMessagesOwner != ""):  # not sending messages to myself or not if the function is not active
+        print("forwards_message() passed first if")
+        if len(message.attachments) > 0:  # there are attachments in the message
             url_list = ""
             for attach in message.attachments:
                 url_list += str(attach.url) + " - "  # create a sting with attachments urls
@@ -147,15 +147,17 @@ async def forwards_message(message: discord.message):
             if channel is None:
                 await user.create_dm()
                 channel = user.dm_channel
+            print("Forwarding message.attachments")
             await channel.send("Message from " + str(message.author.name) + "(ID=" + str(
                 message.author.id) + "):" + message.content + "\nAttachments: " + url_list)
             await message.channel.send("***Message with attachments has been forwarded!***")
-        else:
+        else:  # not sending attachments
             user = bot.get_user(int(privateMessagesOwner))
             channel = user.dm_channel
             if channel is None:
                 await user.create_dm()
                 channel = user.dm_channel
+            print("Forwarding standard message")
             await channel.send(
                 "Message from " + str(message.author.name) + "(ID=" + str(message.author.id) + "):" + message.content)
 
@@ -216,6 +218,7 @@ async def on_message(message: discord.message):
         return
     # ---------------------------------------------------------------------
     if await first_chat_alert(message.channel, message.author):
+        print("first_chat_alert return true for " + str(message.author.name))
         return
     # ---------------------------------------------------------------------
     # get bot mention
