@@ -315,7 +315,7 @@ class BotCommonCommands(commands.Cog):
             async with session.get(
                     "https://quotesondesign.com/wp-json/wp/v2/posts/?orderby=rand") as resp:
                 json_resp = await resp.json()
-                r = json_resp[random.randint(0, len(json_resp))]
+                r = json_resp[random.randint(0, len(json_resp)-1)]
         await message_channel.send("**" + BotMethods.cleanhtml("From " + r['title']['rendered']) + ":**" + html.unescape(
             BotMethods.cleanhtml(r['content']['rendered'])))
 
