@@ -6,7 +6,9 @@ This is a little Python Bot i made for my Discord server and a couple of friends
 
 Born in middle 2016 as little bot with only few commands, Scrocco is now a complete and fully-functional Discord Bot.
 
-Since May 2019 Scrocco use `discord.py 1.0.1` the latest version of Discord Python Api made by Danny.  
+Since May 2019 Scrocco use `discord.py > 1.0.1` the latest version of Discord Python Api made by Danny.
+
+Please see ['Deleted commands'](https://github.com/ScrappyCocco/ScroccoDiscordBot#deleted-commands) to read about why some commands may not work.
 
 ## Getting Started
 
@@ -54,6 +56,8 @@ Since 2016 few APIs have been shut down, so a few commands might be removed from
 List of deleted commands:
 * `!hacked`: using haveibeenpwned API v2 this command checked all the breaches with the given email.
 Sadly, there's no longer a free API to use. Command deleted in [this commit](https://github.com/ScrappyCocco/ScroccoDiscordBot/commit/8c90ac7c436ce352094568cd8bc50dd28a1ca6a8);
+
+Note that lots of commands **may not work as expected or not work at all** because the APIs has changed or has been removed. I will fix some of them, while others will remain offline, as this is only a simple bot made for fun.
 
 ## Built Using
 
