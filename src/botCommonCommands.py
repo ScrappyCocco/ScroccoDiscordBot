@@ -5,6 +5,7 @@ from discord.ext import commands
 
 import html
 import re
+import os
 import json
 import random
 import discord
@@ -14,7 +15,7 @@ import urllib.parse
 import aiohttp
 
 from discord.errors import HTTPException
-from urllib import error
+from urllib import error, request
 from datetime import datetime
 from botMethodsClass import BotMethods
 
@@ -108,15 +109,19 @@ class BotCommonCommands(commands.Cog):
         """Print a random cat
         Usage: !cat
         """
-        url = "http://aws.random.cat/meow"
+        print("cat: Downloading file...")
+        urllib.request.urlretrieve("https://cataas.com/cat", "cat.png")
+        print("cat: Sending file...")
         message_channel: discord.abc.Messageable = ctx.message.channel
         try:
-            async with aiohttp.ClientSession() as session:
-                async with session.get(url) as resp:
-                    r = await resp.json()
-            await message_channel.send(r['file'])
-        except aiohttp.ContentTypeError:
-            print("Cannot send cat image...")
+            with open("cat.png", "rb") as data:
+                file: discord.File = discord.File(data, "cat.png")
+                await message_channel.send(file=file)
+        except discord.HTTPException:
+            await message_channel.send("*Something went wrong sending your cat image...*")
+        # now delete the downloaded file
+        os.remove("cat.png")
+        print("cat: File sent and deleted")
 
     # ---------------------------------------------------------------------
 
