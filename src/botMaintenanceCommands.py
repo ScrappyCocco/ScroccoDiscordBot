@@ -6,6 +6,7 @@ from discord.ext import commands
 import discord
 import requests
 import time
+import sys
 import aiohttp
 
 from datetime import datetime
@@ -242,7 +243,8 @@ class BotMaintenanceCommands(commands.Cog):
         message_channel: discord.abc.Messageable = ctx.message.channel
         await message_channel.send("**Current Bot Version:** " + self.botVariables.get_version()
                                    + " **Build:** " + self.botVariables.get_build()
-                                   + " - **API Version:** " + discord.__version__)
+                                   + " - **API Version:** " + discord.__version__
+                                   + " - **Python Version:** " + sys.version)
 
     # ---------------------------------------------------------------------
 
