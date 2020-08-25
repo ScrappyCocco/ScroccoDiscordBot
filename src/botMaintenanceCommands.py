@@ -350,22 +350,29 @@ class BotMaintenanceCommands(commands.Cog):
                 r_json = await resp.json()
         if str(r_json["status"]["indicator"]) != "none" or len(r_json["incidents"]) != 0:
             print("Discord Status seems Not Normal - There is a problem with Discord Servers")
-            embed = discord.Embed(title="Discord Server Status", url=str(r_json["incidents"][0]["shortlink"]),
+            # Create incident link
+            incident_link = "https://status.discord.com/"
+            if len(r_json["incidents"]) > 0 and len(r_json["incidents"][0]) > 0:
+                incident_link = str(r_json["incidents"][0]["shortlink"])
+            embed = discord.Embed(title="Discord Server Status", url=incident_link,
                                   color=0x7289DA)
             embed.set_author(name="Analysis required by " + ctx.message.author.name,
                              icon_url=ctx.message.author.avatar_url)
             embed.set_thumbnail(
                 url='https://cdn.discordapp.com/attachments/276674976210485248/304963039545786368/1492797249_shield-error.png')
-            embed.add_field(name="Incidents:", value=str(r_json["incidents"][0]["name"]), inline=False)
-            # Go from min(3, len(r_json["incidents"][0]["incident_updates"])-1) (3 or len-1) to -1 to print 3 incident updates
-            for i in range(min(3, len(r_json["incidents"][0]["incident_updates"]) - 1), -1, -1):
-                update_date_object = datetime.strptime(
-                    r_json["incidents"][0]["incident_updates"][i]["updated_at"][0:19], '%Y-%m-%dT%H:%M:%S')
-                embed.add_field(name="Incident Update:" + str(
-                    r_json["incidents"][0]["incident_updates"][i]["status"]) + " - Updated at:" + str(
-                    update_date_object.strftime('%H:%M:%S %d-%m-%Y')),
-                                value=str(r_json["incidents"][0]["incident_updates"][i]["body"]),
-                                inline=False)
+            if len(r_json["incidents"]) > 0 and len(r_json["incidents"][0]) > 0:
+                embed.add_field(name="Incidents:", value=str(r_json["incidents"][0]["name"]), inline=False)
+                # Go from min(3, len(r_json["incidents"][0]["incident_updates"])-1) (3 or len-1) to -1 to print 3 incident updates
+                for i in range(min(3, len(r_json["incidents"][0]["incident_updates"]) - 1), -1, -1):
+                    update_date_object = datetime.strptime(
+                        r_json["incidents"][0]["incident_updates"][i]["updated_at"][0:19], '%Y-%m-%dT%H:%M:%S')
+                    embed.add_field(name="Incident Update:" + str(
+                        r_json["incidents"][0]["incident_updates"][i]["status"]) + " - Updated at:" + str(
+                        update_date_object.strftime('%H:%M:%S %d-%m-%Y')),
+                                    value=str(r_json["incidents"][0]["incident_updates"][i]["body"]),
+                                    inline=False)
+            else:
+                embed.add_field(name="Incidents:", value="No information about the incident...", inline=False)
         else:
             print("Discord Status seems Normal")
             embed = discord.Embed(title="Discord Server Status", url="https://status.discordapp.com/",
