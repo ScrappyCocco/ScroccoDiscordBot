@@ -461,7 +461,7 @@ class BotGamingCommands(commands.Cog):
                                       timestamp=datetime.utcfromtimestamp(time.time())
                                       )
                 embed.set_thumbnail(
-                    url=str(best_element.game_image_url))
+                    url="https://howlongtobeat.com" + str(best_element.game_image_url))
                 embed.set_author(name=ctx.message.author.name, url="", icon_url=ctx.message.author.avatar_url)
                 embed.set_footer(text=self.botVariables.get_description(), icon_url=self.botVariables.get_bot_icon())
                 if best_element.gameplay_main_label is not None:  # Check if the name is available first

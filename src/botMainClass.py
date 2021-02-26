@@ -29,8 +29,13 @@ cleverbot_api_key = botVariables.get_clever_key()
 
 bot_command_prefix_string = botVariables.get_command_prefix()  # get the command prefix
 
+# Set intents permissions
+intents = discord.Intents.all()
+
 # creation of bot prefix and description
-bot = commands.Bot(command_prefix=bot_command_prefix_string, description=botVariables.get_description())
+bot = commands.Bot(command_prefix=bot_command_prefix_string,
+                   description=botVariables.get_description(),
+                   intents=intents)
 bot.get_command("help").hidden = True  # hiding the !help command
 
 # getting base informations
@@ -136,7 +141,8 @@ async def first_chat_alert(channel: discord.abc.Messageable, user: discord.User)
 # function that forward the non-command message to bot owner (if the function is active)
 async def forwards_message(message: discord.message):
     # send private message to bot owner if possible
-    if (str(message.author.id) != privateMessagesOwner) and (privateMessagesOwner != ""):  # not sending messages to myself or not if the function is not active
+    if (str(message.author.id) != privateMessagesOwner) and (
+            privateMessagesOwner != ""):  # not sending messages to myself or not if the function is not active
         print("forwards_message() passed first if")
         if len(message.attachments) > 0:  # there are attachments in the message
             url_list = ""
@@ -217,6 +223,7 @@ def __check_command_exist(message: discord.message):
             return True
     # command doesn't exist
     return False
+
 
 # ---------------------------------------------------------------------
 # bot "on_message" event, called when a message is created and sent to a server.
