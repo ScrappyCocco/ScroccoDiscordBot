@@ -4,7 +4,7 @@ async-timeout==3.0.1
 discord.py==1.6.0
 futures==3.1.1
 goslate==1.5.1
-howlongtobeatpy==0.1.17
+howlongtobeatpy==0.1.18
 hypixel==0.7.9
 multidict==5.1.0
 packaging==20.9
