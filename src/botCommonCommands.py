@@ -79,7 +79,7 @@ class BotCommonCommands(commands.Cog):
                 async with session.get(url) as resp:
                     r = await resp.json()
             if 'data' in r:
-                await message_channel.send(r['data']['image_url'])
+                await message_channel.send(r['data']['url'])
             elif 'message' in r:
                 await message_channel.send("An error occurred:" + r['message'])
         else:  # request a gif with tags
@@ -97,7 +97,7 @@ class BotCommonCommands(commands.Cog):
                 await message_channel.send("No GIF found with those tags :frowning: ")
             else:
                 if 'data' in r:
-                    await message_channel.send(r['data']['image_url'])
+                    await message_channel.send(r['data']['url'])
                 elif 'message' in r:
                     await message_channel.send("An error occurred:" + r['message'])
         print("-------------------------")
