@@ -10,6 +10,8 @@ Since May 2019 Scrocco use `discord.py > 1.0.1` the latest rewritten version of 
 
 Please see ['Deleted commands'](https://github.com/ScrappyCocco/ScroccoDiscordBot#deleted-commands) to read about why some commands may not work.
 
+With the [closure of Heroku Free](https://blog.heroku.com/next-chapter) in 2022 I will no longer support this bot that was just a little project, and it will be archived.
+
 ## Getting Started
 
 These instructions will get you a copy of the bot up and running on your local machine for development and testing purposes.
